@@ -1,0 +1,11 @@
+{
+  "reason": "Correct Granite 4 tool argument transport; Granite4ToolParser.dump_args preserves already serialized argument strings while Hermes double encodes them.",
+  "change": "Serving parser hermes -> granite4 only",
+  "scope": "All nine original task/seed episodes, same weights, template, prompts, decoding, retry budget, datasets, scoring code and Docker image. Preserve original receipts. No selection by rerun score.",
+  "original": "/Users/nikhi/defensebio-physiology-plan/.claude/worktrees/compact-bench-eval/benchmarks/compact-coding-v1/.leaderboard-runs/granite4-grpo-step28",
+  "suite": "/Users/nikhi/Documents/ChatGPT/sd-biodefense 2/.leaderboard-runs/compact-eight-suite.json",
+  "checkpoint_manifest_sha256": "b863338f2ff35bdbac8dcceff3717b01fd50ef9f19f3bdaf1647c1a0596eec33",
+  "reference": "https://docs.vllm.ai/en/stable/features/tool_calling/",
+  "serving_pod": "z9cd4z86nwyhlb",
+  "gpu_rental_usd_per_h": 1.79
+}

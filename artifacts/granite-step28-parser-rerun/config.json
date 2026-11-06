@@ -1,0 +1,27 @@
+{
+  "provider": "self-hosted RunPod",
+  "prompt": "Solve the supplied research task independently under the compact coding protocol.",
+  "decoding": {
+    "max_tokens": 1536
+  },
+  "seed_mode": "send",
+  "pricing_ceiling": {
+    "prompt": "0",
+    "completion": "0"
+  },
+  "request_timeout_s": 600,
+  "competitor": "Granite 4.0 Micro + GRPO (step 28)",
+  "model": "granite4-micro-grpo-step28",
+  "slug": "granite4-micro-grpo-step28",
+  "endpoint": "http://127.0.0.1:8102/v1/chat/completions",
+  "checkpoint": {
+    "manifest_sha256": "b863338f2ff35bdbac8dcceff3717b01fd50ef9f19f3bdaf1647c1a0596eec33",
+    "base_model_revision": "56111ae135df9c53a78c99028e7bc24035a9e979",
+    "tokenizer_revision": "56111ae135df9c53a78c99028e7bc24035a9e979",
+    "chat_template_sha256": "9524df67b77a7b25a2dfee898f75b316a157eb9d855b51e32aeac79d7c8a83ce",
+    "dtype": "bfloat16",
+    "quantization": "none",
+    "serving_image_digest": "runpod/pytorch:1.0.3-cu1281-torch291-ubuntu2404 + verl v0.9.1 venv (vllm 0.24.0, transformers 5.9.0, no image digest: pip-installed); tuned = GRPO LoRA r32 step 28 merged into base 56111ae1 (bf16); served via SSH tunnel, localhost only; rerun: same installed versions and weights, --tool-call-parser granite4 (previously hermes)",
+    "effort_support": "unsupported"
+  }
+}

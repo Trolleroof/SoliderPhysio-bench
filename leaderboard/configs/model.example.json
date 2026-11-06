@@ -1,0 +1,10 @@
+{
+  "competitor": "REPLACE_WITH_MODEL_LABEL",
+  "provider": "REPLACE_WITH_PROVIDER_NAME",
+  "endpoint": "https://provider.example/v1/chat/completions",
+  "model": "REPLACE_WITH_EXACT_MODEL_VERSION",
+  "decoding": {"temperature": 0, "max_tokens": 8192, "response_format": {"type": "json_object"}},
+  "prompt": "Solve the supplied task independently. Use public evidence to choose experiments and submit reproducible code with appropriately limited claims.",
+  "max_calls": 150,
+  "max_total_tokens": 5000000
+}

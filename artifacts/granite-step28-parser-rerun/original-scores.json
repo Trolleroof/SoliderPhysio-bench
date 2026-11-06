@@ -1,0 +1,2069 @@
+[
+  {
+    "task": "heat",
+    "seed": 0,
+    "score": {
+      "execution_valid": false,
+      "failure_reason": "ValueError: Two response attempts exhausted for experiment0",
+      "primary_loss": null,
+      "resource_use": null,
+      "secondary": null,
+      "skill": null,
+      "uncertainty": null
+    },
+    "receipt_sha256": "d073e232308093042cd642fb79a7898fc656072511f9bbb557345220f7ab155e"
+  },
+  {
+    "task": "heat",
+    "seed": 1,
+    "score": {
+      "execution_valid": false,
+      "failure_reason": "ValueError: Two response attempts exhausted for experiment0",
+      "primary_loss": null,
+      "resource_use": null,
+      "secondary": null,
+      "skill": null,
+      "uncertainty": null
+    },
+    "receipt_sha256": "5606e8effdf01f8cabf85a93cc3a215cf0e03d9bea4c90112a5bdaa70efea2f1"
+  },
+  {
+    "task": "heat",
+    "seed": 2,
+    "score": {
+      "execution_valid": false,
+      "failure_reason": "ValueError: Two response attempts exhausted for experiment0",
+      "primary_loss": null,
+      "resource_use": null,
+      "secondary": null,
+      "skill": null,
+      "uncertainty": null
+    },
+    "receipt_sha256": "f72010ccaf7e4532dd52d1a5ac3c62eb998ce31230e7d63394e9808b50788ab8"
+  },
+  {
+    "task": "load",
+    "seed": 0,
+    "score": {
+      "execution_valid": false,
+      "failure_reason": "ValueError: Neither experiment produced a valid development artifact",
+      "primary_loss": null,
+      "resource_use": null,
+      "secondary": null,
+      "skill": null,
+      "uncertainty": null
+    },
+    "receipt_sha256": "a757ae23f53a290183181d70d3834b63fdea3ee3bdbf54c190afaddf00334357"
+  },
+  {
+    "task": "load",
+    "seed": 1,
+    "score": {
+      "execution_valid": false,
+      "failure_reason": "ValueError: Two response attempts exhausted for experiment0",
+      "primary_loss": null,
+      "resource_use": null,
+      "secondary": null,
+      "skill": null,
+      "uncertainty": null
+    },
+    "receipt_sha256": "02862636282366176013ea0b1c24bfbf794a044cb57f94cbe04f289825aa1bbb"
+  },
+  {
+    "task": "load",
+    "seed": 2,
+    "score": {
+      "execution_valid": false,
+      "failure_reason": "ValueError: Two response attempts exhausted for experiment0",
+      "primary_loss": null,
+      "resource_use": null,
+      "secondary": null,
+      "skill": null,
+      "uncertainty": null
+    },
+    "receipt_sha256": "29af9a997cca3226fe88040680a867e464480e1936e0d7ceb0f9ce5f17c4b8a1"
+  },
+  {
+    "task": "pulse",
+    "seed": 0,
+    "score": {
+      "artifact_hashes": {
+        "artifact.json": "f406a1a39e1fd6685bb2d27eab392d6122f9153ef4430ef848a8985e28a966e3",
+        "inference.py": "68e9aeb4ee50e33cd88dac003dfbf0b76290f2f1d84bf259b09e119bfbf674eb",
+        "model.json": "c9cb6ab144300c9e7646ba0beeae4df9eaed97a4dfe910cdb23181faf86a1c16",
+        "requirements.lock": "06e696bb91a26c9057cc81ca5238cf72c5e02d6099b64656f17dfbbbe95b7973",
+        "training_code.py": "3cb38516cd02e8784059b0e31fc8763504ee25f9e55697b103456a38aa6f18f5",
+        "training_source.py": "d2888a8141e95382e9240f07b0897fd4770daef69798558a4346027961a9cf49"
+      },
+      "execution_valid": true,
+      "failure_reason": null,
+      "n_bouts": 100,
+      "n_people": 5,
+      "n_windows": 7629,
+      "per_bout_mae_bpm": {
+        "P05/b000": 6.493719314321448,
+        "P05/b002": 7.15941908635072,
+        "P05/b004": 6.371433697271046,
+        "P05/b006": 2.8339154493307923,
+        "P05/b008": 6.509765965513907,
+        "P05/b010": 4.507697488312417,
+        "P05/b012": 14.817474306856468,
+        "P05/b014": 29.038462430865433,
+        "P05/b016": 10.86692824677778,
+        "P05/b018": 4.762168149502556,
+        "P05/b020": 7.967947650379405,
+        "P05/b022": 5.401592834479735,
+        "P05/b024": 6.09518581742706,
+        "P05/b026": 13.571568304739392,
+        "P05/b028": 7.529532168390372,
+        "P05/b030": 14.038697826622123,
+        "P05/b032": 9.263431816102093,
+        "P05/b034": 13.82988953357972,
+        "P05/b036": 14.709419330196246,
+        "P05/b038": 22.471416931295284,
+        "P10/b000": 2.842458046533848,
+        "P10/b002": 2.052861018064462,
+        "P10/b004": 11.029922015710063,
+        "P10/b006": 17.512260676522036,
+        "P10/b008": 4.661681428438584,
+        "P10/b010": 5.161015421698687,
+        "P10/b012": 29.865850921402256,
+        "P10/b014": 28.79529482659839,
+        "P10/b016": 4.2764349326003614,
+        "P10/b018": 3.9420811933798325,
+        "P10/b020": 7.42335206243109,
+        "P10/b022": 5.5063585595032505,
+        "P10/b024": 6.159604917234759,
+        "P10/b026": 10.620743465430644,
+        "P10/b028": 6.672303447345884,
+        "P10/b030": 20.072432049379508,
+        "P10/b032": 6.378692372394437,
+        "P10/b034": 25.45918445525629,
+        "P10/b036": 24.446257497927817,
+        "P10/b038": 17.38671297199861,
+        "P18/b000": 10.793695995125308,
+        "P18/b002": 11.756798116871607,
+        "P18/b004": 8.921251007184686,
+        "P18/b006": 5.225124085161794,
+        "P18/b008": 9.660812767619506,
+        "P18/b010": 13.700124027819102,
+        "P18/b012": 9.4832434219538,
+        "P18/b014": 7.949746870434074,
+        "P18/b016": 11.191880803002675,
+        "P18/b018": 18.112114902763505,
+        "P18/b020": 14.058155957456064,
+        "P18/b022": 13.489425331533374,
+        "P18/b024": 11.556239615542966,
+        "P18/b026": 7.514104776296269,
+        "P18/b028": 10.295790588466282,
+        "P18/b030": 3.9855878328990153,
+        "P18/b032": 12.767379472541283,
+        "P18/b034": 13.77349584613788,
+        "P18/b036": 21.131056452517512,
+        "P18/b038": 8.636601831588417,
+        "P19/b000": 2.456050688431297,
+        "P19/b002": 2.8679874607736164,
+        "P19/b004": 4.448306549098574,
+        "P19/b006": 6.555785456168695,
+        "P19/b008": 5.592803067259791,
+        "P19/b010": 4.191967022292603,
+        "P19/b012": 13.48691172053203,
+        "P19/b014": 11.743929345026302,
+        "P19/b016": 4.441141476929748,
+        "P19/b018": 5.40872086391221,
+        "P19/b020": 3.915259725413533,
+        "P19/b022": 4.563739873312984,
+        "P19/b024": 2.0660320984439666,
+        "P19/b026": 5.718023866081347,
+        "P19/b028": 3.8480986037753704,
+        "P19/b030": 15.659328188965135,
+        "P19/b032": 5.204644082195675,
+        "P19/b034": 19.520196256771705,
+        "P19/b036": 26.131676924046356,
+        "P19/b038": 23.773457965190094,
+        "P21/b000": 3.2289931510414798,
+        "P21/b002": 4.988772137242167,
+        "P21/b004": 3.929647527872417,
+        "P21/b006": 5.310713378985863,
+        "P21/b008": 6.126533492882187,
+        "P21/b010": 3.7249184837934393,
+        "P21/b012": 17.144425426713937,
+        "P21/b014": 8.688914365195709,
+        "P21/b016": 3.730581382855165,
+        "P21/b018": 6.243660863268194,
+        "P21/b020": 2.4151478768304204,
+        "P21/b022": 2.5696383036912827,
+        "P21/b024": 2.6081664214371054,
+        "P21/b026": 6.963914193094516,
+        "P21/b028": 3.575160307823228,
+        "P21/b030": 18.90774779041984,
+        "P21/b032": 4.406977190658574,
+        "P21/b034": 12.17077528675362,
+        "P21/b036": 16.681047650986613,
+        "P21/b038": 23.898079208324425
+      },
+      "per_person_mae_bpm": {
+        "P05": 10.4119833174157,
+        "P10": 12.013275113992538,
+        "P18": 11.200131485145757,
+        "P19": 8.57970306173105,
+        "P21": 7.8656907219935075
+      },
+      "primary_loss": 10.014156740055713,
+      "resource_use": {
+        "wall_s": 168.19323837500087,
+        "workers": [
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7199.959071832999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.692379125000116
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7197.250300457999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.869513458000256
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7195.362895832999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.791768625000259
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7193.5552113329995
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8417430419995071
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7191.697007917
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.779970124999636
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7188.899225417
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7997858329999872
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7187.0895777079995
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.6189320410003347
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7186.462215916999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.6906922910002322
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7185.750838125
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.7226460420006333
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7183.009530083
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8444597500001692
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7181.152353457999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3572606249999808
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7179.779101083
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7960149999998976
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7177.969802125
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3541830410003968
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7176.5903
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7816576249997524
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7174.796170625
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.361658583999997
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7173.422662999999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3572660840000026
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7172.053462917
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3745449160005592
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7170.663639541999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3433212919999278
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7169.299342208
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.7282892080002057
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7166.545068707999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3166726670006028
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7165.212027625
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.3713060840000253
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7162.824841207999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.6754568750002363
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7161.135737666999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8437250839997432
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7159.275763375
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7612164590000248
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7157.496320916999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.6392420419997507
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7154.8423525
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.765690375000304
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7153.065905042
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.6697753750004267
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7152.38630125
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.7354565420000654
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7151.634705541999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.5089456659998177
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7149.112629042
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7802702089993545
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7147.320358667
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3021527500004595
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7145.993046666999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7448475420005707
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7144.236200208
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.4191002920006213
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7142.804197791999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7881311669998468
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7141.003319332999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.2591359580001154
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7139.724191707999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.2951435420000053
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7138.417159332999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3065876250002475
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7137.098991458
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3593157089999295
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7135.725635917
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.057266917000561
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7133.641535125
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.4056612920003317
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7132.217135749999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.6529557080002633
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7129.550421749999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8300547909993838
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7127.7057577079995
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.851399125000171
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7125.8398638749995
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8074265420000302
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7124.012317207999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.774704374999601
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7121.2236179579995
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7959371669994653
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7119.41537325
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.6751365000000078
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7118.731549749999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.6687941250002041
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7118.045149625
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.7538215419999688
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7115.263331417
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8270955000007234
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7113.423954958
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3152270000000499
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7112.093325792
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7988807499996256
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7110.283002374999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3709853330001351
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7108.895090208
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7700934580007015
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7107.113189291999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3466759579996506
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7105.750722833
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3495192090003911
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7104.389476542
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.2956662079996022
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7103.077415416999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3567628330001753
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7101.7088822079995
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3836354580007537
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7100.283886499999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.4199229999994714
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7098.839652625
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.8498252079998565
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7095.97403125
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.898641624999982
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7094.061683917
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8337407500002882
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7092.210862
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8775621250006225
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7090.311787791999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.789279708000322
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7087.504527624999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8430045840004823
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7085.652233291999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.6834301250000863
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7084.960304208
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.6894246249994467
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7084.228312458
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.7859614170001805
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7081.420555166999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.857978541999728
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7079.549728917
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3521374170004492
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7078.184962542
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8386520839994773
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7076.334745167
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.2931564159998743
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7075.027789166999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8126613750000615
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7073.2030225
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3634017499998663
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7071.827829542
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3604247909997866
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7070.455347542
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3390382079996925
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7069.104273333
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.4086276660000294
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7067.682552708
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3540494580001905
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7066.300269582999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.4084721669996725
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7064.872415708
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.9186018749996947
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7061.939052125
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7749933340001007
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7060.151493124999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7858945420002783
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7058.351724249999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7912553339992883
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7056.543864458
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.7943275409998023
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7053.733688333
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7991894169999796
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7051.924035792
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.665076790999592
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7051.250634083
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.739138124999954
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7050.473846542
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 2.783901457999491
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7047.670776374999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.8239094999998997
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7045.834968417
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.371021166999526
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7044.446707874999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7849017919998005
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7042.647747624999
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3974835409999287
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7041.235146333
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.7981721249998373
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7039.424409708
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.4103343749993655
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7038.0024526669995
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3589772919995085
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7036.630708875
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.35047725000004
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7035.267815667
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.3043774170000688
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7033.951965167
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 1.1570814999995491
+          },
+          {
+            "backend": "docker",
+            "execution_valid": true,
+            "exit_code": 0,
+            "failure_reason": null,
+            "limits": {
+              "cpus": 8,
+              "memory_gb": 7.6525726318359375,
+              "timeout_s": 7032.78363225
+            },
+            "log_tail_character_limit": 65536,
+            "peak_rss_bytes_sampled": null,
+            "scored_resource_isolation": true,
+            "stderr_truncated": false,
+            "stdout_truncated": false,
+            "wall_s": 0.932140709000123
+          }
+        ]
+      },
+      "scored_resource_isolation": true,
+      "secondary": {
+        "activity_balanced_mae_bpm": 10.01415674005571,
+        "activity_counts": {
+          "adaptation": {
+            "people": 5,
+            "windows": 709
+          },
+          "baseline": {
+            "people": 5,
+            "windows": 422
+          },
+          "jogging": {
+            "people": 5,
+            "windows": 277
+          },
+          "keyboard-typing": {
+            "people": 5,
+            "windows": 433
+          },
+          "meditation-1": {
+            "people": 5,
+            "windows": 729
+          },
+          "meditation-2": {
+            "people": 5,
+            "windows": 721
+          },
+          "mobile-typing": {
+            "people": 5,
+            "windows": 425
+          },
+          "rest-1": {
+            "people": 5,
+            "windows": 278
+          },
+          "rest-2": {
+            "people": 5,
+            "windows": 291
+          },
+          "rest-3": {
+            "people": 5,
+            "windows": 277
+          },
+          "rest-4": {
+            "people": 5,
+            "windows": 281
+          },
+          "rest-5": {
+            "people": 5,
+            "windows": 400
+          },
+          "running": {
+            "people": 5,
+            "windows": 256
+          },
+          "screen-reading": {
+            "people": 5,
+            "windows": 430
+          },
+          "ssst-prep": {
+            "people": 5,
+            "windows": 59
+          },
+          "ssst-sing": {
+            "people": 5,
+            "windows": 62
+          },
+          "standing": {
+            "people": 5,
+            "windows": 428
+          },
+          "tsst-prep": {
+            "people": 5,
+            "windows": 432
+          },
+          "tsst-speech": {
+            "people": 5,
+            "windows": 435
+          },
+          "walking": {
+            "people": 5,
+            "windows": 284
+          }
+        },
+        "activity_mae_bpm": {
+          "adaptation": 5.1629834390906755,
+          "baseline": 5.765167563860515,
+          "jogging": 16.950708275699846,
+          "keyboard-typing": 7.693749194565259,
+          "meditation-1": 6.510319344342795,
+          "meditation-2": 6.901393368433146,
+          "mobile-typing": 6.306150980504125,
+          "rest-1": 7.1559726545021025,
+          "rest-2": 5.6970457740171705,
+          "rest-3": 6.384177023160227,
+          "rest-4": 7.604224986778412,
+          "rest-5": 20.61989157113491,
+          "running": 19.233253781679366,
+          "screen-reading": 6.25714448878325,
+          "ssst-prep": 16.959581159491698,
+          "ssst-sing": 17.243269567623983,
+          "standing": 8.877670921128434,
+          "tsst-prep": 6.940112159427358,
+          "tsst-speech": 7.4875598092338365,
+          "walking": 14.532758737657124
+        },
+        "bias_bpm": -2.007875454468828,
+        "fraction_error_over_10_bpm": 0.37084967502838684,
+        "missing_activities": [],
+        "rmse_bpm": 13.795744488763045,
+        "worst_activity_mae_bpm": 20.61989157113491
+      },
+      "skill": null,
+      "uncertainty": {
+        "coverage_90": 0.8289657009601328,
+        "interval_score_90": 68.34324772888306,
+        "width_bpm": 33.92387090844217
+      },
+      "units": "bpm"
+    },
+    "receipt_sha256": "f48f16f803d5af66600e96ec8b9c4074461c68a173bc59655ab74581a9998a0b"
+  },
+  {
+    "task": "pulse",
+    "seed": 1,
+    "score": {
+      "execution_valid": false,
+      "failure_reason": "ValueError: Two response attempts exhausted for experiment0",
+      "primary_loss": null,
+      "resource_use": null,
+      "secondary": null,
+      "skill": null,
+      "uncertainty": null
+    },
+    "receipt_sha256": "7d0f6123af1c207a265764beca74e3f06b87ba971dd0944f4cee268d4d7f5a44"
+  },
+  {
+    "task": "pulse",
+    "seed": 2,
+    "score": {
+      "execution_valid": false,
+      "failure_reason": "ValueError: Two response attempts exhausted for experiment0",
+      "primary_loss": null,
+      "resource_use": null,
+      "secondary": null,
+      "skill": null,
+      "uncertainty": null
+    },
+    "receipt_sha256": "876bfb25e0faaec4d72536c8323767164cb3157572fd4b1668182f7d65c7355a"
+  }
+]

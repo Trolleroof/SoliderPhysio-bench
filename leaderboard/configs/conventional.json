@@ -1,0 +1,7 @@
+{
+  "competitor": "conventional-search-v1",
+  "provider": "offline CPU conventional search",
+  "model": "frozen-30-candidate-grid-v1",
+  "decoding": {"search_calls": 30},
+  "prompt": "Run the predeclared grid in scripts/search_tasks.py; choose the lowest public-development MAE under the shared CPU, wall and evaluation budget. No private-test selection."
+}

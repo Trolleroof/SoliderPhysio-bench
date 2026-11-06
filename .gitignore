@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+
+.benchmark-runs/
+
+.research-data/
+
+.research-runs/
+
+.venv-research/
+.venv-research
+.leaderboard-data/
+.leaderboard-runs/
+.leaderboard-checks/
+.env
+.env.*
+!.env.example
+
+# Local run databases and large generated result bundles
+artifacts/**/run/
