@@ -1,0 +1,885 @@
+{
+  "source": {
+    "url": "https://doi.org/10.6084/m9.figshare.29120024.v1",
+    "license": "CC BY 4.0",
+    "md5": "01214bfc835215fe1a5d3f5da1e9ad52"
+  },
+  "tasks": [
+    {
+      "task_id": "KG-01",
+      "task_type": "keep_going_or_pull",
+      "horizon_min": 15,
+      "threshold_c": 38.5,
+      "subject_profile": {
+        "age_years": 33,
+        "mass_kg": 59
+      },
+      "rows": [
+        {
+          "time_min": 0,
+          "hr_bpm": 147,
+          "skin_c": 34.3,
+          "room_temp_c": 34.0,
+          "humidity_pct": 12,
+          "watts": 140
+        },
+        {
+          "time_min": 1,
+          "hr_bpm": 149,
+          "skin_c": 34.4,
+          "room_temp_c": 34.0,
+          "humidity_pct": 12,
+          "watts": 140
+        },
+        {
+          "time_min": 2,
+          "hr_bpm": 149,
+          "skin_c": 34.7,
+          "room_temp_c": 34.0,
+          "humidity_pct": 12,
+          "watts": 140
+        },
+        {
+          "time_min": 3,
+          "hr_bpm": 153,
+          "skin_c": 35.0,
+          "room_temp_c": 34.0,
+          "humidity_pct": 12,
+          "watts": 140
+        },
+        {
+          "time_min": 4,
+          "hr_bpm": 150,
+          "skin_c": 35.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 5,
+          "hr_bpm": null,
+          "skin_c": 35.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 6,
+          "hr_bpm": null,
+          "skin_c": 35.4,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 7,
+          "hr_bpm": null,
+          "skin_c": 35.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 8,
+          "hr_bpm": null,
+          "skin_c": 35.7,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 9,
+          "hr_bpm": null,
+          "skin_c": 35.8,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 10,
+          "hr_bpm": null,
+          "skin_c": 35.9,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 11,
+          "hr_bpm": null,
+          "skin_c": 36.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 12,
+          "hr_bpm": null,
+          "skin_c": 36.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 13,
+          "hr_bpm": null,
+          "skin_c": 36.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 14,
+          "hr_bpm": null,
+          "skin_c": 35.9,
+          "room_temp_c": 35.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 15,
+          "hr_bpm": 153,
+          "skin_c": 35.7,
+          "room_temp_c": 37.0,
+          "humidity_pct": 23,
+          "watts": 140
+        },
+        {
+          "time_min": 16,
+          "hr_bpm": 156,
+          "skin_c": 35.6,
+          "room_temp_c": 37.0,
+          "humidity_pct": 23,
+          "watts": 140
+        },
+        {
+          "time_min": 17,
+          "hr_bpm": 149,
+          "skin_c": 35.4,
+          "room_temp_c": 37.0,
+          "humidity_pct": 23,
+          "watts": 140
+        },
+        {
+          "time_min": 18,
+          "hr_bpm": 158,
+          "skin_c": 35.2,
+          "room_temp_c": 37.0,
+          "humidity_pct": 23,
+          "watts": 140
+        },
+        {
+          "time_min": 19,
+          "hr_bpm": 155,
+          "skin_c": 35.0,
+          "room_temp_c": 37.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 20,
+          "hr_bpm": null,
+          "skin_c": 34.7,
+          "room_temp_c": 37.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 21,
+          "hr_bpm": null,
+          "skin_c": 34.7,
+          "room_temp_c": 37.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 22,
+          "hr_bpm": null,
+          "skin_c": 34.7,
+          "room_temp_c": 37.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 23,
+          "hr_bpm": null,
+          "skin_c": 34.6,
+          "room_temp_c": 37.0,
+          "humidity_pct": 18,
+          "watts": 140
+        },
+        {
+          "time_min": 24,
+          "hr_bpm": null,
+          "skin_c": 34.5,
+          "room_temp_c": 37.0,
+          "humidity_pct": 18,
+          "watts": 140
+        }
+      ],
+      "prompt": "You are the medic watching one soldier on a stationary bike inside a heat chamber. He has been riding for a while already. The table below is the last 25 minutes of his wearable and chamber log, ending now (minute 24). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.\n\nSoldier: age 33 years, body mass 59 kg.\n\n| min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |\n|---:|---:|---:|---:|---:|---:|\n| 0 | 147 | 34.3 | 34.0 | 12 | 140 |\n| 1 | 149 | 34.4 | 34.0 | 12 | 140 |\n| 2 | 149 | 34.7 | 34.0 | 12 | 140 |\n| 3 | 153 | 35.0 | 34.0 | 12 | 140 |\n| 4 | 150 | 35.2 | 35.0 | 18 | 140 |\n| 5 |  | 35.2 | 35.0 | 18 | 140 |\n| 6 |  | 35.4 | 35.0 | 18 | 140 |\n| 7 |  | 35.6 | 35.0 | 18 | 140 |\n| 8 |  | 35.7 | 35.0 | 18 | 140 |\n| 9 |  | 35.8 | 35.0 | 18 | 140 |\n| 10 |  | 35.9 | 35.0 | 18 | 140 |\n| 11 |  | 36.0 | 35.0 | 18 | 140 |\n| 12 |  | 36.0 | 35.0 | 18 | 140 |\n| 13 |  | 36.0 | 35.0 | 18 | 140 |\n| 14 |  | 35.9 | 35.0 | 18 | 140 |\n| 15 | 153 | 35.7 | 37.0 | 23 | 140 |\n| 16 | 156 | 35.6 | 37.0 | 23 | 140 |\n| 17 | 149 | 35.4 | 37.0 | 23 | 140 |\n| 18 | 158 | 35.2 | 37.0 | 23 | 140 |\n| 19 | 155 | 35.0 | 37.0 | 18 | 140 |\n| 20 |  | 34.7 | 37.0 | 18 | 140 |\n| 21 |  | 34.7 | 37.0 | 18 | 140 |\n| 22 |  | 34.7 | 37.0 | 18 | 140 |\n| 23 |  | 34.6 | 37.0 | 18 | 140 |\n| 24 |  | 34.5 | 37.0 | 18 | 140 |\n\nRule: he must be pulled now if his core temperature 15 minutes from now would be at or above 38.5 C. Otherwise he keeps going at whatever workload he is currently holding.\n\nDecide: KEEP or PULL. Do not run code. Reason from the trace and from physiology.\n\nAnswer with one JSON object and nothing else:\n{\n  \"decision\": \"KEEP or PULL\",\n  \"core_c_in_15_min\": \"your best estimate of core temperature (C) 15 minutes from now, one number\",\n  \"confidence\": \"probability (0 to 1) that PULL is the correct call\",\n  \"reasoning\": \"two to five sentences\"\n}\n",
+      "answer_format": {
+        "decision": "KEEP or PULL",
+        "core_c_in_15_min": "your best estimate of core temperature (C) 15 minutes from now, one number",
+        "confidence": "probability (0 to 1) that PULL is the correct call",
+        "reasoning": "two to five sentences"
+      }
+    },
+    {
+      "task_id": "KG-02",
+      "task_type": "keep_going_or_pull",
+      "horizon_min": 15,
+      "threshold_c": 38.5,
+      "subject_profile": {
+        "age_years": 27,
+        "mass_kg": 72
+      },
+      "rows": [
+        {
+          "time_min": 0,
+          "hr_bpm": 145,
+          "skin_c": 33.1,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 1,
+          "hr_bpm": 147,
+          "skin_c": 33.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 2,
+          "hr_bpm": 152,
+          "skin_c": 32.9,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 3,
+          "hr_bpm": 154,
+          "skin_c": 32.8,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 4,
+          "hr_bpm": 153,
+          "skin_c": 32.7,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 5,
+          "hr_bpm": null,
+          "skin_c": 32.8,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 6,
+          "hr_bpm": null,
+          "skin_c": 32.8,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 7,
+          "hr_bpm": null,
+          "skin_c": 32.9,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 8,
+          "hr_bpm": null,
+          "skin_c": 32.9,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 9,
+          "hr_bpm": null,
+          "skin_c": 32.9,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 10,
+          "hr_bpm": null,
+          "skin_c": 33.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 11,
+          "hr_bpm": null,
+          "skin_c": 33.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 12,
+          "hr_bpm": null,
+          "skin_c": 33.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 13,
+          "hr_bpm": null,
+          "skin_c": 33.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 14,
+          "hr_bpm": null,
+          "skin_c": 33.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 215
+        },
+        {
+          "time_min": 15,
+          "hr_bpm": 164,
+          "skin_c": 33.5,
+          "room_temp_c": 35.0,
+          "humidity_pct": 26,
+          "watts": 215
+        },
+        {
+          "time_min": 16,
+          "hr_bpm": 167,
+          "skin_c": 33.5,
+          "room_temp_c": 35.0,
+          "humidity_pct": 26,
+          "watts": 215
+        },
+        {
+          "time_min": 17,
+          "hr_bpm": 168,
+          "skin_c": 33.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 26,
+          "watts": 215
+        },
+        {
+          "time_min": 18,
+          "hr_bpm": 171,
+          "skin_c": 33.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 26,
+          "watts": 215
+        },
+        {
+          "time_min": 19,
+          "hr_bpm": 168,
+          "skin_c": 33.3,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 180
+        },
+        {
+          "time_min": 20,
+          "hr_bpm": null,
+          "skin_c": 33.4,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 180
+        },
+        {
+          "time_min": 21,
+          "hr_bpm": null,
+          "skin_c": 33.2,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 180
+        },
+        {
+          "time_min": 22,
+          "hr_bpm": null,
+          "skin_c": 33.1,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 180
+        },
+        {
+          "time_min": 23,
+          "hr_bpm": null,
+          "skin_c": 32.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 180
+        },
+        {
+          "time_min": 24,
+          "hr_bpm": null,
+          "skin_c": 32.4,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 180
+        }
+      ],
+      "prompt": "You are the medic watching one soldier on a stationary bike inside a heat chamber. He has been riding for a while already. The table below is the last 25 minutes of his wearable and chamber log, ending now (minute 24). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.\n\nSoldier: age 27 years, body mass 72 kg.\n\n| min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |\n|---:|---:|---:|---:|---:|---:|\n| 0 | 145 | 33.1 | 35.0 | 19 | 215 |\n| 1 | 147 | 33.0 | 35.0 | 19 | 215 |\n| 2 | 152 | 32.9 | 35.0 | 19 | 215 |\n| 3 | 154 | 32.8 | 35.0 | 19 | 215 |\n| 4 | 153 | 32.7 | 35.0 | 19 | 215 |\n| 5 |  | 32.8 | 35.0 | 19 | 215 |\n| 6 |  | 32.8 | 35.0 | 19 | 215 |\n| 7 |  | 32.9 | 35.0 | 19 | 215 |\n| 8 |  | 32.9 | 35.0 | 19 | 215 |\n| 9 |  | 32.9 | 35.0 | 19 | 215 |\n| 10 |  | 33.0 | 35.0 | 19 | 215 |\n| 11 |  | 33.0 | 35.0 | 19 | 215 |\n| 12 |  | 33.0 | 35.0 | 19 | 215 |\n| 13 |  | 33.0 | 35.0 | 19 | 215 |\n| 14 |  | 33.3 | 35.0 | 19 | 215 |\n| 15 | 164 | 33.5 | 35.0 | 26 | 215 |\n| 16 | 167 | 33.5 | 35.0 | 26 | 215 |\n| 17 | 168 | 33.3 | 35.0 | 26 | 215 |\n| 18 | 171 | 33.2 | 35.0 | 26 | 215 |\n| 19 | 168 | 33.3 | 36.0 | 25 | 180 |\n| 20 |  | 33.4 | 36.0 | 25 | 180 |\n| 21 |  | 33.2 | 36.0 | 25 | 180 |\n| 22 |  | 33.1 | 36.0 | 25 | 180 |\n| 23 |  | 32.7 | 36.0 | 25 | 180 |\n| 24 |  | 32.4 | 36.0 | 25 | 180 |\n\nRule: he must be pulled now if his core temperature 15 minutes from now would be at or above 38.5 C. Otherwise he keeps going at whatever workload he is currently holding.\n\nDecide: KEEP or PULL. Do not run code. Reason from the trace and from physiology.\n\nAnswer with one JSON object and nothing else:\n{\n  \"decision\": \"KEEP or PULL\",\n  \"core_c_in_15_min\": \"your best estimate of core temperature (C) 15 minutes from now, one number\",\n  \"confidence\": \"probability (0 to 1) that PULL is the correct call\",\n  \"reasoning\": \"two to five sentences\"\n}\n",
+      "answer_format": {
+        "decision": "KEEP or PULL",
+        "core_c_in_15_min": "your best estimate of core temperature (C) 15 minutes from now, one number",
+        "confidence": "probability (0 to 1) that PULL is the correct call",
+        "reasoning": "two to five sentences"
+      }
+    },
+    {
+      "task_id": "KG-03",
+      "task_type": "keep_going_or_pull",
+      "horizon_min": 15,
+      "threshold_c": 38.5,
+      "subject_profile": {
+        "age_years": 20,
+        "mass_kg": 61
+      },
+      "rows": [
+        {
+          "time_min": 0,
+          "hr_bpm": null,
+          "skin_c": 33.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 24,
+          "watts": 205
+        },
+        {
+          "time_min": 1,
+          "hr_bpm": 161,
+          "skin_c": 33.5,
+          "room_temp_c": 36.0,
+          "humidity_pct": 31,
+          "watts": 205
+        },
+        {
+          "time_min": 2,
+          "hr_bpm": 161,
+          "skin_c": 33.3,
+          "room_temp_c": 36.0,
+          "humidity_pct": 31,
+          "watts": 205
+        },
+        {
+          "time_min": 3,
+          "hr_bpm": 164,
+          "skin_c": 33.2,
+          "room_temp_c": 36.0,
+          "humidity_pct": 31,
+          "watts": 205
+        },
+        {
+          "time_min": 4,
+          "hr_bpm": 163,
+          "skin_c": 33.1,
+          "room_temp_c": 36.0,
+          "humidity_pct": 31,
+          "watts": 205
+        },
+        {
+          "time_min": 5,
+          "hr_bpm": 163,
+          "skin_c": 32.8,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 6,
+          "hr_bpm": null,
+          "skin_c": 32.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 7,
+          "hr_bpm": null,
+          "skin_c": 32.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 8,
+          "hr_bpm": null,
+          "skin_c": 32.6,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 9,
+          "hr_bpm": null,
+          "skin_c": 32.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 10,
+          "hr_bpm": null,
+          "skin_c": 32.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 11,
+          "hr_bpm": null,
+          "skin_c": 32.5,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 12,
+          "hr_bpm": null,
+          "skin_c": 32.6,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 13,
+          "hr_bpm": null,
+          "skin_c": 32.8,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 14,
+          "hr_bpm": null,
+          "skin_c": 32.5,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 15,
+          "hr_bpm": null,
+          "skin_c": 32.6,
+          "room_temp_c": 36.0,
+          "humidity_pct": 28,
+          "watts": 205
+        },
+        {
+          "time_min": 16,
+          "hr_bpm": 168,
+          "skin_c": 32.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 30,
+          "watts": 205
+        },
+        {
+          "time_min": 17,
+          "hr_bpm": 168,
+          "skin_c": 32.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 30,
+          "watts": 205
+        },
+        {
+          "time_min": 18,
+          "hr_bpm": 164,
+          "skin_c": 32.6,
+          "room_temp_c": 36.0,
+          "humidity_pct": 30,
+          "watts": 205
+        },
+        {
+          "time_min": 19,
+          "hr_bpm": 168,
+          "skin_c": 32.2,
+          "room_temp_c": 36.0,
+          "humidity_pct": 30,
+          "watts": 205
+        },
+        {
+          "time_min": 20,
+          "hr_bpm": 166,
+          "skin_c": 32.0,
+          "room_temp_c": 37.0,
+          "humidity_pct": 25,
+          "watts": 205
+        },
+        {
+          "time_min": 21,
+          "hr_bpm": null,
+          "skin_c": 32.0,
+          "room_temp_c": 37.0,
+          "humidity_pct": 25,
+          "watts": 188
+        },
+        {
+          "time_min": 22,
+          "hr_bpm": null,
+          "skin_c": 32.0,
+          "room_temp_c": 37.0,
+          "humidity_pct": 25,
+          "watts": 188
+        },
+        {
+          "time_min": 23,
+          "hr_bpm": null,
+          "skin_c": 31.8,
+          "room_temp_c": 37.0,
+          "humidity_pct": 25,
+          "watts": 188
+        },
+        {
+          "time_min": 24,
+          "hr_bpm": null,
+          "skin_c": 31.9,
+          "room_temp_c": 37.0,
+          "humidity_pct": 25,
+          "watts": 188
+        }
+      ],
+      "prompt": "You are the medic watching one soldier on a stationary bike inside a heat chamber. He has been riding for a while already. The table below is the last 25 minutes of his wearable and chamber log, ending now (minute 24). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.\n\nSoldier: age 20 years, body mass 61 kg.\n\n| min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |\n|---:|---:|---:|---:|---:|---:|\n| 0 |  | 33.6 | 35.0 | 24 | 205 |\n| 1 | 161 | 33.5 | 36.0 | 31 | 205 |\n| 2 | 161 | 33.3 | 36.0 | 31 | 205 |\n| 3 | 164 | 33.2 | 36.0 | 31 | 205 |\n| 4 | 163 | 33.1 | 36.0 | 31 | 205 |\n| 5 | 163 | 32.8 | 36.0 | 28 | 205 |\n| 6 |  | 32.7 | 36.0 | 28 | 205 |\n| 7 |  | 32.7 | 36.0 | 28 | 205 |\n| 8 |  | 32.6 | 36.0 | 28 | 205 |\n| 9 |  | 32.7 | 36.0 | 28 | 205 |\n| 10 |  | 32.7 | 36.0 | 28 | 205 |\n| 11 |  | 32.5 | 36.0 | 28 | 205 |\n| 12 |  | 32.6 | 36.0 | 28 | 205 |\n| 13 |  | 32.8 | 36.0 | 28 | 205 |\n| 14 |  | 32.5 | 36.0 | 28 | 205 |\n| 15 |  | 32.6 | 36.0 | 28 | 205 |\n| 16 | 168 | 32.7 | 36.0 | 30 | 205 |\n| 17 | 168 | 32.7 | 36.0 | 30 | 205 |\n| 18 | 164 | 32.6 | 36.0 | 30 | 205 |\n| 19 | 168 | 32.2 | 36.0 | 30 | 205 |\n| 20 | 166 | 32.0 | 37.0 | 25 | 205 |\n| 21 |  | 32.0 | 37.0 | 25 | 188 |\n| 22 |  | 32.0 | 37.0 | 25 | 188 |\n| 23 |  | 31.8 | 37.0 | 25 | 188 |\n| 24 |  | 31.9 | 37.0 | 25 | 188 |\n\nRule: he must be pulled now if his core temperature 15 minutes from now would be at or above 38.5 C. Otherwise he keeps going at whatever workload he is currently holding.\n\nDecide: KEEP or PULL. Do not run code. Reason from the trace and from physiology.\n\nAnswer with one JSON object and nothing else:\n{\n  \"decision\": \"KEEP or PULL\",\n  \"core_c_in_15_min\": \"your best estimate of core temperature (C) 15 minutes from now, one number\",\n  \"confidence\": \"probability (0 to 1) that PULL is the correct call\",\n  \"reasoning\": \"two to five sentences\"\n}\n",
+      "answer_format": {
+        "decision": "KEEP or PULL",
+        "core_c_in_15_min": "your best estimate of core temperature (C) 15 minutes from now, one number",
+        "confidence": "probability (0 to 1) that PULL is the correct call",
+        "reasoning": "two to five sentences"
+      }
+    },
+    {
+      "task_id": "KG-04",
+      "task_type": "keep_going_or_pull",
+      "horizon_min": 15,
+      "threshold_c": 38.5,
+      "subject_profile": {
+        "age_years": 21,
+        "mass_kg": 77
+      },
+      "rows": [
+        {
+          "time_min": 0,
+          "hr_bpm": 158,
+          "skin_c": 35.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 20,
+          "watts": 123
+        },
+        {
+          "time_min": 1,
+          "hr_bpm": 161,
+          "skin_c": 35.1,
+          "room_temp_c": 35.0,
+          "humidity_pct": 20,
+          "watts": 123
+        },
+        {
+          "time_min": 2,
+          "hr_bpm": 157,
+          "skin_c": 35.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 20,
+          "watts": 123
+        },
+        {
+          "time_min": 3,
+          "hr_bpm": 161,
+          "skin_c": 35.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 20,
+          "watts": 123
+        },
+        {
+          "time_min": 4,
+          "hr_bpm": 160,
+          "skin_c": 35.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 5,
+          "hr_bpm": null,
+          "skin_c": 35.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 6,
+          "hr_bpm": null,
+          "skin_c": 35.1,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 7,
+          "hr_bpm": null,
+          "skin_c": 33.7,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 8,
+          "hr_bpm": null,
+          "skin_c": 34.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 9,
+          "hr_bpm": null,
+          "skin_c": 34.4,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 10,
+          "hr_bpm": null,
+          "skin_c": 34.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 11,
+          "hr_bpm": null,
+          "skin_c": 35.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 12,
+          "hr_bpm": null,
+          "skin_c": 35.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 13,
+          "hr_bpm": null,
+          "skin_c": 35.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 14,
+          "hr_bpm": null,
+          "skin_c": 35.1,
+          "room_temp_c": 35.0,
+          "humidity_pct": 21,
+          "watts": 123
+        },
+        {
+          "time_min": 15,
+          "hr_bpm": 169,
+          "skin_c": 35.1,
+          "room_temp_c": 36.0,
+          "humidity_pct": 29,
+          "watts": 123
+        },
+        {
+          "time_min": 16,
+          "hr_bpm": 168,
+          "skin_c": 35.2,
+          "room_temp_c": 36.0,
+          "humidity_pct": 29,
+          "watts": 123
+        },
+        {
+          "time_min": 17,
+          "hr_bpm": 173,
+          "skin_c": 35.1,
+          "room_temp_c": 36.0,
+          "humidity_pct": 29,
+          "watts": 123
+        },
+        {
+          "time_min": 18,
+          "hr_bpm": 169,
+          "skin_c": 35.0,
+          "room_temp_c": 36.0,
+          "humidity_pct": 29,
+          "watts": 123
+        },
+        {
+          "time_min": 19,
+          "hr_bpm": 171,
+          "skin_c": 34.8,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 123
+        },
+        {
+          "time_min": 20,
+          "hr_bpm": null,
+          "skin_c": 34.5,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 123
+        },
+        {
+          "time_min": 21,
+          "hr_bpm": null,
+          "skin_c": 34.4,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 123
+        },
+        {
+          "time_min": 22,
+          "hr_bpm": null,
+          "skin_c": 34.5,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 123
+        },
+        {
+          "time_min": 23,
+          "hr_bpm": null,
+          "skin_c": 34.5,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 123
+        },
+        {
+          "time_min": 24,
+          "hr_bpm": null,
+          "skin_c": 34.6,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 123
+        }
+      ],
+      "prompt": "You are the medic watching one soldier on a stationary bike inside a heat chamber. He has been riding for a while already. The table below is the last 25 minutes of his wearable and chamber log, ending now (minute 24). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.\n\nSoldier: age 21 years, body mass 77 kg.\n\n| min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |\n|---:|---:|---:|---:|---:|---:|\n| 0 | 158 | 35.0 | 35.0 | 20 | 123 |\n| 1 | 161 | 35.1 | 35.0 | 20 | 123 |\n| 2 | 157 | 35.2 | 35.0 | 20 | 123 |\n| 3 | 161 | 35.3 | 35.0 | 20 | 123 |\n| 4 | 160 | 35.2 | 35.0 | 21 | 123 |\n| 5 |  | 35.2 | 35.0 | 21 | 123 |\n| 6 |  | 35.1 | 35.0 | 21 | 123 |\n| 7 |  | 33.7 | 35.0 | 21 | 123 |\n| 8 |  | 34.3 | 35.0 | 21 | 123 |\n| 9 |  | 34.4 | 35.0 | 21 | 123 |\n| 10 |  | 34.6 | 35.0 | 21 | 123 |\n| 11 |  | 35.0 | 35.0 | 21 | 123 |\n| 12 |  | 35.2 | 35.0 | 21 | 123 |\n| 13 |  | 35.3 | 35.0 | 21 | 123 |\n| 14 |  | 35.1 | 35.0 | 21 | 123 |\n| 15 | 169 | 35.1 | 36.0 | 29 | 123 |\n| 16 | 168 | 35.2 | 36.0 | 29 | 123 |\n| 17 | 173 | 35.1 | 36.0 | 29 | 123 |\n| 18 | 169 | 35.0 | 36.0 | 29 | 123 |\n| 19 | 171 | 34.8 | 36.0 | 26 | 123 |\n| 20 |  | 34.5 | 36.0 | 26 | 123 |\n| 21 |  | 34.4 | 36.0 | 26 | 123 |\n| 22 |  | 34.5 | 36.0 | 26 | 123 |\n| 23 |  | 34.5 | 36.0 | 26 | 123 |\n| 24 |  | 34.6 | 36.0 | 26 | 123 |\n\nRule: he must be pulled now if his core temperature 15 minutes from now would be at or above 38.5 C. Otherwise he keeps going at whatever workload he is currently holding.\n\nDecide: KEEP or PULL. Do not run code. Reason from the trace and from physiology.\n\nAnswer with one JSON object and nothing else:\n{\n  \"decision\": \"KEEP or PULL\",\n  \"core_c_in_15_min\": \"your best estimate of core temperature (C) 15 minutes from now, one number\",\n  \"confidence\": \"probability (0 to 1) that PULL is the correct call\",\n  \"reasoning\": \"two to five sentences\"\n}\n",
+      "answer_format": {
+        "decision": "KEEP or PULL",
+        "core_c_in_15_min": "your best estimate of core temperature (C) 15 minutes from now, one number",
+        "confidence": "probability (0 to 1) that PULL is the correct call",
+        "reasoning": "two to five sentences"
+      }
+    }
+  ]
+}
