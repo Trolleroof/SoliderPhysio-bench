@@ -47,7 +47,6 @@ RULEBOOK_FIELDS = (
     "continuous_work_min",
     "continuous_water_qt_per_hr",
 )
-DECISIONS = ("FOLLOW", "OVERRIDE")
 PUBLIC_ROW_KEYS = ("time_min", "hr_bpm", "skin_c", "room_temp_c", "humidity_pct", "watts")
 
 FLAG_NAMES = {"white": "1", "green": "2", "yellow": "3", "red": "4", "black": "5"}
@@ -203,20 +202,30 @@ def parse_work_rest(value: Any) -> str | None:
     return None
 
 
-def parse_decision(value: Any) -> str | None:
-    text = str(value or "").strip().upper()
-    if not text:
-        return None
-    has_override = re.search(r"\bOVERRIDE\b", text) is not None
-    has_follow = re.search(r"\bFOLLOW\b", text) is not None
+def _verdict_word(text: str) -> str | None:
+    """The standalone verdict word, if exactly one appears or an explicit 'decision: X' does."""
+    upper = text.upper()
+    has_override = re.search(r"\bOVERRIDE\b", upper) is not None
+    has_follow = re.search(r"\bFOLLOW\b", upper) is not None
     if has_override != has_follow:
         return "OVERRIDE" if has_override else "FOLLOW"
     if has_override and has_follow:
-        match = re.search(r"DECISION\**\s*[:=]?\s*\**\s*(FOLLOW|OVERRIDE)\b", text)
+        match = re.search(r"DECISION\**\s*[:=]?\s*\**\s*(FOLLOW|OVERRIDE)\b", upper)
         return match.group(1) if match else None
-    if re.search(r"\b(PULL|STOP|HALT|INTERVENE|REMOVE|WITHDRAW)\b", text):
+    return None
+
+
+def parse_decision(value: Any) -> str | None:
+    """Decision field of the JSON answer: the verdict word, else a close synonym."""
+    text = str(value or "").strip()
+    if not text:
+        return None
+    verdict = _verdict_word(text)
+    if verdict is not None:
+        return verdict
+    if re.search(r"\b(PULL|STOP|HALT|INTERVENE|REMOVE|WITHDRAW)\b", text.upper()):
         return "OVERRIDE"
-    if re.search(r"\b(CONTINUE|COMPLY|KEEP|PROCEED|ADHERE)\b", text):
+    if re.search(r"\b(CONTINUE|COMPLY|KEEP|PROCEED|ADHERE)\b", text.upper()):
         return "FOLLOW"
     return None
 
@@ -243,17 +252,13 @@ def parse_response(text: Any) -> dict[str, Any]:
         if out["decision"] is not None:
             return out
     if isinstance(text, str):
-        # Plain-text fallback: a standalone verdict word.
-        decision = parse_decision(text) if obj is None else None
-        if decision is None and obj is None:
-            upper = text.upper()
-            has_override = re.search(r"\bOVERRIDE\b", upper) is not None
-            has_follow = re.search(r"\bFOLLOW\b", upper) is not None
-            if has_override != has_follow:
-                decision = "OVERRIDE" if has_override else "FOLLOW"
+        # Plain-text fallback: a standalone verdict word in the reply (synonyms are not
+        # trusted here because the prompt itself talks about pulling him).
+        decision = _verdict_word(text)
         if decision is not None:
             out["decision"] = decision
-            out["parse_mode"] = "text" if out["parse_mode"] == "none" else out["parse_mode"]
+            if out["parse_mode"] == "none":
+                out["parse_mode"] = "text"
     return out
 
 
