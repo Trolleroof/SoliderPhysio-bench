@@ -1,0 +1,31 @@
+{
+  "task_id": "RB-01",
+  "design": "steady_power_quiet_wearable_hot_core",
+  "note": "Steady 195 W, about 3.3 W/kg, heart rate drifting only from the high 140s to the high 150s. Nothing in the wearable looks alarming and the rulebook cell is no-limit, but the measured rectal temperature is already 38.40 C at the cutoff and reaches 38.92 C fifteen minutes later.",
+  "subject_id": 25,
+  "person_code": "H25",
+  "sex": "M",
+  "cutoff_min": 44,
+  "window_start_min": 20,
+  "horizon_min": 15,
+  "threshold_c": 38.5,
+  "core_at_cutoff_c": 38.4,
+  "core_at_cutoff_plus_15_c": 38.92,
+  "peak_core_next_15_c": 38.92,
+  "core_change_15_c": 0.52,
+  "device_estimate_at_cutoff_c": 38.54,
+  "device_estimate_at_cutoff_plus_15_c": 38.62,
+  "power_dropped_in_window": false,
+  "watts_first": 195,
+  "watts_last": 195,
+  "rulebook_allows_work_through_horizon": true,
+  "expected_rulebook": {
+    "work_rest_min": "NL",
+    "water_qt_per_hr": 0.75,
+    "continuous_work_min": "NL",
+    "continuous_water_qt_per_hr": 1.0
+  },
+  "expected_decision": "OVERRIDE",
+  "override_is_correct": true,
+  "scorer": "tasks.rulebook_vs_body.evaluator.grade"
+}
