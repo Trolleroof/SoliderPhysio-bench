@@ -32,6 +32,7 @@ SYSTEM=('Develop an executable predictor in offline /work. You get two Python tr
  'with predict(artifact_dir,request), fitted files and requirements.lock. Use only staged public data; '
  'no network or private labels. reason is a brief evidence-based explanation, <=160 characters. '
  'You may use the provided baseline helper or write your own code. Use the supplied trial seed. '
+ 'Each experiment must train and save an artifact; exploration-only code uses up an experiment. '
  'Available: numpy, scipy, sklearn, joblib; pandas is unavailable. Keep code concise.')
 BRIEFS={
  'load':'Predict gross metabolic W at 4 km/h, loads 0/5/10/15kg for unseen people. Inputs mass_kg,height_cm,age_years,load_kg. Output mean_w,lower_w,upper_w,state. Primary: person MAE.',
@@ -53,8 +54,15 @@ def request_body(config,observation,judge=False):
     system=('Score only the blind supplied evidence. Five criteria: evidence use, experiment choice, feedback integration, '
             'reproducibility, final selection. Each score 0-4 or null if unobservable. Cite supplied event IDs for scores. '
             'Do not infer hidden test performance or identify models. Call grade once; concise reasons.') if judge else SYSTEM
+    tool=deepcopy(GRADE if judge else ACTION)
+    if not judge:
+        parameters=tool['function']['parameters']
+        selecting=observation.get('phase')==2
+        parameters['required']=['reason','candidate' if selecting else 'code']
+        parameters['properties'].pop('code' if selecting else 'candidate')
+        if selecting:parameters['properties']['candidate']['enum']=observation['valid_candidates']
     body={'model':config['model'],**options,'max_tokens':1025 if judge else 1536,
-          'tools':[GRADE if judge else ACTION],'tool_choice':'auto',
+          'tools':[tool],'tool_choice':'auto',
           'messages':[{'role':'system','content':system},{'role':'user','content':canonical(observation).decode()}]}
     if not judge and config['seed_mode']=='send':body['seed']=observation.get('seed',0)
     limit=3072 if judge else 4096
@@ -148,11 +156,15 @@ def observation(task,round_index,experiments,seed=0):
     guide=("from research_env.tasks.pulse.baselines import train; train('data/train/manifest.json',None,'artifact',0,kind='ridge',alpha=10)"
            if task=='pulse' else "from research_env.tasks.baselines import train; train('data/train/manifest.json','artifact',kind='ridge',seed=0,alpha=10)")
     guide=guide.replace("'artifact',0,",f"'artifact',{seed},").replace('seed=0',f'seed={seed}')
-    prior=[{'index':x['index'],'evidence_id':x['evidence_id'],'reason':trim(x['reason'],200),**score_summary(x['score']),
-            'stderr':trim(x.get('stderr',''),180)} for x in experiments]
-    return {'task':BRIEFS[task],'seed':seed,'phase':round_index,'instruction':'Return training code for experiment '+str(round_index+1)+'.'
+    prior=[{'index':x['index'],'evidence_id':x['evidence_id'],'reason':trim(x['reason'],80),**score_summary(x['score']),
+            'stderr':trim(x.get('stderr',''),100)} for x in experiments]
+    for row,experiment in zip(prior,experiments):
+        if experiment.get('stdout'):row['stdout']=trim(experiment['stdout'],240)
+    schema=('records contain request and targets:[{slice,value}]. Fit request features to target value.'
+            if task!='pulse' else 'entries contain signal files and records with reference_bpm. Use pulse.data.iter_windows(manifest,with_reference=True).')
+    return {'task':BRIEFS[task],'seed':seed,'phase':round_index,'instruction':'Train and SAVE artifact now, not just inspect files. Experiment '+str(round_index+1)+' of 2.'
             if round_index<2 else 'Choose candidate index from valid_candidates; ground reason in development evidence.',
-            'helper_example':guide,'files':'data/train/manifest.json; research_env/tasks/'+task+'/DATA_DICTIONARY.md; previous code trial0.py',
+            'helper_example':guide,'training_schema':schema,
             'experiments':prior,'valid_candidates':[x['index'] for x in experiments if x['score']['execution_valid']]}
 
 
@@ -182,7 +194,8 @@ def episode(suite_path,task,config,config_path,root,key,spend,seed=0):
             decision['evidence_ids']=[e['event_id'] for e in env.session.events()]
             score=env.act({'operation':'evaluate','decision':decision},model_call_id=f'experiment{i}')
             event=env.session.events()[-1]['event_id']
-            experiments.append({'index':i,'reason':a['reason'],'score':score,'evidence_id':event,'stderr':command.get('stderr','')[-200:]})
+            experiments.append({'index':i,'reason':a['reason'],'score':score,'evidence_id':event,
+                                'stdout':command.get('stdout','')[-2000:],'stderr':command.get('stderr','')[-200:]})
             write(root/'experiments.json',experiments)
         valid=[x['index'] for x in experiments if x['score']['execution_valid']]
         if not valid:raise ValueError('Neither experiment produced a valid development artifact')

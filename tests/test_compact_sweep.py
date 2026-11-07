@@ -12,10 +12,26 @@ def response(action,name='respond'):
  return io.BytesIO(canonical({'usage':{'cost':0.001,'total_tokens':None},'choices':[{'message':{'tool_calls':[{'function':{'name':name,'arguments':json.dumps(action)}}]}}]}))
 
 class Compact(unittest.TestCase):
+ def test_phase_schema_requires_executable_code_or_valid_selection(self):
+  config=CONFIGS[0]
+  for phase in (0,1):
+   schema=request_body(config,observation('load',phase,[]))['tools'][0]['function']['parameters']
+   self.assertIn('code',schema['required']);self.assertNotIn('candidate',schema['properties'])
+  xs=[dict(index=0,evidence_id='e00001',reason='Valid baseline',score={'execution_valid':True,'primary_loss':1})]
+  schema=request_body(config,observation('load',2,xs))['tools'][0]['function']['parameters']
+  self.assertIn('candidate',schema['required']);self.assertEqual(schema['properties']['candidate']['enum'],[0])
+  self.assertNotIn('code',schema['properties'])
+  self.assertEqual(ACTION['function']['parameters']['required'],['reason'])
+
+ def test_public_command_output_reaches_next_experiment(self):
+  xs=[dict(index=0,evidence_id='e00001',reason='Inspect schema',score={'execution_valid':False},stdout='records: request, targets')]
+  obs=observation('load',1,xs)
+  self.assertEqual(obs['experiments'][0]['stdout'],'records: request, targets')
+
  def test_budget_and_maximum_observations(self):
   self.assertLess(worst_case(CONFIGS,JUDGE)['total_usd'],10)
   self.assertEqual(worst_case(CONFIGS,JUDGE)['maximum_calls_including_repairs'],120)
-  xs=[dict(index=i,evidence_id=f'e{i:05}',reason='🙂'*160,score={'execution_valid':True,'primary_loss':1},stderr='x'*180) for i in range(2)]
+  xs=[dict(index=i,evidence_id=f'e{i:05}',reason='🙂'*160,score={'execution_valid':True,'primary_loss':1},stderr='x'*180,stdout='x'*2000) for i in range(2)]
   for c in CONFIGS:
    self.assertEqual(c['decoding']['reasoning']['effort'],'medium')
    for task in TASKS:
@@ -44,12 +60,13 @@ class Compact(unittest.TestCase):
    def worker(workspace,command,**kw):
     target=Path(workspace)/'artifact';target.mkdir(exist_ok=True)
     (target/'inference.py').write_text('def predict(a,r):return {}\n')
-    return {'execution_valid':True,'stderr':''}
+    return {'execution_valid':True,'stderr':'','stdout':'Public training output'}
    action={'code':'print(1)','reason':'Fit ridge as a reproducible baseline'}
    score={'execution_valid':True,'primary_loss':1,'uncertainty':{'interval_score_90':2}}
    with patch('urllib.request.urlopen',side_effect=[response(action),response(action),response({'candidate':0,'reason':'Select the valid low-loss candidate'})]),patch('research_env.core.session.execute',side_effect=worker),patch('research_env.core.agent.evaluate',return_value=(score.copy(),{})),patch('research_env.core.evaluation.evaluate',return_value=(score.copy(),{})):
     receipt=episode(root/'suite.json','load',cfg,root/'config.json',run,'SECRET',ledger)
    self.assertTrue(receipt['score']['execution_valid']);self.assertEqual(len(read(run/'experiments.json')),2)
+   self.assertEqual(read(run/'experiments.json')[0]['stdout'],'Public training output')
    events=[json.loads(x)['event'] for x in (run/'trajectory.jsonl').read_text().splitlines()]
    ids=[e['event_id'] for e in events if e['kind']=='experiment']
    verdict={'criteria':[{'id':c,'score':1,'reason':'Observed a recorded experiment','evidence_ids':[ids[0]]} for c in CRITERIA]}
