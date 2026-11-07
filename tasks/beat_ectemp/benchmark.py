@@ -1,5 +1,6 @@
 """Organizer-only data builder and scorer. Never mount this repository for entrants."""
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -10,6 +11,7 @@ import subprocess
 import sys
 import time
 
+SOURCE_MD5 = '01214bfc835215fe1a5d3f5da1e9ad52'
 TRAIN = 'H01 H19 H07 H05 H14 H23 H16 H04 H09 H03 H02 H15 H10 H12'.split()
 DEV = 'H21 H24 H08 H17 H20'.split()
 TEST = 'H25 H22 H13 H06 H18'.split()
@@ -18,8 +20,11 @@ SPLITS = {'train': TRAIN, 'development': DEV, 'test': TEST}
 
 def read_workbook(path):
     import openpyxl
+    path = Path(path)
+    if hashlib.md5(path.read_bytes()).hexdigest() != SOURCE_MD5:
+        raise ValueError('Workbook checksum mismatch')
     book = openpyxl.load_workbook(path, data_only=True, read_only=True)
-    def series(sheet, start, person):
+    def series(sheet, start, person, low, high):
         rows = list(book[sheet].values)
         col = next(i for i in range(start, start + 24) if rows[1][i] == person)
         result = {}
@@ -29,17 +34,17 @@ def read_workbook(path):
                 continue
             minute = int(str(t).split('-')[-1])
             value = row[col]
-            if isinstance(value, (int, float)) and math.isfinite(value):
+            if isinstance(value, (int, float)) and math.isfinite(value) and low <= value <= high:
                 result[minute] = float(value)
         return result
     demos = {int(r[0]): r for r in list(book['Demographics'].values)[1:] if isinstance(r[0], (int, float))}
     people = {}
     for pid in TRAIN + DEV + TEST:
         n = int(pid[1:]); d = demos[n]
-        channels = {k: series(s, c, n) for k, s, c in [
-            ('core_temp', 'Core Temp', 2), ('skin_temp', 'Skin Temp', 2),
-            ('hr', 'Exercise Data', 27), ('watts', 'Exercise Data', 77),
-            ('ambient_temp', 'Environmental Conditions', 2), ('humidity', 'Environmental Conditions', 27)]}
+        channels = {k: series(s, c, n, lo, hi) for k, s, c, lo, hi in [
+            ('core_temp', 'Core Temp', 2, 30, 45), ('skin_temp', 'Skin Temp', 2, 20, 45),
+            ('hr', 'Exercise Data', 27, 30, 240), ('watts', 'Exercise Data', 77, 0, 1000),
+            ('ambient_temp', 'Environmental Conditions', 2, 0, 60), ('humidity', 'Environmental Conditions', 27, 0, 100)]}
         rows = []
         for t in range(1, 61):
             row = dict(time_min=t, age=d[2], mass=d[4], height=d[3])
@@ -70,7 +75,7 @@ def requests(rows, task, offset=0):
 
 
 def build(workbook, split_file, public, private):
-    if json.loads(Path(split_file).read_text()) != SPLITS:
+    if split_file is not None and json.loads(Path(split_file).read_text()) != SPLITS:
         raise ValueError('Split file does not match frozen person split')
     public, private = Path(public).resolve(), Path(private).resolve()
     if public == private or public in private.parents or private in public.parents:
@@ -169,7 +174,7 @@ def evaluate(public, private, task, hidden=False, runner=run_submission):
 
 def main():
     p=argparse.ArgumentParser(); sub=p.add_subparsers(dest='command',required=True)
-    b=sub.add_parser('build'); b.add_argument('--workbook',required=True); b.add_argument('--splits',required=True)
+    b=sub.add_parser('build'); b.add_argument('--workbook',required=True); b.add_argument('--splits')
     for cmd in (b,sub.add_parser('score')):
         cmd.add_argument('--public',required=True); cmd.add_argument('--private',required=True)
     s=sub.choices['score']; s.add_argument('--task',choices=['3A','3B'],required=True); s.add_argument('--hidden',action='store_true')

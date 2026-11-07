@@ -32,6 +32,7 @@ class BeatECTempTests(unittest.TestCase):
         self.assertEqual([len(x) for x in (b.TRAIN,b.DEV,b.TEST)],[14,5,5])
         self.assertTrue(all(len(r)==60 for r in data.values()))
         self.assertTrue(all(any(r[k] is not None for r in data['H01']) for k in rows()[0]))
+        self.assertTrue(all(30 <= r['hr'] <= 240 for rows_p in data.values() for r in rows_p if r['hr'] is not None))
         split=self.root/'splits.json'; split.write_text(json.dumps(b.SPLITS))
         b.build(ROOT/'sources/figshare-heat/core_cycling_2025.xlsx',split,self.public,self.private)
         train=json.loads((self.public/'train.json').read_text())
@@ -47,6 +48,8 @@ class BeatECTempTests(unittest.TestCase):
         self.assertNotIn('labels.json',[p.name for p in self.public.iterdir()])
         split.write_text('{}')
         with self.assertRaises(ValueError): b.build('unused',split,self.public,self.private)
+        bad_wb=self.root/'bad.xlsx'; bad_wb.write_bytes(b'bad')
+        with self.assertRaises(ValueError): b.read_workbook(bad_wb)
 
     def test_causal_forecast_and_online(self):
         a=list(b.requests(rows(),'3A')); c=list(b.requests(rows(),'3B'))

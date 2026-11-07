@@ -1,4 +1,4 @@
-"""Grade 'Rulebook versus body' answers (Task Type 2, one no-code task).
+"""Grade 'Rulebook versus body' answers (Task Type 2, two no-code tasks).
 
 Two halves, each worth half of the total:
 
@@ -241,12 +241,19 @@ def parse_decision(value: Any) -> str | None:
 
 
 def parse_response(text: Any) -> dict[str, Any]:
-    """Extract rulebook fields, decision and core estimate from raw model text.
+    """Extract rulebook fields, decision, core estimate and confidence from raw model text.
 
     Returns {'rulebook': dict|None, 'decision': 'FOLLOW'|'OVERRIDE'|None,
-             'predicted_core_c': float|None, 'parse_mode': 'json'|'text'|'none'}.
+             'predicted_core_c': float|None, 'confidence': float|None,
+             'parse_mode': 'json'|'text'|'none'}.
     """
-    out: dict[str, Any] = {"rulebook": None, "decision": None, "predicted_core_c": None, "parse_mode": "none"}
+    out: dict[str, Any] = {
+        "rulebook": None,
+        "decision": None,
+        "predicted_core_c": None,
+        "confidence": None,
+        "parse_mode": "none",
+    }
     if isinstance(text, dict):
         obj: dict[str, Any] | None = text
     elif isinstance(text, str) and text.strip():
@@ -259,6 +266,8 @@ def parse_response(text: Any) -> dict[str, Any]:
         out["rulebook"] = rulebook if isinstance(rulebook, dict) else None
         out["decision"] = parse_decision(obj.get("decision"))
         out["predicted_core_c"] = parse_quantity(obj.get("predicted_core_c"))
+        conf = parse_quantity(obj.get("confidence"))
+        out["confidence"] = conf if conf is not None and 0.0 <= conf <= 1.0 else None
         if out["decision"] is not None:
             return out
     if isinstance(text, str):
@@ -328,6 +337,7 @@ def grade_body(parsed: dict[str, Any], truth: dict[str, Any]) -> dict[str, Any]:
         "core_estimate_c": est,
         "core_abs_error_c": err,
         "core_within_tolerance": None if err is None else bool(err <= CORE_TOLERANCE_C),
+        "confidence": parsed.get("confidence"),
         "error_type": (None if correct else
                        "unparsed" if parsed["decision"] is None else
                        "missed_override" if expected == "OVERRIDE" else "false_override"),

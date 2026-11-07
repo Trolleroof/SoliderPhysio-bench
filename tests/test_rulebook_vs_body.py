@@ -282,7 +282,9 @@ class TestParsing(unittest.TestCase):
         parsed = evaluator.parse_response(text)
         self.assertEqual(parsed["parse_mode"], "json")
         self.assertEqual(parsed["decision"], "OVERRIDE")
+        self.assertEqual(parsed["confidence"], 0.7)
         self.assertEqual(parsed["rulebook"]["work_rest_min"], "NL")
+        self.assertIsNone(evaluator.parse_response('{"decision": "OVERRIDE", "confidence": 80}')["confidence"])
 
     def test_response_plain_text_fallback(self):
         parsed = evaluator.parse_response("I would OVERRIDE the table and pull him.")

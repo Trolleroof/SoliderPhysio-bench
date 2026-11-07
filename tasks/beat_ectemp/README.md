@@ -14,19 +14,18 @@ Return `{"mean": 38.0, "lower": 37.5, "upper": 38.5}`. Requests contain `task`, 
 Run from repository root, using the research Python environment (openpyxl required):
 
 ```sh
-python tasks/beat_ectemp/benchmark.py build \
+.venv-research/bin/python tasks/beat_ectemp/benchmark.py build \
   --workbook sources/figshare-heat/core_cycling_2025.xlsx \
-  --splits /Users/nikhi/SoliderPhysio-bench/.leaderboard-data/heat/private/splits.json \
   --public /path/to/participant --private /path/to/private
 ```
 
-Destinations must be separate; public must be empty. The participant folder contains only labeled train data, label-free dev requests, baseline, and template. Copy template.py to submission.py and implement predict. Never give participants access to this source repository, original workbook, private directory, organizer shell, or scorer process. Use a separate account/container to expose the public folder and a scoring endpoint; the command below is the organizer-side entrypoint behind that endpoint. A folder layout alone does not isolate a participant with unrestricted organizer shell access.
+Destinations must be separate; public must be empty. (If `--splits` is passed, it is verified against the frozen split.) The participant folder contains only labeled train data, label-free dev requests, baseline, and template. Copy template.py to submission.py and implement predict. Never give participants access to this source repository, original workbook, private directory, organizer shell, or scorer process. Use a separate account/container to expose the public folder and a scoring endpoint; the command below is the organizer-side entrypoint behind that endpoint. A folder layout alone does not isolate a participant with unrestricted organizer shell access.
 
 ```sh
-python tasks/beat_ectemp/benchmark.py score \
+.venv-research/bin/python tasks/beat_ectemp/benchmark.py score \
   --public /path/to/participant --private /path/to/private --task 3A
 # Organizer-only final evaluation:
-python tasks/beat_ectemp/benchmark.py score \
+.venv-research/bin/python tasks/beat_ectemp/benchmark.py score \
   --public /path/to/participant --private /path/to/private --task 3A --hidden
 ```
 
@@ -40,7 +39,7 @@ Frozen split (checked against the specified JSON):
 - Dev: H21 H24 H08 H17 H20
 - Test: H25 H22 H13 H06 H18
 
-Rectal temperature is the target, YSI is skin temperature. Exercise HR and Wattage blocks provide body and load inputs. Demographics supply age, mass, height. Time ranges such as 5–6 map to minute 6. Sparse inputs use latest observation carried forward; before first observation they remain null. Labels are never imputed. The CORE wearable temperature block is deliberately excluded to avoid target leakage.
+Rectal temperature is the target, YSI is skin temperature. Exercise HR and Wattage blocks provide body and load inputs. Demographics supply age, mass, height. Workbook MD5 `01214bfc835215fe1a5d3f5da1e9ad52` is verified before loading. Time ranges such as 5–6 map to minute 6. Heart rate outside 30 to 240 bpm (three four-digit typo cells: 1176, 1556 and 1152 bpm) is omitted before carry-forward. Sparse inputs use latest observation carried forward; before first observation they remain null. Labels are never imputed. The CORE wearable temperature block is deliberately excluded to avoid target leakage.
 
 ## Scoring and cheat blocks
 
@@ -55,5 +54,5 @@ Public scoring uses all eligible dev targets. Hidden primary MAE uses **true cor
 Tests include real workbook export, causal request boundaries, all five cheat blocks, inclusive hot threshold and persistent post-drop gate, baseline clock invariance/body sensitivity, and a real sandbox label/network denial probe.
 
 ```sh
-/Users/nikhi/SoliderPhysio-bench/.venv-research/bin/python -m unittest tests/test_beat_ectemp.py -v
+.venv-research/bin/python -m unittest tests/test_beat_ectemp.py -v
 ```

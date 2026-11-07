@@ -1,11 +1,12 @@
-"""Build the 'Rulebook versus body' task (Task Type 2) from the CORE cycling workbook.
+"""Build the 'Rulebook versus body' tasks (Task Type 2) from the CORE cycling workbook.
 
 Source: D'Lugos (2025), Figshare 29120024 v1, CC BY 4.0, the same workbook as Task Type 1.
 The trace is produced by the Task Type 1 builder (``tasks.keep_going.build_tasks``) so the
-de-identified format is identical: a 25-row window ending at the cutoff, timestamps
-re-zeroed to 0..24, heart rate / watts / humidity / age / mass rounded to integers, skin and
-room temperature to one decimal, room conditions carried forward only after they were
-observed, no core temperature of any kind, no subject number, no sex.
+de-identified format is identical: a 25-row window ending at the cutoff in real ride minutes
+(cutoff-24..cutoff, as a medic on site knows elapsed time), heart rate / watts / humidity /
+age / mass rounded to integers, skin and room temperature to one decimal, room conditions
+carried forward only after they were observed, no core temperature of any kind, no subject
+number, no sex.
 
 Writes ``task.json`` and ``prompts/RB-0x.md`` (public) and ``private_ground_truth.json`` (private).
 
@@ -31,13 +32,13 @@ WINDOW_MIN = kg.WINDOW_MIN
 # Scenario. The flag and work category are inputs to the rulebook half; they are not
 # derived from the chamber (35 C at about 20 percent humidity is below Heat Category 1
 # on the WBGT scale). Moderate work at Yellow flag is a no-limit cell in both tables, so
-# the prescription does not depend on how long he has already been working, and the
-# protocol clock can stay hidden exactly as in Task Type 1.
+# the prescription does not depend on how long the soldier has already been working.
 HEAT_CATEGORY = "Yellow"
 WORK_CATEGORY = "Moderate"
 
 # Two cases under the same flag and work category, so the rulebook answer is identical and
-# only the body differs. Neither person is used by Task Type 1 (subjects 3, 4, 21 and 23).
+# only the body differs. Task Type 1 also uses subjects 12 and 25 at earlier cutoffs
+# (minute 25 for both), so the +15 min prediction targets never coincide.
 CASES = [
     {"task_id": "RB-01", "subject": 25, "cutoff": 44, "role": "trap",
      "design": "steady_power_quiet_wearable_hot_core",

@@ -55,7 +55,7 @@ Channels used: `Core Temp / Rectal` (ground truth only), `Skin Temp / YSI TSK`,
 labels such as `5-6` are aligned to their right edge. Heart rate is only logged in four
 five-minute blocks per session; other minutes are blank in the prompt and the prompt says so.
 Room conditions are carried forward from the last observation, never backward. Heart rate
-outside 30 to 240 bpm (one 1176 bpm cell) is dropped. The vendor CORE sensor estimate,
+outside 30 to 240 bpm (three four-digit typo cells: 1176, 1556 and 1152 bpm) is dropped. The vendor CORE sensor estimate,
 VO2, RPE and subcutaneous fat are not used.
 
 ## Cases
