@@ -1,0 +1,8 @@
+{
+  "schema": "physiology-new-tasks-v1",
+  "tasks": [
+    {"id":"keep-going-or-pull-him","title":"Keep going or pull him?","specification":"tasks/keep-going-or-pull-him/SPEC.md","status":"specification_only","missing":["frozen measured cases","validated decision-label rubric","forecast and decision grader","held-out replay tests"]},
+    {"id":"rulebook-versus-body","title":"Rulebook versus body","specification":"tasks/rulebook-versus-body/SPEC.md","status":"specification_only","missing":["versioned TB MED 507 reference table","frozen lookup and override cases","validated override rubric","deterministic grader tests"]},
+    {"id":"beat-ectemp","title":"Beat ECTemp","specification":"tasks/beat-ectemp/SPEC.md","status":"specification_only","missing":["verified ECTemp reference implementation","new causal workload-inclusive data export","public and hidden slice graders","20-minute offline research runner","leakage and shortcut controls"]}
+  ]
+}
