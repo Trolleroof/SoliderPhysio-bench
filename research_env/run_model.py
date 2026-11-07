@@ -1,5 +1,6 @@
 """Run an explicitly configured HTTPS model through the isolated research controller."""
 import argparse
+from copy import deepcopy
 import json
 import os
 from pathlib import Path
@@ -84,6 +85,10 @@ class ModelProvider:
             raise ValueError('Native transport requires the frozen take_action schema and auto tool choice')
         if type(config.get('max_consecutive_protocol_errors',1)) is not int or not 1<=config.get('max_consecutive_protocol_errors',1)<=3:
             raise ValueError('Allow at most three consecutive malformed replies')
+        if config.get('conversation_mode', 'snapshot') not in ('snapshot', 'tools'):
+            raise ValueError('Unknown participant conversation mode')
+        if config.get('conversation_mode') == 'tools' and config.get('action_transport') != 'tools':
+            raise ValueError('Tool conversations require native tool transport')
         p=self.root/'provider-usage.json'
         self.usage=read(p) if p.exists() else {'calls':0,'tokens':0}
         self.last_call_id = None
@@ -108,14 +113,49 @@ class ModelProvider:
         estimate=len(canonical(observation))+len(system.encode())+self.config['decoding']['max_tokens']+2048
         observation['inference_budget']['near_limit']=remaining_calls<=3 or remaining_tokens<=3*estimate
         observation['inference_budget']['instruction']='If near_limit is true, select and submit your best valid evaluated candidate now; do not start more experiments.'
-        reservation=len(canonical(observation))+len(system.encode())+self.config['decoding']['max_tokens']+1024
+        candidates = {e['result']['candidate_id']: e['result'].get('primary_loss')
+                      for e in observation.get('history', [])
+                      if e.get('kind') == 'development_result' and e.get('result', {}).get('execution_valid')
+                      and e['result'].get('candidate_id')}
+        submission_phase = bool(candidates) and (remaining_calls <= 4 or observation['inference_budget']['near_limit'])
+        if submission_phase:
+            observation['submission_phase'] = {'valid_candidates':candidates,
+                'instruction':'Research is closed. Choose and submit a valid candidate now using public development loss (lower is better).'}
+            system += '\nSUBMISSION PHASE: choose a valid evaluated candidate and call submit now. Do not edit, train or inspect more files.'
+        messages=[{'role':'user','content':canonical(observation).decode()}]
+        if self.config.get('conversation_mode') == 'tools':
+            state_path=self.root/'participant-history.json'
+            if state_path.exists():
+                state=read(state_path)
+                history=observation.get('history', [])
+                count=state['observed_events']
+                if (state['configuration_sha256'] != digest(self.config) or count > len(history)
+                        or digest(history[:count]) != state['ledger_prefix_sha256']):
+                    raise ValueError('Participant conversation identity or public ledger changed')
+                messages=deepcopy(state['messages'])
+                public={k:v for k,v in observation.items() if k != 'history'}
+                public['new_events']=history[count:]
+                public['result_status']='observed' if history[count:] else 'no_controller_result_recorded'
+                messages.append({'role':'tool','tool_call_id':messages[-1]['tool_calls'][0]['id'],
+                                 'content':canonical(public).decode()})
+        body={'model':self.config['model'],**self.config['decoding'],
+              'messages':[{'role':'system','content':system},*messages]}
+        if submission_phase and self.config.get('action_transport') == 'tools':
+            body['tools'] = [{'type':'function', 'function':{
+                'name':'take_action', 'description':'Submit your chosen valid evaluated candidate; research is closed.',
+                'parameters':{'type':'object', 'properties':{
+                    'operation':{'type':'string', 'enum':['submit']},
+                    'candidate_id':{'type':'string', 'enum':sorted(candidates)},
+                    'reason':{'type':'string'},
+                    'evidence_ids':{'type':'array', 'items':{'type':'string'}}},
+                    'required':['operation','candidate_id','reason','evidence_ids']}}}]
+        if self.config.get('seed_mode','send')=='send':
+            body['seed']=seed
+        reservation=(len(canonical(body)) if self.config.get('conversation_mode') == 'tools'
+                     else len(canonical(observation))+len(system.encode()))+self.config['decoding']['max_tokens']+1024
         if self.usage['calls']>=self.config['max_calls'] or self.usage['tokens']+reservation>self.config['max_total_tokens']:
             self.last_fault = {'kind':'budget_exhausted','budget':'provider_calls_or_tokens'}
             raise ValueError('Participant inference budget exhausted')
-        body={'model':self.config['model'],**self.config['decoding'],
-              'messages':[{'role':'system','content':system},{'role':'user','content':canonical(observation).decode()}]}
-        if self.config.get('seed_mode','send')=='send':
-            body['seed']=seed
         charge=self.spend.reserve(body,self.config['pricing_ceiling']) if self.spend else None
         self.usage['calls']+=1;self.usage['tokens']+=reservation
         write(self.root/'provider-usage.json',self.usage)
@@ -166,6 +206,19 @@ class ModelProvider:
                 action=json.loads(text)
             if not isinstance(action,dict):
                 raise ActionProtocolError('Controller action must be an object; no action was executed')
+            if submission_phase and (action.get('operation') != 'submit' or action.get('candidate_id') not in candidates):
+                raise ActionProtocolError('Research is closed: submit one of the valid evaluated candidates; no action was executed')
+            if self.config.get('conversation_mode') == 'tools':
+                if not isinstance(calls[0].get('id'), str) or not calls[0]['id']:
+                    raise ActionProtocolError('Tool conversation requires a tool call ID')
+                assistant={'role':'assistant', 'content':text,
+                           'tool_calls':[{k:deepcopy(calls[0][k]) for k in ('id','type','function')}]}
+                for name in ('reasoning_details','reasoning'):
+                    if message.get(name):assistant[name]=deepcopy(message[name])
+                write(self.root/'participant-history.json', {
+                    'configuration_sha256':digest(self.config), 'messages':[*messages, assistant],
+                    'observed_events':len(observation.get('history', [])),
+                    'ledger_prefix_sha256':digest(observation.get('history', []))})
             record['status']='completed'
             record['action']=action
             return action

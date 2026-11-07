@@ -24,6 +24,66 @@ def reply(action=None,*,calls=None):
 
 
 class NativeActions(unittest.TestCase):
+    def test_tool_conversation_preserves_code_reasoning_and_actual_results_on_resume(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c=native_config();c.update(conversation_mode='tools',max_total_tokens=1000000)
+            provider=ModelProvider(c,'SECRET',tmp)
+            initial={'history':[{'event_id':'e00000','kind':'initial_evidence','content':'Public task'}]}
+            action={'operation':'edit','path':'train.py','text':'print("remember this code")'}
+            block={'type':'reasoning.text','text':'fixture reasoning','signature':'opaque'}
+            raw={'usage':{'total_tokens':20},'choices':[{'message':{'content':None,
+                'reasoning_details':[block], 'tool_calls':[{'id':'call1','type':'function',
+                'function':{'name':'take_action','arguments':json.dumps(action)}}]}}]}
+            with patch('urllib.request.urlopen',return_value=io.BytesIO(canonical(raw))):
+                self.assertEqual(provider(initial,0),action)
+            resumed=ModelProvider(c,'SECRET',tmp)
+            result={'event_id':'e00001','kind':'edit','content_sha256':'public hash'}
+            observation={'history':[*initial['history'],result]}
+            def next_turn(request,**kwargs):
+                messages=json.loads(request.data)['messages']
+                self.assertEqual([m['role'] for m in messages],['system','user','assistant','tool'])
+                self.assertEqual(messages[2]['reasoning_details'],[block])
+                self.assertEqual(json.loads(messages[2]['tool_calls'][0]['function']['arguments']),action)
+                self.assertEqual(messages[3]['tool_call_id'],'call1')
+                self.assertEqual(json.loads(messages[3]['content'])['new_events'],[result])
+                self.assertNotIn('history',json.loads(messages[3]['content']))
+                return reply({'operation':'command','argv':['python','train.py']})
+            with patch('urllib.request.urlopen',side_effect=next_turn):
+                resumed(observation,0)
+            state=read(Path(tmp)/'participant-history.json')
+            self.assertNotIn('SECRET',canonical(state).decode())
+            changed={'history':[{'event_id':'changed'}]}
+            with patch('urllib.request.urlopen') as network:
+                with self.assertRaisesRegex(ValueError,'public ledger changed'):resumed(changed,0)
+                network.assert_not_called()
+
+    def test_submission_phase_requires_model_choice_and_blocks_more_research(self):
+        observation={'history':[{'kind':'development_result','result':{
+            'execution_valid':True,'candidate_id':'good','primary_loss':2}},
+            {'kind':'development_result','result':{'execution_valid':False,'candidate_id':'bad'}}]}
+        with tempfile.TemporaryDirectory() as tmp:
+            c=native_config();c['max_calls']=4
+            provider=ModelProvider(c,'SECRET',tmp)
+            def respond(request,**kwargs):
+                body=json.loads(request.data)
+                schema=body['tools'][0]['function']['parameters']
+                self.assertEqual(schema['properties']['operation']['enum'],['submit'])
+                self.assertEqual(schema['properties']['candidate_id']['enum'],['good'])
+                self.assertIn('SUBMISSION PHASE',body['messages'][0]['content'])
+                return reply({'operation':'edit','path':'x.py','text':'more research'})
+            with patch('urllib.request.urlopen',side_effect=respond):
+                with self.assertRaisesRegex(ActionProtocolError,'Research is closed'):
+                    provider(observation,0)
+            with patch('urllib.request.urlopen',return_value=reply({'operation':'submit','candidate_id':'bad'})):
+                with self.assertRaisesRegex(ActionProtocolError,'Research is closed'):
+                    provider(observation,0)
+            choice={'operation':'submit','candidate_id':'good','reason':'Lowest public loss','evidence_ids':['e00001']}
+            with patch('urllib.request.urlopen',return_value=reply(choice)):
+                self.assertEqual(provider(observation,0),choice)
+            self.assertEqual(provider.usage['calls'],3)
+            self.assertEqual(ACTION_TOOL['function']['parameters']['properties']['operation']['enum'],
+                             ['edit','command','evaluate','select','submit'])
+
     def test_cap_cannot_exceed_recorded_user_authorization(self):
         with tempfile.TemporaryDirectory() as tmp,patch('urllib.request.urlopen') as network:
             with self.assertRaisesRegex(ValueError,'authorization'):
