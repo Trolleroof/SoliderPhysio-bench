@@ -27,6 +27,10 @@ Rebuild (needs `openpyxl`, present in `.venv-research`):
 .venv-research/bin/python -m tasks.keep_going.build_tasks
 ```
 
+**Run rule: no web or tool access.** Send each prompt as a single message with web
+search, browsing, code execution and file tools turned off. A run with any of these
+enabled is invalid, because the source workbook is public and the answer can be looked up.
+
 Grade a set of raw model answers (`{"KG-01": "<model text>", ...}`):
 
 ```sh
@@ -127,6 +131,10 @@ score 0. No LLM grader. Chance level is 50 percent.
 data, or with tool access, could look up the rectal column for the matching subject and
 minute and read the answer off the page instead of reasoning.
 
+**Main mitigation: no web or tool access.** Every run must have web, browsing, code and
+file tools off. This blocks the realistic cheat of downloading the workbook. The remaining
+risk is memorisation, and it is accepted on purpose (see below).
+
 **Mitigations built into the public files.**
 
 1. Elapsed time is shown on purpose. An earlier version re-zeroed the table to minutes
@@ -146,6 +154,12 @@ minute and read the answer off the page instead of reasoning.
 
 **Residual risk.**
 
+- Rounded age and mass alone match exactly one of the 24 people on the workbook's
+  Demographics tab. A model that had memorised the workbook could identify the person,
+  then recall their core temperature at the known minute. This risk is accepted: the
+  workbook is an 84 KB Figshare file, and recalling about 1,400 readings from training
+  data is very unlikely. Coarsening age and mass (for example "30s", "65 to 70 kg") would
+  close it if needed.
 - Heart-rate values are integers in the sheet, so a heart-rate block (five consecutive
   integers) plus the watts level is a near-unique fingerprint. A model that has memorised
   the workbook could match the pattern despite rounding. With 24 people and distinctive
