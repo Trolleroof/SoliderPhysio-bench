@@ -1,8 +1,9 @@
 # Task type 1: Keep going or pull him?
 
-No-code decision tasks. The evaluated model sees the last 25 minutes of one person's
-wearable and chamber log (heart rate, skin temperature, room temperature, humidity, pedal
-watts) plus age and body mass. It never sees core temperature. It must decide whether to
+No-code decision tasks. The evaluated model sees how long the person has been riding,
+the last 25 minutes of their wearable and chamber log (heart rate, skin temperature, room
+temperature, humidity, pedal watts) and their age and body mass. This is the information
+a medic on site would have. It never sees core temperature. It must decide whether to
 **PULL** the person now because their core temperature 15 minutes later would be at or
 above 38.5 C, or **KEEP** them going.
 
@@ -15,7 +16,7 @@ cooling off now" miss the pull.
 | File | Visibility | Contents |
 |---|---|---|
 | `build_tasks.py` | builder | Reads the Figshare workbook, writes everything below. Deterministic. |
-| `public_tasks.json` | public | Task ids, rounded/re-zeroed rows, subject age and mass, full prompt text, answer format. |
+| `public_tasks.json` | public | Task ids, rounded rows with real ride minutes, subject age and mass, full prompt text, answer format. |
 | `prompts/KG-0x.md` | public | The same prompt as rendered markdown, one file per task. |
 | `private_ground_truth.json` | private | Original subject number, original cutoff minute, measured core at cutoff and cutoff+15, expected decision, scorer. |
 | `evaluator.py` | private | Parses the model answer and grades it. |
@@ -128,8 +129,10 @@ minute and read the answer off the page instead of reasoning.
 
 **Mitigations built into the public files.**
 
-1. Timestamps are re-zeroed. The prompt shows minutes 0 to 24; the real protocol minute of
-   the cutoff (25 to 44 here) never appears, and the window start varies by case.
+1. Elapsed time is shown on purpose. An earlier version re-zeroed the table to minutes
+   0 to 24 to hide the protocol clock. That was dropped because a real medic knows how
+   long the soldier has been working, and elapsed time is the strongest single predictor
+   in this dataset. Hiding it would test a situation no human faces.
 2. Values are rounded: heart rate, watts, humidity, age and mass to integers; skin and room
    temperature to one decimal. The sheet stores skin temperature at two decimals, so exact
    cell-value matching fails for most rows.
@@ -146,11 +149,12 @@ minute and read the answer off the page instead of reasoning.
 - Heart-rate values are integers in the sheet, so a heart-rate block (five consecutive
   integers) plus the watts level is a near-unique fingerprint. A model that has memorised
   the workbook could match the pattern despite rounding. With 24 people and distinctive
-  watt levels (215, 140, 205, 123) this is not a strong barrier.
+  watt levels (for example 277, 215, 195) this is not a strong barrier.
 - Watts are also unrounded integers in the sheet. Watts carry the protocol signal (the
   drop), so they cannot be jittered without changing the task.
-- The window length is fixed at 25 rows, which lets a solver recover the window start once
-  it has matched the heart-rate block.
+- Showing real ride minutes makes lookup easier: a solver with the workbook only has to
+  match the watts level and heart-rate block at a known minute. Rounding and the missing
+  subject number remain the only barriers. This trade was chosen for realism.
 - Twelve scored tasks is still a small sample. One answer moves accuracy by about 8
   points, and only three cases are thermal-lag traps. Run several samples per task and
   report the spread rather than a single accuracy.

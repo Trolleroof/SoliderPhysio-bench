@@ -21,7 +21,7 @@ SOURCE_MD5 = '01214bfc835215fe1a5d3f5da1e9ad52'
 
 THRESHOLD_C = 38.5          # pull if core at cutoff+HORIZON is at or above this
 HORIZON_MIN = 15            # decision horizon in minutes
-WINDOW_MIN = 25             # rows shown to the model: cutoff-24 .. cutoff, re-zeroed to 0..24
+WINDOW_MIN = 25             # rows shown to the model: ride minutes cutoff-24 .. cutoff
 HR_RANGE = (30, 240)        # HR outside this is a source error (e.g. 1176) and is omitted
 MIN_MARGIN_C = 0.15         # scored labels must sit at least this far from the threshold
 MAX_STEP_C = 0.3            # scored horizons must not contain a one-minute core jump above this
@@ -137,7 +137,7 @@ def _ri(x):
 
 
 def make_window(person, cutoff, window=WINDOW_MIN):
-    """Public rows for minutes cutoff-window+1 .. cutoff, re-zeroed to 0 .. window-1 and rounded."""
+    """Public rows for ride minutes cutoff-window+1 .. cutoff, rounded."""
     start = cutoff - window + 1
     if start < 1:
         raise ValueError('Window starts before the record')
@@ -148,7 +148,7 @@ def make_window(person, cutoff, window=WINDOW_MIN):
         if t not in person['skin'] or t not in person['watts']:
             raise ValueError(f'Missing skin or watts at minute {t}')
         rows.append({
-            'time_min': t - start,
+            'time_min': t,  # real ride minute: a medic on site knows elapsed time
             'hr_bpm': _ri(person['hr'].get(t)),
             'skin_c': _r1(person['skin'][t]),
             'room_temp_c': _r1(amb),
@@ -163,7 +163,7 @@ def _fmt(v):
 
 
 def render_table(rows):
-    head = '| min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |'
+    head = '| ride min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |'
     sep = '|---:|---:|---:|---:|---:|---:|'
     body = ['| ' + ' | '.join(_fmt(r[k]) for k in PUBLIC_ROW_KEYS) + ' |' for r in rows]
     return '\n'.join([head, sep] + body)
@@ -179,7 +179,7 @@ ANSWER_FORMAT = {
 
 def render_prompt(rows, demo):
     last = rows[-1]['time_min']
-    return f"""You are the medic watching one soldier on a stationary bike inside a heat chamber. The soldier has been riding for a while already. The table below is the last {len(rows)} minutes of the soldier's wearable and chamber log, ending now (minute {last}). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.
+    return f"""You are the medic watching one soldier on a stationary bike inside a heat chamber. The soldier has been riding for {last} minutes. The table below is the last {len(rows)} minutes of the soldier's wearable and chamber log, ending now (ride minute {last}). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.
 
 Soldier: age {demo['age_years']} years, body mass {demo['mass_kg']} kg.
 

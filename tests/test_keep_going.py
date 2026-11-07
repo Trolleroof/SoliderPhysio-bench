@@ -91,18 +91,20 @@ class TestNoLeakage(unittest.TestCase):
             self.assertNotIn('KEEP', body)
 
 
-class TestRezeroAndRounding(unittest.TestCase):
-    def test_timestamps_re_zeroed_and_consecutive(self):
+class TestTimeAndRounding(unittest.TestCase):
+    def test_time_column_is_real_ride_minutes(self):
+        """A medic knows elapsed time, so the table shows real ride minutes ending at the cutoff."""
         for tid, task in PUBLIC_BY_ID.items():
+            gt = PRIVATE_BY_ID[tid]
             times = [r['time_min'] for r in task['rows']]
-            self.assertEqual(times, list(range(build_tasks.WINDOW_MIN)))
-            self.assertNotEqual(times[-1], PRIVATE_BY_ID[tid]['cutoff_min'])
-            self.assertEqual(PRIVATE_BY_ID[tid]['cutoff_min'] - PRIVATE_BY_ID[tid]['window_start_min'],
-                             build_tasks.WINDOW_MIN - 1)
+            self.assertEqual(times, list(range(gt['window_start_min'], gt['cutoff_min'] + 1)))
+            self.assertEqual(len(times), build_tasks.WINDOW_MIN)
 
-    def test_original_cutoff_minute_absent_from_prompt_header(self):
+    def test_prompt_states_elapsed_time(self):
         for tid, task in PUBLIC_BY_ID.items():
-            self.assertIn(f"ending now (minute {build_tasks.WINDOW_MIN - 1})", task['prompt'])
+            cutoff = PRIVATE_BY_ID[tid]['cutoff_min']
+            self.assertIn(f"has been riding for {cutoff} minutes", task['prompt'])
+            self.assertIn(f"ending now (ride minute {cutoff})", task['prompt'])
 
     def test_values_rounded(self):
         for task in PUBLIC['tasks']:
@@ -126,7 +128,7 @@ class TestRezeroAndRounding(unittest.TestCase):
             if person is None:
                 self.skipTest('source workbook not available')
             changed = sum(
-                person['skin'][gt['window_start_min'] + r['time_min']] != r['skin_c'] for r in task['rows'])
+                person['skin'][r['time_min']] != r['skin_c'] for r in task['rows'])
             self.assertGreater(changed, 0, tid)
             raw_mass = person['demo']['mass_kg']
             self.assertEqual(task['subject_profile']['mass_kg'], int(round(raw_mass)))
