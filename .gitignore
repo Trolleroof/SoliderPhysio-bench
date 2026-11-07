@@ -19,3 +19,4 @@ __pycache__/
 
 # Local run databases and large generated result bundles
 artifacts/**/run/
+.venv/
