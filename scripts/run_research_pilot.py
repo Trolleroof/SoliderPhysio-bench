@@ -36,7 +36,10 @@ def review_selection(root, config, key, spend):
 
 
 def execute(output, config_path, judge_path, key, *, cap=1, seed=0,
-            data='.leaderboard-data', image=None, spend_path=None):
+            data='.leaderboard-data', image=None, spend_path=None, tasks=('load','heat','pulse')):
+    tasks=tuple(tasks)
+    if not tasks or len(set(tasks)) != len(tasks) or any(t not in ('load','heat','pulse') for t in tasks):
+        raise ValueError('Select distinct pilot tasks from load, heat and pulse')
     root = Path(output)
     root.mkdir(parents=True, exist_ok=True)
     with (root/'runner.lock').open('a') as lock:
@@ -52,14 +55,15 @@ def execute(output, config_path, judge_path, key, *, cap=1, seed=0,
         check_suite(read(suite))
         spend_path = Path(spend_path or root/'spend.sqlite').resolve()
         identity = digest({'suite':read(suite)['sha256'], 'config':config, 'judge':judge, 'seed':seed,
-                           'spend_path':str(spend_path), 'cap':cap})
+                           'spend_path':str(spend_path), 'cap':cap, 'tasks':list(tasks)})
         status_path = root/'pilot-status.json'
         if status_path.exists() and read(status_path)['identity'] != identity:
             raise ValueError('Cannot change pilot identity on resume')
         spend = SpendLedger(spend_path, cap)
-        status = {'identity':identity, 'scope':'interactive diagnostic; no leaderboard entry', 'tasks':{}}
+        status = {'identity':identity, 'scope':'interactive diagnostic; no leaderboard entry',
+                  'requested_tasks':list(tasks), 'tasks':{}}
         try:
-            for task in ('load', 'heat', 'pulse'):
+            for task in tasks:
                 p = root/task
                 status['active_task'] = task
                 write(status_path, {**status, 'spend':spend.summary()})
@@ -96,6 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('--key-env', default='OPENROUTER_API_KEY')
     parser.add_argument('--env-file')
     parser.add_argument('--spend-path')
+    parser.add_argument('--tasks', nargs='+', choices=('load','heat','pulse'), default=['load','heat','pulse'])
     args = parser.parse_args()
     print(execute(args.output, args.config, args.judge, credential(args.key_env, args.env_file),
-                  cap=args.cap, seed=args.seed, image=args.image, spend_path=args.spend_path))
+                  cap=args.cap, seed=args.seed, image=args.image, spend_path=args.spend_path, tasks=args.tasks))

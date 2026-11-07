@@ -25,7 +25,7 @@ Reasoning blocks are passed back as described in the
 
 The pilot first asks the model to fit and evaluate a documented reference
 (load ridge, heat elapsed, pulse ridge), then improve it using public development
-feedback. If no development evaluation has occurred after 12 paid calls, a
+feedback. If no development evaluation has occurred after 24 paid calls, a
 native evaluate-only phase requires an actual evaluation. A failed result
 reopens research for repairs; this gate never trains or substitutes an artifact.
 It prevents the observed heat failure where the first valid evaluation happened
@@ -48,7 +48,8 @@ The command makes paid calls under the persistent shared cap:
 
 ```sh
 .venv-research/bin/python -m scripts.run_research_pilot \
-  .leaderboard-checks/deepseek-interactive-20261106/v4 \
+  .leaderboard-checks/deepseek-interactive-20261106/v5-pulse \
+  --tasks pulse \
   --spend-path .leaderboard-checks/deepseek-interactive-20261106/spend.sqlite
 ```
 
@@ -86,3 +87,13 @@ interrupted to apply the early-evaluation fix; its partial trace and charges are
 preserved as an interrupted diagnostic, not a scored prediction attempt.
 The baseline-first/early-evaluation rerun is in `v4/`; outcomes remain pending
 until sealed receipts and independent reviews exist.
+
+`v4/` load and heat completed submission, replay and independent review. Pulse
+spent 12 calls discovering the data/helper interface, then rejected the forced
+evaluation phase and exhausted its protocol repairs. The pulse task now includes
+an executable baseline CLI example, consistent with the heat/load task guides.
+The current pilot configuration permits 24 calls before forcing the first
+evaluation, leaving eight calls for correction/submission. `v5-pulse/` tests this
+repair on pulse alone; task lists are explicitly bound into pilot identity so
+partial diagnostics cannot be mistaken for a full suite. It is a separate freeze
+and does not silently replace or merge previous receipts.

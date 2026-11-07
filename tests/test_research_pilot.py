@@ -6,10 +6,20 @@ from unittest.mock import patch
 from research_env.core.common import canonical, digest, file_hash, read, write
 from research_env.judging.judge import RUBRIC, build_packets
 from research_env.leaderboard import seal
-from scripts.run_research_pilot import review_selection
+from scripts.run_research_pilot import execute, review_selection
 
 
 class PilotReview(unittest.TestCase):
+    def test_invalid_task_scope_cannot_start_or_repeat_paid_episodes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)/'not-created'
+            for tasks in ([],['pulse','pulse'],['unknown']):
+                with self.subTest(tasks=tasks),patch('scripts.run_research_pilot.run') as participant:
+                    with self.assertRaisesRegex(ValueError,'distinct pilot tasks'):
+                        execute(root,'unused','unused','SECRET',tasks=tasks)
+                    participant.assert_not_called()
+                    self.assertFalse(root.exists())
+
     def fixture(self, root):
         events = [
             {'event_id':'e00000', 'kind':'initial_evidence', 'content':{'task':'Public task'}},

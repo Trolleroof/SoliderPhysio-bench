@@ -6,6 +6,18 @@ Read `DATA_DICTIONARY.md` and `example-request.json`. Run from a writable worksp
 
 Submit `artifact/inference.py` implementing `predict(artifact_dir, request)`. Return exactly `mean_bpm, lower_bpm, upper_bpm, state`. All numeric values must be finite; lower <= mean <= upper. State is JSON under 16 KiB. The runner sends one request at a time and resets the worker/state between people and bouts. Load fitted parameters from the artifact; do not fit from evaluation recordings. Include training source, JSON/NPZ fitted parameters (untrusted serialization stays inside worker), requirements lock, seeds, exact reproduction command, and evidence report. The final selected artifact is immutable and verified by hashes.
 
+Start a reproducible fitted reference from the staged workspace with:
+
+```sh
+python -m research_env baseline data/train/manifest.json artifact --task pulse --kind ridge --seed 0
+```
+
+This helper reads the exported sensor format, fits on training people and writes
+self-contained inference code, fitted parameters and the dependency lock. Use the
+trial seed. Then request the controller `evaluate` action with a substantive
+decision and public evidence IDs; a training command alone does not evaluate or
+submit the artifact. Other supplied kinds are `median`, `spectral` and `motion`.
+
 Baseline API: `prepare(source_root, output_root, split_manifest)`, `train(train_manifest, calibration_manifest, output_dir, seed)`, `predict(artifact_dir, request)`, `score(reference_records, predictions, scoring_config)`. Task-specific baseline implementations are examples; your estimator is unrestricted within the allowed inputs and compute. Training-median, spectral, motion-aware spectral tracking and ridge regression are provided. Intervals use training residual quantiles; coverage is measured, not promised. Calibration manifests must contain permitted training people; no new-person ECG calibration tier exists in this release.
 
 Provisional limits: CPU only, two hours elapsed from session creation, 30 development calls including failed calls, up to 8 cores and 32 GiB capped by host allocation. Commands and descendants count against elapsed time. No network in workers. Cache dependencies and allowed assets before starting. Scored runs require the digest-pinned Docker worker. Local macOS development has privacy and timeout checks but lacks hard memory/CPU-core isolation and is not a scored resource-compliant run. Freeze the declared incumbent at 15/30/60/120 minutes; final selection uses public development results. Private checkpoint/final scores provide no participant feedback. Never choose a final candidate from private results.
