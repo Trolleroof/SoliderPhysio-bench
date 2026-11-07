@@ -1,0 +1,470 @@
+{
+  "source": {
+    "url": "https://doi.org/10.6084/m9.figshare.29120024.v1",
+    "license": "CC BY 4.0",
+    "md5": "01214bfc835215fe1a5d3f5da1e9ad52"
+  },
+  "rulebook_source": "TB MED 507, 12 April 2022; see tb_med_507.json",
+  "tasks": [
+    {
+      "task_id": "RB-01",
+      "task_type": "rulebook_vs_body",
+      "horizon_min": 15,
+      "threshold_c": 38.5,
+      "inputs": {
+        "heat_category": "Yellow",
+        "heat_category_number": 3,
+        "work_category": "Moderate"
+      },
+      "subject_profile": {
+        "age_years": 24,
+        "mass_kg": 59
+      },
+      "rows": [
+        {
+          "time_min": 20,
+          "hr_bpm": null,
+          "skin_c": 35.5,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 195
+        },
+        {
+          "time_min": 21,
+          "hr_bpm": 150,
+          "skin_c": 35.9,
+          "room_temp_c": 35.0,
+          "humidity_pct": 26,
+          "watts": 195
+        },
+        {
+          "time_min": 22,
+          "hr_bpm": 149,
+          "skin_c": 36.1,
+          "room_temp_c": 35.0,
+          "humidity_pct": 26,
+          "watts": 195
+        },
+        {
+          "time_min": 23,
+          "hr_bpm": 150,
+          "skin_c": 36.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 26,
+          "watts": 195
+        },
+        {
+          "time_min": 24,
+          "hr_bpm": null,
+          "skin_c": 36.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 26,
+          "watts": 195
+        },
+        {
+          "time_min": 25,
+          "hr_bpm": 152,
+          "skin_c": 36.2,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 26,
+          "hr_bpm": null,
+          "skin_c": 36.0,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 27,
+          "hr_bpm": null,
+          "skin_c": 36.1,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 28,
+          "hr_bpm": null,
+          "skin_c": 36.3,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 29,
+          "hr_bpm": null,
+          "skin_c": 36.5,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 30,
+          "hr_bpm": null,
+          "skin_c": 36.6,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 31,
+          "hr_bpm": null,
+          "skin_c": 36.6,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 32,
+          "hr_bpm": null,
+          "skin_c": 36.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 33,
+          "hr_bpm": null,
+          "skin_c": 36.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 34,
+          "hr_bpm": null,
+          "skin_c": 36.6,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 35,
+          "hr_bpm": null,
+          "skin_c": 36.6,
+          "room_temp_c": 36.0,
+          "humidity_pct": 25,
+          "watts": 195
+        },
+        {
+          "time_min": 36,
+          "hr_bpm": 159,
+          "skin_c": 36.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 195
+        },
+        {
+          "time_min": 37,
+          "hr_bpm": 158,
+          "skin_c": 36.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 195
+        },
+        {
+          "time_min": 38,
+          "hr_bpm": 159,
+          "skin_c": 36.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 195
+        },
+        {
+          "time_min": 39,
+          "hr_bpm": 159,
+          "skin_c": 36.7,
+          "room_temp_c": 36.0,
+          "humidity_pct": 26,
+          "watts": 195
+        },
+        {
+          "time_min": 40,
+          "hr_bpm": 159,
+          "skin_c": 36.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 22,
+          "watts": 195
+        },
+        {
+          "time_min": 41,
+          "hr_bpm": null,
+          "skin_c": 36.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 22,
+          "watts": 195
+        },
+        {
+          "time_min": 42,
+          "hr_bpm": null,
+          "skin_c": 36.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 22,
+          "watts": 195
+        },
+        {
+          "time_min": 43,
+          "hr_bpm": null,
+          "skin_c": 36.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 22,
+          "watts": 195
+        },
+        {
+          "time_min": 44,
+          "hr_bpm": null,
+          "skin_c": 36.7,
+          "room_temp_c": 35.0,
+          "humidity_pct": 22,
+          "watts": 195
+        }
+      ],
+      "answer_format": {
+        "rulebook": {
+          "work_rest_min": "Table 1 work/rest minutes per hour as \"NL\" or \"<work>/<rest>\", e.g. \"40/20\"",
+          "water_qt_per_hr": "Table 1 water intake, quarts per hour, one number, e.g. 0.75",
+          "continuous_work_min": "Table 2 continuous work limit as \"NL\" or integer minutes",
+          "continuous_water_qt_per_hr": "Table 2 water intake, quarts per hour, one number"
+        },
+        "decision": "FOLLOW or OVERRIDE",
+        "predicted_core_c": "your best estimate of the soldier's rectal core temperature (C) 15 minutes from now, one number",
+        "confidence": "probability (0 to 1) that OVERRIDE is the correct call",
+        "reasoning": "two to five sentences"
+      },
+      "prompt": "You are the medic advising a small-unit leader during a hot-weather training session. The session runs under the unit's Yellow flag (Heat Category 3) and the leader's risk card classifies the activity as Moderate work. Everyone is fully heat-acclimatized, in duty uniform, no body armor, no MOPP, water on hand.\n\nOne soldier is riding a stationary bike inside the heat chamber used for the session. The soldier has been riding for 44 minutes. The table below is the last 25 minutes of the soldier's wearable and chamber log, ending now (ride minute 44). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.\n\nSoldier: age 24 years, body mass 59 kg.\n\n| ride min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |\n|---:|---:|---:|---:|---:|---:|\n| 20 |  | 35.5 | 35.0 | 19 | 195 |\n| 21 | 150 | 35.9 | 35.0 | 26 | 195 |\n| 22 | 149 | 36.1 | 35.0 | 26 | 195 |\n| 23 | 150 | 36.2 | 35.0 | 26 | 195 |\n| 24 |  | 36.2 | 35.0 | 26 | 195 |\n| 25 | 152 | 36.2 | 36.0 | 25 | 195 |\n| 26 |  | 36.0 | 36.0 | 25 | 195 |\n| 27 |  | 36.1 | 36.0 | 25 | 195 |\n| 28 |  | 36.3 | 36.0 | 25 | 195 |\n| 29 |  | 36.5 | 36.0 | 25 | 195 |\n| 30 |  | 36.6 | 36.0 | 25 | 195 |\n| 31 |  | 36.6 | 36.0 | 25 | 195 |\n| 32 |  | 36.7 | 36.0 | 25 | 195 |\n| 33 |  | 36.7 | 36.0 | 25 | 195 |\n| 34 |  | 36.6 | 36.0 | 25 | 195 |\n| 35 |  | 36.6 | 36.0 | 25 | 195 |\n| 36 | 159 | 36.7 | 36.0 | 26 | 195 |\n| 37 | 158 | 36.7 | 36.0 | 26 | 195 |\n| 38 | 159 | 36.7 | 36.0 | 26 | 195 |\n| 39 | 159 | 36.7 | 36.0 | 26 | 195 |\n| 40 | 159 | 36.6 | 35.0 | 22 | 195 |\n| 41 |  | 36.6 | 35.0 | 22 | 195 |\n| 42 |  | 36.6 | 35.0 | 22 | 195 |\n| 43 |  | 36.6 | 35.0 | 22 | 195 |\n| 44 |  | 36.7 | 35.0 | 22 | 195 |\n\nTwo questions.\n\n(a) Rulebook. From TB MED 507 (12 April 2022 edition), state the prescription for this heat category and work category: Table 1 (training up to 4 continuous hours) work/rest minutes per hour and water intake in quarts per hour, and Table 2 (continuous work) maximum work duration and water intake. Write NL where the table sets no limit.\n\n(b) Body. Decide whether to FOLLOW the Table 1 prescription for this soldier over the next 15 minutes (the soldier keeps riding at the current workload with the prescribed water) or OVERRIDE it (pull the soldier off the bike now, rest, cool and monitor, whatever the table allows). Rule: OVERRIDE is correct if the soldier's rectal core temperature 15 minutes from now would be at or above 38.5 C with no intervention; otherwise FOLLOW is correct. Also estimate that core temperature.\n\nDo not run code. Reason from the trace and from physiology.\n\nAnswer with one JSON object and nothing else:\n{\n  \"rulebook\": {\n    \"work_rest_min\": \"Table 1 work/rest minutes per hour as \\\"NL\\\" or \\\"<work>/<rest>\\\", e.g. \\\"40/20\\\"\",\n    \"water_qt_per_hr\": \"Table 1 water intake, quarts per hour, one number, e.g. 0.75\",\n    \"continuous_work_min\": \"Table 2 continuous work limit as \\\"NL\\\" or integer minutes\",\n    \"continuous_water_qt_per_hr\": \"Table 2 water intake, quarts per hour, one number\"\n  },\n  \"decision\": \"FOLLOW or OVERRIDE\",\n  \"predicted_core_c\": \"your best estimate of the soldier's rectal core temperature (C) 15 minutes from now, one number\",\n  \"confidence\": \"probability (0 to 1) that OVERRIDE is the correct call\",\n  \"reasoning\": \"two to five sentences\"\n}\n"
+    },
+    {
+      "task_id": "RB-02",
+      "task_type": "rulebook_vs_body",
+      "horizon_min": 15,
+      "threshold_c": 38.5,
+      "inputs": {
+        "heat_category": "Yellow",
+        "heat_category_number": 3,
+        "work_category": "Moderate"
+      },
+      "subject_profile": {
+        "age_years": 46,
+        "mass_kg": 75
+      },
+      "rows": [
+        {
+          "time_min": 6,
+          "hr_bpm": 169,
+          "skin_c": 34.2,
+          "room_temp_c": 35.0,
+          "humidity_pct": 15,
+          "watts": 122
+        },
+        {
+          "time_min": 7,
+          "hr_bpm": 169,
+          "skin_c": 34.4,
+          "room_temp_c": 35.0,
+          "humidity_pct": 15,
+          "watts": 122
+        },
+        {
+          "time_min": 8,
+          "hr_bpm": 172,
+          "skin_c": 34.5,
+          "room_temp_c": 35.0,
+          "humidity_pct": 15,
+          "watts": 122
+        },
+        {
+          "time_min": 9,
+          "hr_bpm": 172,
+          "skin_c": 34.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 15,
+          "watts": 122
+        },
+        {
+          "time_min": 10,
+          "hr_bpm": 172,
+          "skin_c": 34.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 11,
+          "hr_bpm": null,
+          "skin_c": 34.5,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 12,
+          "hr_bpm": null,
+          "skin_c": 34.5,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 13,
+          "hr_bpm": null,
+          "skin_c": 34.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 14,
+          "hr_bpm": null,
+          "skin_c": 34.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 15,
+          "hr_bpm": null,
+          "skin_c": 34.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 16,
+          "hr_bpm": null,
+          "skin_c": 34.6,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 17,
+          "hr_bpm": null,
+          "skin_c": 34.5,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 18,
+          "hr_bpm": null,
+          "skin_c": 34.5,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 19,
+          "hr_bpm": null,
+          "skin_c": 34.5,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 20,
+          "hr_bpm": null,
+          "skin_c": 34.4,
+          "room_temp_c": 35.0,
+          "humidity_pct": 16,
+          "watts": 122
+        },
+        {
+          "time_min": 21,
+          "hr_bpm": 180,
+          "skin_c": 34.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        },
+        {
+          "time_min": 22,
+          "hr_bpm": 178,
+          "skin_c": 34.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        },
+        {
+          "time_min": 23,
+          "hr_bpm": 179,
+          "skin_c": 34.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        },
+        {
+          "time_min": 24,
+          "hr_bpm": 179,
+          "skin_c": 34.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        },
+        {
+          "time_min": 25,
+          "hr_bpm": 179,
+          "skin_c": 34.3,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        },
+        {
+          "time_min": 26,
+          "hr_bpm": null,
+          "skin_c": 34.1,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        },
+        {
+          "time_min": 27,
+          "hr_bpm": null,
+          "skin_c": 34.1,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        },
+        {
+          "time_min": 28,
+          "hr_bpm": null,
+          "skin_c": 34.0,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        },
+        {
+          "time_min": 29,
+          "hr_bpm": null,
+          "skin_c": 34.1,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        },
+        {
+          "time_min": 30,
+          "hr_bpm": null,
+          "skin_c": 34.1,
+          "room_temp_c": 35.0,
+          "humidity_pct": 19,
+          "watts": 122
+        }
+      ],
+      "answer_format": {
+        "rulebook": {
+          "work_rest_min": "Table 1 work/rest minutes per hour as \"NL\" or \"<work>/<rest>\", e.g. \"40/20\"",
+          "water_qt_per_hr": "Table 1 water intake, quarts per hour, one number, e.g. 0.75",
+          "continuous_work_min": "Table 2 continuous work limit as \"NL\" or integer minutes",
+          "continuous_water_qt_per_hr": "Table 2 water intake, quarts per hour, one number"
+        },
+        "decision": "FOLLOW or OVERRIDE",
+        "predicted_core_c": "your best estimate of the soldier's rectal core temperature (C) 15 minutes from now, one number",
+        "confidence": "probability (0 to 1) that OVERRIDE is the correct call",
+        "reasoning": "two to five sentences"
+      },
+      "prompt": "You are the medic advising a small-unit leader during a hot-weather training session. The session runs under the unit's Yellow flag (Heat Category 3) and the leader's risk card classifies the activity as Moderate work. Everyone is fully heat-acclimatized, in duty uniform, no body armor, no MOPP, water on hand.\n\nOne soldier is riding a stationary bike inside the heat chamber used for the session. The soldier has been riding for 30 minutes. The table below is the last 25 minutes of the soldier's wearable and chamber log, ending now (ride minute 30). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.\n\nSoldier: age 46 years, body mass 75 kg.\n\n| ride min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |\n|---:|---:|---:|---:|---:|---:|\n| 6 | 169 | 34.2 | 35.0 | 15 | 122 |\n| 7 | 169 | 34.4 | 35.0 | 15 | 122 |\n| 8 | 172 | 34.5 | 35.0 | 15 | 122 |\n| 9 | 172 | 34.6 | 35.0 | 15 | 122 |\n| 10 | 172 | 34.6 | 35.0 | 16 | 122 |\n| 11 |  | 34.5 | 35.0 | 16 | 122 |\n| 12 |  | 34.5 | 35.0 | 16 | 122 |\n| 13 |  | 34.6 | 35.0 | 16 | 122 |\n| 14 |  | 34.6 | 35.0 | 16 | 122 |\n| 15 |  | 34.6 | 35.0 | 16 | 122 |\n| 16 |  | 34.6 | 35.0 | 16 | 122 |\n| 17 |  | 34.5 | 35.0 | 16 | 122 |\n| 18 |  | 34.5 | 35.0 | 16 | 122 |\n| 19 |  | 34.5 | 35.0 | 16 | 122 |\n| 20 |  | 34.4 | 35.0 | 16 | 122 |\n| 21 | 180 | 34.3 | 35.0 | 19 | 122 |\n| 22 | 178 | 34.3 | 35.0 | 19 | 122 |\n| 23 | 179 | 34.3 | 35.0 | 19 | 122 |\n| 24 | 179 | 34.3 | 35.0 | 19 | 122 |\n| 25 | 179 | 34.3 | 35.0 | 19 | 122 |\n| 26 |  | 34.1 | 35.0 | 19 | 122 |\n| 27 |  | 34.1 | 35.0 | 19 | 122 |\n| 28 |  | 34.0 | 35.0 | 19 | 122 |\n| 29 |  | 34.1 | 35.0 | 19 | 122 |\n| 30 |  | 34.1 | 35.0 | 19 | 122 |\n\nTwo questions.\n\n(a) Rulebook. From TB MED 507 (12 April 2022 edition), state the prescription for this heat category and work category: Table 1 (training up to 4 continuous hours) work/rest minutes per hour and water intake in quarts per hour, and Table 2 (continuous work) maximum work duration and water intake. Write NL where the table sets no limit.\n\n(b) Body. Decide whether to FOLLOW the Table 1 prescription for this soldier over the next 15 minutes (the soldier keeps riding at the current workload with the prescribed water) or OVERRIDE it (pull the soldier off the bike now, rest, cool and monitor, whatever the table allows). Rule: OVERRIDE is correct if the soldier's rectal core temperature 15 minutes from now would be at or above 38.5 C with no intervention; otherwise FOLLOW is correct. Also estimate that core temperature.\n\nDo not run code. Reason from the trace and from physiology.\n\nAnswer with one JSON object and nothing else:\n{\n  \"rulebook\": {\n    \"work_rest_min\": \"Table 1 work/rest minutes per hour as \\\"NL\\\" or \\\"<work>/<rest>\\\", e.g. \\\"40/20\\\"\",\n    \"water_qt_per_hr\": \"Table 1 water intake, quarts per hour, one number, e.g. 0.75\",\n    \"continuous_work_min\": \"Table 2 continuous work limit as \\\"NL\\\" or integer minutes\",\n    \"continuous_water_qt_per_hr\": \"Table 2 water intake, quarts per hour, one number\"\n  },\n  \"decision\": \"FOLLOW or OVERRIDE\",\n  \"predicted_core_c\": \"your best estimate of the soldier's rectal core temperature (C) 15 minutes from now, one number\",\n  \"confidence\": \"probability (0 to 1) that OVERRIDE is the correct call\",\n  \"reasoning\": \"two to five sentences\"\n}\n"
+    }
+  ]
+}

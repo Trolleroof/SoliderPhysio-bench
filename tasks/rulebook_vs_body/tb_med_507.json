@@ -1,0 +1,111 @@
+{
+  "source": {
+    "document": "TB MED 507, Heat Stress Control and Heat Casualty Management",
+    "edition": "12 April 2022",
+    "reproduced_from": "Defense Centers for Public Health - Aberdeen (DCPH-A), 'Fluid Replacement & Work-Rest Guidelines to Prevent Heat Illness', TA-724-MAR23, and 'Heat Illness Prevention Guide', TA-010-MAR23",
+    "urls": [
+      "https://ph.health.mil/PHC%20Resource%20Library/cphe-heat-fluid-replacement-poster.pdf",
+      "https://ph.health.mil/resources/cphe-heat-ehip-guide.pdf"
+    ],
+    "verified_on": "2026-11-06",
+    "note": "The 2003 edition had three work columns (Easy / Moderate / Hard). The 2022 edition has four (Easy / Moderate / Heavy / Very Heavy) and relaxed several Moderate cells to no-limit. 'Hard' is accepted here as an alias for 'Heavy'. Models that recall the 2003 card produce different cells (for example Moderate work in Heat Category 3 was 40/20, now NL)."
+  },
+  "units": {
+    "wbgt": "degrees Fahrenheit",
+    "work_min": "minutes of work per hour; null with no_limit=true means NL (no limit)",
+    "rest_min": "minutes of rest per hour; null when work is NL",
+    "water_qt_per_hr": "US quarts per hour",
+    "max_work_min": "continuous work duration in minutes; null with no_limit=true means NL"
+  },
+  "heat_categories": [
+    {"category": 1, "flag": "White",  "wbgt_f_min": 78.0, "wbgt_f_max": 81.9},
+    {"category": 2, "flag": "Green",  "wbgt_f_min": 82.0, "wbgt_f_max": 84.9},
+    {"category": 3, "flag": "Yellow", "wbgt_f_min": 85.0, "wbgt_f_max": 87.9},
+    {"category": 4, "flag": "Red",    "wbgt_f_min": 88.0, "wbgt_f_max": 89.9},
+    {"category": 5, "flag": "Black",  "wbgt_f_min": 90.0, "wbgt_f_max": null}
+  ],
+  "work_categories": {
+    "Easy":       {"aliases": [], "examples": "weapons maintenance, marksmanship training, drill and ceremony"},
+    "Moderate":   {"aliases": [], "examples": "patrolling with a 30-pound load, low and high crawl, digging a defensive position"},
+    "Heavy":      {"aliases": ["Hard"], "examples": "patrolling with a 45-pound load, 4-person litter carry (180 pounds), jogging 4 mph"},
+    "Very Heavy": {"aliases": ["Very Hard"], "examples": "2-person litter carry (150 pounds), move under direct fire, obstacle course"}
+  },
+  "work_rest_table": {
+    "title": "Table 1. Fluid Replacement and Work-Rest Guidelines for Training up to 4 Continuous Hours",
+    "cells": {
+      "1": {
+        "Easy":       {"work_min": null, "rest_min": null, "no_limit": true,  "water_qt_per_hr": 0.5},
+        "Moderate":   {"work_min": null, "rest_min": null, "no_limit": true,  "water_qt_per_hr": 0.75},
+        "Heavy":      {"work_min": 40,   "rest_min": 20,   "no_limit": false, "water_qt_per_hr": 0.75},
+        "Very Heavy": {"work_min": 20,   "rest_min": 40,   "no_limit": false, "water_qt_per_hr": 1.0}
+      },
+      "2": {
+        "Easy":       {"work_min": null, "rest_min": null, "no_limit": true,  "water_qt_per_hr": 0.5},
+        "Moderate":   {"work_min": null, "rest_min": null, "no_limit": true,  "water_qt_per_hr": 0.75},
+        "Heavy":      {"work_min": 30,   "rest_min": 30,   "no_limit": false, "water_qt_per_hr": 1.0},
+        "Very Heavy": {"work_min": 15,   "rest_min": 45,   "no_limit": false, "water_qt_per_hr": 1.0}
+      },
+      "3": {
+        "Easy":       {"work_min": null, "rest_min": null, "no_limit": true,  "water_qt_per_hr": 0.75},
+        "Moderate":   {"work_min": null, "rest_min": null, "no_limit": true,  "water_qt_per_hr": 0.75},
+        "Heavy":      {"work_min": 30,   "rest_min": 30,   "no_limit": false, "water_qt_per_hr": 1.0},
+        "Very Heavy": {"work_min": 10,   "rest_min": 50,   "no_limit": false, "water_qt_per_hr": 1.0}
+      },
+      "4": {
+        "Easy":       {"work_min": null, "rest_min": null, "no_limit": true,  "water_qt_per_hr": 0.75},
+        "Moderate":   {"work_min": 50,   "rest_min": 10,   "no_limit": false, "water_qt_per_hr": 0.75},
+        "Heavy":      {"work_min": 20,   "rest_min": 40,   "no_limit": false, "water_qt_per_hr": 1.0},
+        "Very Heavy": {"work_min": 10,   "rest_min": 50,   "no_limit": false, "water_qt_per_hr": 1.0}
+      },
+      "5": {
+        "Easy":       {"work_min": null, "rest_min": null, "no_limit": true,  "water_qt_per_hr": 1.0},
+        "Moderate":   {"work_min": 20,   "rest_min": 40,   "no_limit": false, "water_qt_per_hr": 1.0},
+        "Heavy":      {"work_min": 15,   "rest_min": 45,   "no_limit": false, "water_qt_per_hr": 1.0},
+        "Very Heavy": {"work_min": 10,   "rest_min": 50,   "no_limit": false, "water_qt_per_hr": 1.0}
+      }
+    }
+  },
+  "continuous_work_table": {
+    "title": "Table 2. Recommendations for Continuous Work Duration and Fluid Replacement",
+    "note": "Specific rest cycle durations are not prescribed for continuous operations; however, leaders should ensure rest breaks for Heat Category 3 and above.",
+    "cells": {
+      "1": {
+        "Easy":       {"max_work_min": null, "no_limit": true,  "water_qt_per_hr": 0.5},
+        "Moderate":   {"max_work_min": null, "no_limit": true,  "water_qt_per_hr": 0.75},
+        "Heavy":      {"max_work_min": 100,  "no_limit": false, "water_qt_per_hr": 0.75},
+        "Very Heavy": {"max_work_min": 45,   "no_limit": false, "water_qt_per_hr": 0.75}
+      },
+      "2": {
+        "Easy":       {"max_work_min": null, "no_limit": true,  "water_qt_per_hr": 0.5},
+        "Moderate":   {"max_work_min": null, "no_limit": true,  "water_qt_per_hr": 1.0},
+        "Heavy":      {"max_work_min": 70,   "no_limit": false, "water_qt_per_hr": 1.0},
+        "Very Heavy": {"max_work_min": 40,   "no_limit": false, "water_qt_per_hr": 1.0}
+      },
+      "3": {
+        "Easy":       {"max_work_min": null, "no_limit": true,  "water_qt_per_hr": 0.75},
+        "Moderate":   {"max_work_min": null, "no_limit": true,  "water_qt_per_hr": 1.0},
+        "Heavy":      {"max_work_min": 60,   "no_limit": false, "water_qt_per_hr": 1.0},
+        "Very Heavy": {"max_work_min": 25,   "no_limit": false, "water_qt_per_hr": 1.0}
+      },
+      "4": {
+        "Easy":       {"max_work_min": null, "no_limit": true,  "water_qt_per_hr": 0.75},
+        "Moderate":   {"max_work_min": 180,  "no_limit": false, "water_qt_per_hr": 1.25},
+        "Heavy":      {"max_work_min": 50,   "no_limit": false, "water_qt_per_hr": 1.25},
+        "Very Heavy": {"max_work_min": 20,   "no_limit": false, "water_qt_per_hr": 1.25}
+      },
+      "5": {
+        "Easy":       {"max_work_min": null, "no_limit": true,  "water_qt_per_hr": 1.0},
+        "Moderate":   {"max_work_min": 70,   "no_limit": false, "water_qt_per_hr": 1.5},
+        "Heavy":      {"max_work_min": 45,   "no_limit": false, "water_qt_per_hr": 1.5},
+        "Very Heavy": {"max_work_min": 20,   "no_limit": false, "water_qt_per_hr": 1.5}
+      }
+    }
+  },
+  "notes": [
+    "NL = no limit to work time per hour (Table 1) or to continuous work duration (Table 2).",
+    "Rest means minimal physical activity (sitting or standing), accomplished in shade if possible.",
+    "Do not exceed 1 quart per hour under most conditions; under very strenuous conditions a maximum of 1.5 quarts per hour or 12 quarts per day may be advised.",
+    "MOPP 4: add 10 F to the WBGT index for easy work and 20 F for moderate and hard work. Body armor: add 5 F to the WBGT index.",
+    "Table 1 applies to limited or controlled activities such as training up to 4 continuous hours; Table 2 applies to operations that may exceed 4 hours."
+  ]
+}
