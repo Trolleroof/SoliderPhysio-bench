@@ -53,8 +53,9 @@ class BeatECTempTests(unittest.TestCase):
 
     def test_causal_forecast_and_online(self):
         a=list(b.requests(rows(),'3A')); c=list(b.requests(rows(),'3B'))
-        self.assertEqual(len(a),1); self.assertEqual(len(a[0][0]['history']),11)
-        self.assertEqual(a[0][1],rows()[25]['core_temp'])
+        # 3A: every origin from the first drop (minute 11) whose +15 target exists.
+        self.assertEqual([len(x[0]['history']) for x in a],list(range(11,26)))
+        self.assertEqual([x[1] for x in a],[r['core_temp'] for r in rows()[25:40]])
         self.assertEqual(len(c),40)
         self.assertEqual([len(x[0]['history']) for x in c],list(range(1,41)))
 
@@ -75,6 +76,23 @@ class BeatECTempTests(unittest.TestCase):
                        {'mean':38,'lower':20,'upper':50}, {'mean':38,'lower':38,'upper':38}):
             self.assertEqual(b.metrics([output],[38],[True])['score'],0)
         self.assertEqual(b.metrics([],[38],[True])['score'],0)
+
+    def test_worker_ignores_submission_prints(self):
+        import subprocess, sys
+        self.public.mkdir()
+        (self.public/'submission.py').write_text(
+            'print("import noise")\ndef predict(r):\n    print("debug")\n    return {"mean":38,"lower":37.5,"upper":38.5}\n')
+        r=subprocess.run([sys.executable,'-I','-c',b.WORKER,str(self.public)],input='[{}, {}]',
+                         text=True,capture_output=True,check=True)
+        self.assertEqual(json.loads(r.stdout),[{'mean':38,'lower':37.5,'upper':38.5}]*2)
+        self.assertIn('debug',r.stderr)
+
+    def test_missing_sandbox_is_not_a_logged_call(self):
+        from unittest import mock
+        with mock.patch.object(b.shutil,'which',return_value=None):
+            with self.assertRaises(RuntimeError):
+                b.evaluate(self.public,self.private,'3B')
+        self.assertFalse((self.private/'calls.jsonl').exists())
 
     def test_hidden_hot_after_drop_and_gap_and_spam(self):
         runner=lambda _,rs:[{'mean':38,'lower':37.5,'upper':38.5} for r in rs]

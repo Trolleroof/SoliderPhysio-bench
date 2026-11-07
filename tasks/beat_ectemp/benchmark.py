@@ -63,7 +63,7 @@ def requests(rows, task, offset=0):
     for i, row in enumerate(rows):
         drop = i > 0 and row['watts'] is not None and rows[i-1]['watts'] is not None and row['watts'] < rows[i-1]['watts']
         dropped |= drop
-        if task == '3A' and not drop:
+        if task == '3A' and not dropped:  # every origin from the first drop onward
             continue
         j = i + 15 if task == '3A' else i
         if j >= len(rows) or rows[j]['core_temp'] is None:
@@ -117,19 +117,25 @@ def metrics(outputs, targets, mask):
 WORKER = '''import sys,json,resource,importlib.util
 resource.setrlimit(resource.RLIMIT_CPU,(1200,1200))
 sys.path.insert(0,sys.argv[1])
+out,sys.stdout=sys.stdout,sys.stderr  # submission prints must not corrupt the JSON result
 spec=importlib.util.spec_from_file_location("submission",sys.argv[1]+"/submission.py")
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 r=json.load(sys.stdin)
-json.dump([m.predict(x) for x in r],sys.stdout,allow_nan=False)
+json.dump([m.predict(x) for x in r],out,allow_nan=False)
 '''
+
+
+def require_sandbox():
+    sandbox = shutil.which('sandbox-exec')
+    if sys.platform != 'darwin' or not sandbox:
+        raise RuntimeError('Requires macOS sandbox-exec; refusing unsandboxed execution')
+    return sandbox
 
 
 def run_submission(public, batch, private=None):
     """macOS sandbox: private data is never inherited or readable; network denied."""
     public = Path(public).resolve()
-    sandbox = shutil.which('sandbox-exec')
-    if sys.platform != 'darwin' or not sandbox:
-        raise RuntimeError('Requires macOS sandbox-exec; refusing unsandboxed execution')
+    sandbox = require_sandbox()
     roots = [str(public), sys.base_prefix, sys.prefix, '/opt/homebrew', '/System', '/usr', '/bin', '/private/var/db', '/private/etc', '/Library/Frameworks', '/dev']
     allows = ' '.join('(subpath '+json.dumps(p)+')' for p in dict.fromkeys(roots + [str(Path(x).resolve()) for x in roots]))
     profile = '(version 1)(deny default)(allow process*)(allow file-read-metadata)(allow sysctl-read)(allow mach-lookup)(allow file-read* (require-any (require-not (subpath "/Users")) '+allows+'))(allow file-write* (literal "/dev/null"))'
@@ -145,6 +151,8 @@ def run_submission(public, batch, private=None):
 
 def evaluate(public, private, task, hidden=False, runner=run_submission):
     private = Path(private)
+    if runner is run_submission:
+        require_sandbox()  # organizer setup error: fail before it counts as a participant call
     # Record attempts before executing untrusted code, including failures.
     log = private/'calls.jsonl'
     previous = [json.loads(x) for x in log.read_text().splitlines()] if log.exists() else []
