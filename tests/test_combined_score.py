@@ -87,7 +87,7 @@ class Ratings(unittest.TestCase):
 
     def test_better_model_rates_higher_and_mean_is_1500(self):
         runs = [self.run_for('good', 0.1, 0.1), self.run_for('mid', 0.4, 0.3), self.run_for('bad', 0.8, 0.45)]
-        r = cs.rate(cs.score_runs(runs, PARAMS), n_boot=50)
+        r = cs.rate(cs.score_runs(runs, PARAMS), n_boot=50, dev_allow_union_cases=True)
         self.assertEqual([x['model'] for x in r['ratings']], ['good', 'mid', 'bad'])
         self.assertAlmostEqual(sum(x['elo'] for x in r['ratings']) / 3, 1500)
         for x in r['ratings']:
@@ -95,7 +95,7 @@ class Ratings(unittest.TestCase):
             self.assertTrue(math.isfinite(x['elo']))
 
     def test_identical_models_tie_at_1500(self):
-        r = cs.rate(cs.score_runs([self.run_for('a', 0.2, 0.2), self.run_for('b', 0.2, 0.2)], PARAMS), n_boot=0)
+        r = cs.rate(cs.score_runs([self.run_for('a', 0.2, 0.2), self.run_for('b', 0.2, 0.2)], PARAMS), n_boot=0, dev_allow_union_cases=True)
         self.assertEqual(r['pairwise'][0]['ties'], 2.0)
         for x in r['ratings']:
             self.assertAlmostEqual(x['elo'], 1500, places=6)
@@ -105,7 +105,7 @@ class Ratings(unittest.TestCase):
         kg_cases = ['KG-01', 'KG-02', 'KG-03']
         a = {'model': 'a', 'cases': [kg_case(0.0, case=c) for c in kg_cases] + [ec_case(0.4)]}
         b = {'model': 'b', 'cases': [kg_case(0.5, case=c) for c in kg_cases] + [ec_case(0.1)]}
-        r = cs.rate(cs.score_runs([a, b], PARAMS), n_boot=0)
+        r = cs.rate(cs.score_runs([a, b], PARAMS), n_boot=0, dev_allow_union_cases=True)
         p = r['pairwise'][0]
         self.assertAlmostEqual(p['wins_a'], 1.0)
         self.assertAlmostEqual(p['wins_b'], 1.0)
@@ -116,7 +116,7 @@ class Ratings(unittest.TestCase):
         blocked['cases'][0]['judge']['decision'] = 'not_scorable'
         partial = {'model': 'partial', 'cases': [kg_case(0.1)]}
         runs = [self.run_for('a', 0.1, 0.1), self.run_for('b', 0.3, 0.3), blocked, partial]
-        r = cs.rate(cs.score_runs(runs, PARAMS), n_boot=0)
+        r = cs.rate(cs.score_runs(runs, PARAMS), n_boot=0, dev_allow_union_cases=True)
         self.assertEqual(r['eligible'], ['a', 'b'])
         self.assertEqual(r['excluded']['blocked']['not_scorable'], ['keep_going/KG-01'])
         self.assertEqual(r['excluded']['partial']['missing'], ['beat_ectemp/3A'])
@@ -135,9 +135,146 @@ class Ratings(unittest.TestCase):
         b['cases'][0]['judge_record'] = {'judge_model': 'judge-z'}
         cs.score_runs([a, b], PARAMS)
 
+    def test_required_cases_ignore_extra_case(self):
+        # One model also ran KG-02. Under the union rule that excluded everyone else.
+        extra = self.run_for('a', 0.1, 0.1)
+        extra['cases'].append(kg_case(0.1, case='KG-02'))
+        runs = [extra, self.run_for('b', 0.3, 0.3), self.run_for('c', 0.5, 0.4)]
+        scores = cs.score_runs(runs, PARAMS)
+        union = cs.rate(scores, n_boot=0, dev_allow_union_cases=True)
+        self.assertEqual(union['eligible'], ['a'])
+        self.assertTrue(union['warnings'])
+        r = cs.rate(scores, n_boot=0, required_cases=['keep_going/KG-01', 'beat_ectemp/3A'])
+        self.assertEqual(r['eligible'], ['a', 'b', 'c'])
+        self.assertEqual(r['extra_cases_not_rated'], {'a': ['keep_going/KG-02']})
+        self.assertEqual(r['cases'], ['beat_ectemp/3A', 'keep_going/KG-01'])
+        self.assertEqual(r['warnings'], [])
+        # The extra case must not change the comparison at all.
+        base = cs.rate(cs.score_runs(runs[1:] + [self.run_for('a', 0.1, 0.1)], PARAMS), n_boot=0, dev_allow_union_cases=True)
+        self.assertEqual([x['elo'] for x in r['ratings']], [x['elo'] for x in base['ratings']])
+
+    def test_required_cases_blocked_extra_does_not_exclude_but_required_does(self):
+        a = self.run_for('a', 0.1, 0.1)
+        bad = kg_case(0.1, case='KG-02')
+        bad['judge']['decision'] = 'not_scorable'
+        a['cases'].append(bad)
+        req = ['keep_going/KG-01', 'beat_ectemp/3A', 'beat_ectemp/3B']
+        r = cs.rate(cs.score_runs([a, self.run_for('b', 0.3, 0.3)], PARAMS), n_boot=0, required_cases=req)
+        self.assertEqual(r['eligible'], [])
+        self.assertEqual(r['excluded']['a'], {'missing': ['beat_ectemp/3B'], 'not_scorable': []})
+        with self.assertRaises(ValueError):
+            cs.parse_required(['KG-01'])
+        with self.assertRaises(ValueError):
+            cs.parse_required(['nope/KG-01'])
+
+    def test_missing_required_cases_is_an_error(self):
+        scores = cs.score_runs([self.run_for('a', 0.1, 0.1), self.run_for('b', 0.3, 0.3)], PARAMS)
+        with self.assertRaises(ValueError):
+            cs.rate(scores, n_boot=0)
+        self.assertEqual(cs.rate(scores, n_boot=0, dev_allow_union_cases=True)['eligible'], ['a', 'b'])
+
+    def test_cli_reads_required_cases_and_dev_flag(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as d:
+            runs = []
+            for m, e in (('a', 0.1), ('b', 0.4)):
+                p = Path(d) / f'{m}.json'
+                p.write_text(json.dumps(self.run_for(m, e, e)))
+                runs.append(str(p))
+            params = Path(d) / 'params.json'
+            out = Path(d) / 'out.json'
+            params.write_text(json.dumps(PARAMS))
+            with self.assertRaises(ValueError):
+                cs.main(runs + ['--params', str(params), '--n-boot', '0', '--out', str(out)])
+            for extra in ({'dev_allow_union_cases': True}, {'required_cases': ['keep_going/KG-01', 'beat_ectemp/3A']}):
+                params.write_text(json.dumps({**PARAMS, **extra}))
+                import contextlib, io
+                with contextlib.redirect_stdout(io.StringIO()):
+                    cs.main(runs + ['--params', str(params), '--n-boot', '0', '--out', str(out)])
+                self.assertEqual(json.loads(out.read_text())['eligible'], ['a', 'b'])
+
+    def test_kg03_edge_case_outside_required_list_is_reported_not_rated(self):
+        req = ['keep_going/KG-01', 'beat_ectemp/3A']
+        runs = [self.run_for('a', 0.1, 0.1), self.run_for('b', 0.3, 0.3)]
+        runs[0]['cases'].append(kg_case(0.0, case='KG-03'))
+        runs[1]['cases'].append(kg_case(2.0, (0, 0), case='KG-03'))
+        r = cs.rate(cs.score_runs(runs, PARAMS), n_boot=0, required_cases=req)
+        self.assertNotIn('keep_going/KG-03', r['cases'])
+        self.assertEqual(r['extra_cases_not_rated'], {'a': ['keep_going/KG-03'], 'b': ['keep_going/KG-03']})
+        base = cs.rate(cs.score_runs([self.run_for('a', 0.1, 0.1), self.run_for('b', 0.3, 0.3)], PARAMS),
+                       n_boot=0, required_cases=req)
+        self.assertEqual([x['elo'] for x in r['ratings']], [x['elo'] for x in base['ratings']])
+
+    def test_required_case_ids_may_contain_slashes(self):
+        # Per-person beat_ectemp ids such as "3A/H04" split on the first slash only.
+        self.assertEqual(cs.parse_required(['beat_ectemp/3A/H04', 'keep_going/KG-01']),
+                         [('beat_ectemp', '3A/H04'), ('keep_going', 'KG-01')])
+
+    def test_separation_flag_and_ci_note(self):
+        runs = [self.run_for('top', 0.0, 0.05), self.run_for('mid', 0.3, 0.3), self.run_for('low', 0.9, 0.49, judge=1)]
+        req = ['keep_going/KG-01', 'beat_ectemp/3A']
+        r = cs.rate(cs.score_runs(runs, PARAMS), n_boot=10, required_cases=req)
+        flags = {x['model']: x['separation'] for x in r['ratings']}
+        self.assertEqual(flags, {'top': 'wins_all', 'mid': None, 'low': 'loses_all'})
+        self.assertIn('prior', [x for x in r['ratings'] if x['model'] == 'top'][0]['separation_note'])
+        self.assertIsNone([x for x in r['ratings'] if x['model'] == 'mid'][0]['separation_note'])
+        self.assertIn('70%', r['ci95_note'])
+        self.assertIn('exploratory', r['ci95_note'])
+        # A tie with a winner means "did not win every comparison".
+        tied = [self.run_for('a', 0.1, 0.1), self.run_for('b', 0.1, 0.1), self.run_for('c', 0.5, 0.4)]
+        r = cs.rate(cs.score_runs(tied, PARAMS), n_boot=0, required_cases=req)
+        self.assertEqual({x['model']: x['separation'] for x in r['ratings']}, {'a': None, 'b': None, 'c': 'loses_all'})
+
+    def test_ties_use_tolerance_not_rounding(self):
+        # These differ by ~4e-19 but round(., 9) puts them on opposite sides of a boundary.
+        x, y = math.nextafter(0.0010000005, 0), math.nextafter(0.0010000005, 1)
+        self.assertNotEqual(round(x, 9), round(y, 9))
+        scores = {m: {('keep_going', 'KG-01'): {'status': 'scored', 'combined': v}}
+                  for m, v in (('a', x), ('b', y))}
+        self.assertEqual(cs.pairwise(scores, ['a', 'b'], [('keep_going', 'KG-01')])[(0, 1)]['ties'], 1)
+
+    def test_percentile_interpolates_symmetrically(self):
+        xs = list(range(1000))
+        self.assertAlmostEqual(cs.percentile(xs, 0.025), 24.975)
+        self.assertAlmostEqual(cs.percentile(xs, 0.975), 974.025)
+        self.assertEqual(cs.percentile([7], 0.975), 7)
+
+    def test_perfect_separation_finite_and_all_ties_flat(self):
+        ids = [('keep_going', f'KG-{i:02d}') for i in range(1, 14)] + [
+            ('rulebook_vs_body', 'RB-01'), ('rulebook_vs_body', 'RB-02'), ('beat_ectemp', '3A'), ('beat_ectemp', '3B')]
+        sep = {f'm{i}': {k: {'status': 'scored', 'combined': 1 - i / 4} for k in ids} for i in range(4)}
+        r = cs.rate(sep, n_boot=20, dev_allow_union_cases=True)
+        elos = [x['elo'] for x in r['ratings']]
+        self.assertEqual([x['model'] for x in r['ratings']], ['m0', 'm1', 'm2', 'm3'])
+        self.assertTrue(all(math.isfinite(e) for e in elos))
+        self.assertLess(max(elos) - min(elos), 2000)
+        tie = {f'm{i}': {k: {'status': 'scored', 'combined': 0.5} for k in ids} for i in range(4)}
+        r = cs.rate(tie, n_boot=20, dev_allow_union_cases=True)
+        for x in r['ratings']:
+            self.assertAlmostEqual(x['elo'], 1500, places=6)
+            self.assertAlmostEqual(x['ci95'][0], 1500, places=6)
+            self.assertAlmostEqual(x['ci95'][1], 1500, places=6)
+
     def test_too_few_models(self):
-        r = cs.rate(cs.score_runs([self.run_for('a', 0.1, 0.1)], PARAMS))
+        r = cs.rate(cs.score_runs([self.run_for('a', 0.1, 0.1)], PARAMS), dev_allow_union_cases=True)
         self.assertIsNone(r['ratings'])
+
+
+
+class StressHarness(unittest.TestCase):
+    def test_elo_order_is_total_pairwise_score_order(self):
+        # Complete matched design: every fit variant ranks by total (task-averaged) pairwise score.
+        import random
+        from tasks import elo_stress as es
+        rng = random.Random(3)
+        for _ in range(5):
+            scores = es.to_scores(es.benchmark(es.roster(6, es.SCENARIOS['typical'], rng), es.SCENARIOS['typical'], rng))
+            ts = es.total_score(scores)
+            if len({round(x, 9) for x in ts}) < len(ts):
+                continue
+            for tm, over in (('davidson', {}), ('half_win', {}), ('davidson', {'theta_prior_precision': 1.0})):
+                self.assertEqual(es.ranks(es.elo_of(scores, tm, **over)[0]), es.ranks(ts))
 
 
 if __name__ == '__main__':

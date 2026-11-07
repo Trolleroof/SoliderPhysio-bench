@@ -15,7 +15,14 @@ Run file (one per model run):
          "judge": {"research_explanation": 3}}]}
 
 Params file (frozen before runs; no defaults for E or B by design):
-    {"version": "...", "E_c": <float>, "ectemp_B": {"3A": <float>, "3B": <float>}}
+    {"version": "...", "E_c": <float>, "ectemp_B": {"3A": <float>, "3B": <float>},
+     "required_cases": ["keep_going/KG-01", ..., "beat_ectemp/3B"]}
+
+required_cases is the frozen list every model must cover (KG-03, the unscored
+edge case, is deliberately left out). Cases outside it are scored and reported
+but never rated and never exclude anyone. A missing list is an error; tests and
+dev work may set "dev_allow_union_cases": true to require the union of observed
+cases instead (one extra case anywhere then excludes every model lacking it).
 
 Judge scores are integers 0-5. "not_scorable" or a missing judge score blocks
 the case (it is not a zero); a blocked or missing case makes the model
@@ -43,7 +50,7 @@ FIT = {
     'optimizer': 'damped_newton',
     'theta_prior_precision': 0.1,   # Gaussian prior on log-strength; keeps perfect separation finite
     'log_nu_prior_precision': 0.01,  # weak prior on the Davidson tie parameter, centered at nu=1
-    'tie_rounding_decimals': 9,      # combined scores equal after rounding are ties (float noise only)
+    'tie_tolerance': 1e-9,           # |combined a - combined b| <= this is a tie (float noise only)
     'repeat_aggregation': 'mean_combined_score_per_case',
     'bootstrap': 'cases_resampled_within_task_matched_across_models',
 }
@@ -141,18 +148,43 @@ def score_runs(runs, params):
     return out
 
 
-def eligibility(scores):
-    """Models need a scored value on every case anyone was run on."""
-    all_cases = sorted({k for m in scores.values() for k in m})
-    eligible, excluded = [], {}
+def parse_required(required):
+    """["task/case_id", ...] -> sorted [(task, case_id)]; None stays None."""
+    if required is None:
+        return None
+    out = set()
+    for item in required:
+        task, sep, case = str(item).partition('/')
+        if not sep or not case or task not in WEIGHTS:
+            raise ValueError(f'required case {item!r} must be "<task>/<case_id>" with a known task')
+        out.add((task, case))
+    if not out:
+        raise ValueError('required_cases is empty')
+    return sorted(out)
+
+
+def eligibility(scores, required=None):
+    """Models need a scored value on every required case.
+
+    required: frozen [(task, case_id)] list; None falls back to the union of
+    every case anyone was run on. Returns (eligible, excluded, cases, extra)
+    where extra maps model -> cases it ran outside the required list.
+    """
+    cases = sorted({k for m in scores.values() for k in m}) if required is None else list(required)
+    need = set(cases)
+    eligible, excluded, extra = [], {}, {}
     for model in sorted(scores):
-        missing = [f'{t}/{c}' for t, c in all_cases if (t, c) not in scores[model]]
-        blocked = [f'{t}/{c}' for (t, c), r in scores[model].items() if r['status'] != 'scored']
+        missing = [f'{t}/{c}' for t, c in cases if (t, c) not in scores[model]]
+        blocked = [f'{t}/{c}' for (t, c), r in sorted(scores[model].items())
+                   if (t, c) in need and r['status'] != 'scored']
+        outside = [f'{t}/{c}' for t, c in sorted(scores[model]) if (t, c) not in need]
+        if outside:
+            extra[model] = outside
         if missing or blocked:
             excluded[model] = {'missing': missing, 'not_scorable': blocked}
         else:
             eligible.append(model)
-    return eligible, excluded, all_cases
+    return eligible, excluded, cases, extra
 
 
 def pairwise(scores, models, cases):
@@ -160,16 +192,15 @@ def pairwise(scores, models, cases):
     by_task = {}
     for t, c in cases:
         by_task.setdefault(t, []).append(c)
-    d = FIT['tie_rounding_decimals']
+    tol = FIT['tie_tolerance']
     pairs = {}
     for a in range(len(models)):
         for b in range(a + 1, len(models)):
             w = {'wins_a': 0.0, 'wins_b': 0.0, 'ties': 0.0}
             for t, cs in by_task.items():
                 for c in cs:
-                    sa = round(scores[models[a]][(t, c)]['combined'], d)
-                    sb = round(scores[models[b]][(t, c)]['combined'], d)
-                    w['wins_a' if sa > sb else 'wins_b' if sb > sa else 'ties'] += 1 / len(cs)
+                    diff = scores[models[a]][(t, c)]['combined'] - scores[models[b]][(t, c)]['combined']
+                    w['ties' if abs(diff) <= tol else 'wins_a' if diff > 0 else 'wins_b'] += 1 / len(cs)
             pairs[(a, b)] = w
     return pairs
 
@@ -248,10 +279,46 @@ def to_elo(theta):
     return [1500 + 400 * (t - mean) / math.log(10) for t in theta]
 
 
-def rate(scores, n_boot=1000, seed=0):
-    models, excluded, cases = eligibility(scores)
+def percentile(xs, q):
+    """Linearly interpolated quantile (numpy's default), 0 <= q <= 1."""
+    xs = sorted(xs)
+    pos = q * (len(xs) - 1)
+    lo = math.floor(pos)
+    hi = min(lo + 1, len(xs) - 1)
+    return xs[lo] + (xs[hi] - xs[lo]) * (pos - lo)
+
+
+CI_NOTE = ('exploratory: case-resampling interval; in simulation it covers the true rating about 70% '
+           'of the time, not 95%, because two tasks have very few cases (docs/SCORING_AND_ELO.md)')
+PRIOR_GAP_NOTE = ('won or lost every matched comparison: the size of its rating gap is set by the '
+                  'prior (theta_prior_precision), not by the data')
+
+
+def separation_flags(models, pairs):
+    """'wins_all' / 'loses_all' when a model never loses / never wins nor ties a matched comparison."""
+    flags = {}
+    for i, m in enumerate(models):
+        won = lost = 0.0
+        for (a, b), w in pairs.items():
+            if i in (a, b):
+                mine, theirs = ('wins_a', 'wins_b') if i == a else ('wins_b', 'wins_a')
+                won += w[mine] + w['ties']
+                lost += w[theirs] + w['ties']
+        flags[m] = 'wins_all' if lost == 0 else 'loses_all' if won == 0 else None
+    return flags
+
+
+def rate(scores, n_boot=1000, seed=0, required_cases=None, dev_allow_union_cases=False):
+    if required_cases is None and not dev_allow_union_cases:
+        raise ValueError('params must freeze required_cases (set dev_allow_union_cases only for tests/dev)')
+    required = parse_required(required_cases)
+    models, excluded, cases, extra = eligibility(scores, required)
     result = {'fit': FIT, 'eligible': models, 'excluded': excluded,
-              'cases': [f'{t}/{c}' for t, c in cases], 'ratings': None}
+              'cases': [f'{t}/{c}' for t, c in cases], 'extra_cases_not_rated': extra,
+              'warnings': [], 'ratings': None}
+    if required is None:
+        result['warnings'].append('dev_allow_union_cases: union of observed cases is required, '
+                                  'so one extra case anywhere excludes every model that lacks it; not official')
     if len(models) < 2:
         result['reason'] = 'fewer than two eligible models'
         return result
@@ -272,18 +339,18 @@ def rate(scores, n_boot=1000, seed=0):
         for i, e in enumerate(to_elo(bt)):
             boots[i].append(e)
 
-    def pct(xs, q):
-        xs = sorted(xs)
-        return xs[min(len(xs) - 1, int(q * len(xs)))]
-
     task_means = {m: {t: sum(scores[m][(t, c)]['combined'] for c in cs) / len(cs)
                       for t, cs in by_task.items()} for m in models}
+    flags = separation_flags(models, pairs)
     result.update(
         nu=nu,
+        ci95_note=CI_NOTE,
         n_boot=n_boot, seed=seed,
         pairwise=[{'a': models[a], 'b': models[b], **w} for (a, b), w in pairs.items()],
         ratings=sorted(({'model': m, 'elo': elo[i],
-                         'ci95': [pct(boots[i], 0.025), pct(boots[i], 0.975)] if n_boot else None,
+                         'ci95': [percentile(boots[i], 0.025), percentile(boots[i], 0.975)] if n_boot else None,
+                         'separation': flags[m],
+                         'separation_note': PRIOR_GAP_NOTE if flags[m] else None,
                          'task_mean_combined': task_means[m]}
                         for i, m in enumerate(models)), key=lambda r: -r['elo']),
     )
@@ -300,7 +367,8 @@ def main(argv=None):
     a = ap.parse_args(argv)
     params = json.loads(a.params.read_text())
     scores = score_runs([json.loads(p.read_text()) for p in a.runs], params)
-    result = rate(scores, a.n_boot, a.seed)
+    result = rate(scores, a.n_boot, a.seed, params.get('required_cases'),
+                  dev_allow_union_cases=params.get('dev_allow_union_cases') is True)
     result['params'] = params
     result['case_scores'] = {m: list(v.values()) for m, v in scores.items()}
     text = json.dumps(result, indent=2)
