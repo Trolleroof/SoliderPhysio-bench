@@ -117,10 +117,11 @@ def metrics(outputs, targets, mask):
 WORKER = '''import sys,json,resource,importlib.util
 resource.setrlimit(resource.RLIMIT_CPU,(1200,1200))
 sys.path.insert(0,sys.argv[1])
+out,sys.stdout=sys.stdout,sys.stderr  # submission prints must not corrupt the JSON result
 spec=importlib.util.spec_from_file_location("submission",sys.argv[1]+"/submission.py")
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 r=json.load(sys.stdin)
-json.dump([m.predict(x) for x in r],sys.stdout,allow_nan=False)
+json.dump([m.predict(x) for x in r],out,allow_nan=False)
 '''
 
 
