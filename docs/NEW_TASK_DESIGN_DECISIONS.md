@@ -61,7 +61,15 @@ to weigh current observations and predicted outcomes.
 - Define the combined score and Elo procedure, completion, invalid response
   and missing-data handling.
 
-## Other tasks
+## Rulebook versus body
 
-Rulebook versus body and Beat ECTemp have not yet been designed in this
-discussion. Their existing specifications and readiness blockers still apply.
+Score the work/rest table lookup deterministically. An independent LLM judge
+scores the individual override decision and its reasoning separately on a 0–5
+scale, with supporting evidence. Preserve the individual results alongside the
+combined score used for final Elo. The existing specification and readiness
+blockers still apply; the table, rubric and combination remain to be defined.
+
+## Beat ECTemp
+
+This task has not yet been designed in this discussion. Its existing
+specification and readiness blockers still apply.
