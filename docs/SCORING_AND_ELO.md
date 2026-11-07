@@ -91,8 +91,9 @@ assumed data model, not evidence about real models.
    `required_cases` list (params key `required_cases`, `"task/case_id"`
    strings). Only those cases are rated; cases outside it are scored and listed
    under `extra_cases_not_rated` but never exclude anyone; a blocked or missing
-   required case still excludes. Without the list the old union rule still
-   applies and the output carries a warning.
+   required case still excludes. A missing list is now an error (decided
+   2026-11-07); only tests/dev may set `"dev_allow_union_cases": true` to fall
+   back to the union rule, and that output carries a "not official" warning.
 2. **Ties by rounding could split float-noise twins.** `round(x, 9)` puts two
    values 4e-19 apart on opposite sides of a rounding boundary. Ties now use
    `abs(a - b) <= 1e-9` (`FIT['tie_tolerance']`, replacing
@@ -142,10 +143,10 @@ underestimates case variance by half (factor (n-1)/n), and (b) finite-case
 ratings overstate gaps (median sample/population spread 1.12-1.81), a bias the
 bootstrap does not see. Drawing n-1 cases per task (rescaled bootstrap) adds
 2-5 points of coverage and makes intervals ~20% wider: not worth changing the
-pin. The point estimate was never outside its interval. **Recommend: keep the
-method, but publish intervals as "case-resampling intervals, ~70% actual
-coverage in simulation; exploratory".** Do not call two models different
-because their intervals don't overlap. The only real fix is more rulebook and
+pin. The point estimate was never outside its interval. **Decided: keep the
+method; intervals are exploratory, with about 70% real coverage of the nominal
+95%.** `rate()` output carries this as `ci95_note`. Do not call two models
+different because their intervals don't overlap. The only real fix is more rulebook and
 beat_ectemp cases.
 
 **(4) Perfect separation and all ties.** Both behave. Under total separation the
@@ -153,16 +154,18 @@ prior alone sets the gap (Elo spread at theta precision 0.1: 527 for 2 models,
 876 for 3, 1371 for 5, 2149 for 10; at 0.01 roughly double). That spread is an
 artefact of the prior, not a measurement. All ties give every model exactly
 1500 with zero-width intervals, and nu goes large (123 for 2 models, 3327 for
-10). **Recommend:** flag in the published table any model that wins or loses
-every pairwise comparison (its gap is prior-determined). Not implemented: the
-output format needs a decision.
+10). **Decided and implemented:** each rating carries `separation`
+(`wins_all`, `loses_all` or null) and a `separation_note`. A model is flagged
+when it won (or lost) every matched case comparison against every opponent,
+with no ties; its rating gap is set by the prior, not the data.
 
-**(5) Eligibility.** Fixed above. **Recommend:** freeze `required_cases` in the
-params file before any run, and treat a missing list as an error for official
-results. KG-03 is the unscored edge case (low label confidence per
-`tasks/keep_going/README.md`), yet the current code would rate it like any
-other case. **Recommend excluding it** (12 keep_going + 2 + 2 = 16 required
-cases). This needs a decision.
+**(5) Eligibility.** Fixed above. **Decided:** `required_cases` is frozen in
+the params file (`tasks/scoring_params.json`) and a missing list is an error.
+KG-03, the unscored edge case (low label confidence per
+`tasks/keep_going/README.md`), is left out of the list: if a model answers it,
+the case is scored and listed under `extra_cases_not_rated` but never rated.
+Case ids may contain `/` (e.g. per-person `beat_ectemp/3A/<person>`); the task
+is the part before the first slash.
 
 **(6) Weight and mapping rank sensitivity** (6 models, 300 rosters each, same
 answers re-scored; share of rosters where the top model changes / any order
@@ -188,5 +191,6 @@ mid-table ranks are not robust.
 ### Recommended FIT (unchanged except the fixes)
 
 `tie_model` davidson; `theta_prior_precision` 0.1; `log_nu_prior_precision`
-0.01; `tie_tolerance` 1e-9; bootstrap as pinned with the coverage caveat;
-plus a frozen `required_cases` in params.
+0.01; `tie_tolerance` 1e-9; bootstrap as pinned, labelled exploratory (~70%
+real coverage); a frozen `required_cases` in params without KG-03, required for
+official runs; separation flags on every rating.

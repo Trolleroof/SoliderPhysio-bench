@@ -238,7 +238,7 @@ def check_extremes():
             eh, _ = elo_of(sep, 'half_win', theta_prior_precision=lam)
             row.append(f'lam={lam}: davidson spread {spread(e):.0f} (nu={nu:.1e}), half-win {spread(eh):.0f}')
         et, nut = elo_of(tie)
-        r = cs.rate(tie, n_boot=50)
+        r = cs.rate(tie, n_boot=50, dev_allow_union_cases=True)
         cis = {tuple(round(v, 6) for v in x['ci95']) for x in r['ratings']}
         print(f'n={n} separation: ' + '; '.join(row))
         print(f'n={n} all ties: Elo {sorted({round(x, 6) for x in et})}, nu={nut:.0f}, CIs {cis}')
@@ -251,7 +251,7 @@ def population_elo(skills, sc, rng, mp=BASE_MAP, k=400):
 def bootstrap_ci(scores, n_boot, seed, minus_one=False):
     """Pinned method via cs.rate(); minus_one draws n-1 cases per task (n-1 bootstrap)."""
     if not minus_one:
-        r = cs.rate(scores, n_boot=n_boot, seed=seed)
+        r = cs.rate(scores, n_boot=n_boot, seed=seed, dev_allow_union_cases=True)
         return {x['model']: (x['elo'], x['ci95']) for x in r['ratings']}
     models = models_of(scores)
     by_task = {}
