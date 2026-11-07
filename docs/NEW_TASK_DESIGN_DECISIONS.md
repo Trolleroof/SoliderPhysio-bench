@@ -21,6 +21,10 @@ to weigh current observations and predicted outcomes.
   the forecast; the model determines their importance.
 - No internet access. All models receive the same library containing only
   documents selected and frozen beforehand, with no case-specific briefing.
+- Provide the information realistically available to a medic in the scenario,
+  constrained by what the measured record actually contains. Do not invent
+  symptoms, observations or history; mark missing information as unavailable.
+  The exact fields and history window require a dataset and scenario audit.
 - An independent LLM judge assesses forecast, decision and reasoning separately
   using a rubric. Calculate numerical forecast error in code as well. This is
   an expert-style hackathon assessment, not human expert validation.
@@ -36,7 +40,8 @@ to weigh current observations and predicted outcomes.
 ### Open design work
 
 - Select and freeze the actual research documents, measured cases and cutoffs;
-  specify the case inputs, history window, tools and output schema.
+  audit medic-relevant inputs against available data and specify the history
+  window, tools and output schema.
 - Define and test the judge rubric, scoring scales, judge inputs and handling
   of hindsight; pin the judge and preserve judgments for review.
 - Verify that the measured data support any proposed case categories. A clear
