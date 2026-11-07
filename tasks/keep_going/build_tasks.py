@@ -2,8 +2,8 @@
 
 Source: D'Lugos (2025), Figshare 29120024 v1, CC BY 4.0. 24 people, ~60 min of cycling in a
 hot chamber, rectal core temperature every minute. The evaluated model never sees core
-temperature, the subject ID, or the raw protocol clock; it sees a re-zeroed, rounded window of
-wearable-style data and must decide whether to pull the person before core temperature reaches
+temperature or the subject ID; like a medic on site, it sees elapsed ride time and a rounded
+window of wearable-style data, and must decide whether to pull the person before core temperature reaches
 the threshold 15 minutes later.
 
 Run:  .venv-research/bin/python -m tasks.keep_going.build_tasks
