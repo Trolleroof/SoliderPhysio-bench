@@ -127,9 +127,87 @@ class Ratings(unittest.TestCase):
         self.assertEqual(s['a'][('keep_going', 'KG-01')]['n_runs'], 2)
         self.assertAlmostEqual(s['a'][('keep_going', 'KG-01')]['combined'], s['b'][('keep_going', 'KG-01')]['combined'])
 
+    def test_required_cases_ignore_extra_case(self):
+        # One model also ran KG-02. Under the union rule that excluded everyone else.
+        extra = self.run_for('a', 0.1, 0.1)
+        extra['cases'].append(kg_case(0.1, case='KG-02'))
+        runs = [extra, self.run_for('b', 0.3, 0.3), self.run_for('c', 0.5, 0.4)]
+        scores = cs.score_runs(runs, PARAMS)
+        union = cs.rate(scores, n_boot=0)
+        self.assertEqual(union['eligible'], ['a'])
+        self.assertTrue(union['warnings'])
+        r = cs.rate(scores, n_boot=0, required_cases=['keep_going/KG-01', 'beat_ectemp/3A'])
+        self.assertEqual(r['eligible'], ['a', 'b', 'c'])
+        self.assertEqual(r['extra_cases_not_rated'], {'a': ['keep_going/KG-02']})
+        self.assertEqual(r['cases'], ['beat_ectemp/3A', 'keep_going/KG-01'])
+        self.assertEqual(r['warnings'], [])
+        # The extra case must not change the comparison at all.
+        base = cs.rate(cs.score_runs(runs[1:] + [self.run_for('a', 0.1, 0.1)], PARAMS), n_boot=0)
+        self.assertEqual([x['elo'] for x in r['ratings']], [x['elo'] for x in base['ratings']])
+
+    def test_required_cases_blocked_extra_does_not_exclude_but_required_does(self):
+        a = self.run_for('a', 0.1, 0.1)
+        bad = kg_case(0.1, case='KG-02')
+        bad['judge']['decision'] = 'not_scorable'
+        a['cases'].append(bad)
+        req = ['keep_going/KG-01', 'beat_ectemp/3A', 'beat_ectemp/3B']
+        r = cs.rate(cs.score_runs([a, self.run_for('b', 0.3, 0.3)], PARAMS), n_boot=0, required_cases=req)
+        self.assertEqual(r['eligible'], [])
+        self.assertEqual(r['excluded']['a'], {'missing': ['beat_ectemp/3B'], 'not_scorable': []})
+        with self.assertRaises(ValueError):
+            cs.parse_required(['KG-01'])
+        with self.assertRaises(ValueError):
+            cs.parse_required(['nope/KG-01'])
+
+    def test_ties_use_tolerance_not_rounding(self):
+        # These differ by ~4e-19 but round(., 9) puts them on opposite sides of a boundary.
+        x, y = math.nextafter(0.0010000005, 0), math.nextafter(0.0010000005, 1)
+        self.assertNotEqual(round(x, 9), round(y, 9))
+        scores = {m: {('keep_going', 'KG-01'): {'status': 'scored', 'combined': v}}
+                  for m, v in (('a', x), ('b', y))}
+        self.assertEqual(cs.pairwise(scores, ['a', 'b'], [('keep_going', 'KG-01')])[(0, 1)]['ties'], 1)
+
+    def test_percentile_interpolates_symmetrically(self):
+        xs = list(range(1000))
+        self.assertAlmostEqual(cs.percentile(xs, 0.025), 24.975)
+        self.assertAlmostEqual(cs.percentile(xs, 0.975), 974.025)
+        self.assertEqual(cs.percentile([7], 0.975), 7)
+
+    def test_perfect_separation_finite_and_all_ties_flat(self):
+        ids = [('keep_going', f'KG-{i:02d}') for i in range(1, 14)] + [
+            ('rulebook_vs_body', 'RB-01'), ('rulebook_vs_body', 'RB-02'), ('beat_ectemp', '3A'), ('beat_ectemp', '3B')]
+        sep = {f'm{i}': {k: {'status': 'scored', 'combined': 1 - i / 4} for k in ids} for i in range(4)}
+        r = cs.rate(sep, n_boot=20)
+        elos = [x['elo'] for x in r['ratings']]
+        self.assertEqual([x['model'] for x in r['ratings']], ['m0', 'm1', 'm2', 'm3'])
+        self.assertTrue(all(math.isfinite(e) for e in elos))
+        self.assertLess(max(elos) - min(elos), 2000)
+        tie = {f'm{i}': {k: {'status': 'scored', 'combined': 0.5} for k in ids} for i in range(4)}
+        r = cs.rate(tie, n_boot=20)
+        for x in r['ratings']:
+            self.assertAlmostEqual(x['elo'], 1500, places=6)
+            self.assertAlmostEqual(x['ci95'][0], 1500, places=6)
+            self.assertAlmostEqual(x['ci95'][1], 1500, places=6)
+
     def test_too_few_models(self):
         r = cs.rate(cs.score_runs([self.run_for('a', 0.1, 0.1)], PARAMS))
         self.assertIsNone(r['ratings'])
+
+
+
+class StressHarness(unittest.TestCase):
+    def test_elo_order_is_total_pairwise_score_order(self):
+        # Complete matched design: every fit variant ranks by total (task-averaged) pairwise score.
+        import random
+        from tasks import elo_stress as es
+        rng = random.Random(3)
+        for _ in range(5):
+            scores = es.to_scores(es.benchmark(es.roster(6, es.SCENARIOS['typical'], rng), es.SCENARIOS['typical'], rng))
+            ts = es.total_score(scores)
+            if len({round(x, 9) for x in ts}) < len(ts):
+                continue
+            for tm, over in (('davidson', {}), ('half_win', {}), ('davidson', {'theta_prior_precision': 1.0})):
+                self.assertEqual(es.ranks(es.elo_of(scores, tm, **over)[0]), es.ranks(ts))
 
 
 if __name__ == '__main__':
