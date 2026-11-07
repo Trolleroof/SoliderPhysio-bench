@@ -1,5 +1,12 @@
 # DeepSeek pilot results — 2026-11-07
 
+**Scope correction:** these runs exercised the legacy pulse, heat and load
+regression tasks. They did **not** exercise the newly discussed task types
+“Keep going or pull him?”, “Rulebook versus body”, or “Beat ECTemp”. The earlier
+claim that the intended three-task suite was complete was incorrect. These
+results are legacy harness diagnostics only; they do not establish readiness,
+completion or ratings for the new task suite.
+
 DeepSeek V4 Flash High produced valid submitted predictors for load, heat and
 pulse. Every selected artifact completed full-cohort hidden replay and an
 independent GPT-6.1 Sol Medium final-selection review. This proves that the model
