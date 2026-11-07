@@ -85,8 +85,7 @@ Its heat predictor passed development evaluation on its last call, then failed
 for lack of a submission call. Its long pulse fitting command was explicitly
 interrupted to apply the early-evaluation fix; its partial trace and charges are
 preserved as an interrupted diagnostic, not a scored prediction attempt.
-The baseline-first/early-evaluation rerun is in `v4/`; outcomes remain pending
-until sealed receipts and independent reviews exist.
+The baseline-first/early-evaluation rerun is in `v4/`.
 
 `v4/` load and heat completed submission, replay and independent review. Pulse
 spent 12 calls discovering the data/helper interface, then rejected the forced
@@ -97,3 +96,7 @@ evaluation, leaving eight calls for correction/submission. `v5-pulse/` tests thi
 repair on pulse alone; task lists are explicitly bound into pilot identity so
 partial diagnostics cannot be mistaken for a full suite. It is a separate freeze
 and does not silently replace or merge previous receipts.
+
+Pulse in `v5-pulse/` completed submission, full hidden replay and independent
+review. Together with `v4/` load and heat, all three task paths are now verified.
+See [final metrics, controls, costs and scope](DEEPSEEK_PILOT_RESULTS.md).
