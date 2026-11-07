@@ -125,12 +125,17 @@ json.dump([m.predict(x) for x in r],out,allow_nan=False)
 '''
 
 
-def run_submission(public, batch, private=None):
-    """macOS sandbox: private data is never inherited or readable; network denied."""
-    public = Path(public).resolve()
+def require_sandbox():
     sandbox = shutil.which('sandbox-exec')
     if sys.platform != 'darwin' or not sandbox:
         raise RuntimeError('Requires macOS sandbox-exec; refusing unsandboxed execution')
+    return sandbox
+
+
+def run_submission(public, batch, private=None):
+    """macOS sandbox: private data is never inherited or readable; network denied."""
+    public = Path(public).resolve()
+    sandbox = require_sandbox()
     roots = [str(public), sys.base_prefix, sys.prefix, '/opt/homebrew', '/System', '/usr', '/bin', '/private/var/db', '/private/etc', '/Library/Frameworks', '/dev']
     allows = ' '.join('(subpath '+json.dumps(p)+')' for p in dict.fromkeys(roots + [str(Path(x).resolve()) for x in roots]))
     profile = '(version 1)(deny default)(allow process*)(allow file-read-metadata)(allow sysctl-read)(allow mach-lookup)(allow file-read* (require-any (require-not (subpath "/Users")) '+allows+'))(allow file-write* (literal "/dev/null"))'
@@ -146,6 +151,8 @@ def run_submission(public, batch, private=None):
 
 def evaluate(public, private, task, hidden=False, runner=run_submission):
     private = Path(private)
+    if runner is run_submission:
+        require_sandbox()  # organizer setup error: fail before it counts as a participant call
     # Record attempts before executing untrusted code, including failures.
     log = private/'calls.jsonl'
     previous = [json.loads(x) for x in log.read_text().splitlines()] if log.exists() else []

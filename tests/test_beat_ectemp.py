@@ -86,6 +86,13 @@ class BeatECTempTests(unittest.TestCase):
         self.assertEqual(json.loads(r.stdout),[{'mean':38,'lower':37.5,'upper':38.5}]*2)
         self.assertIn('debug',r.stderr)
 
+    def test_missing_sandbox_is_not_a_logged_call(self):
+        from unittest import mock
+        with mock.patch.object(b.shutil,'which',return_value=None):
+            with self.assertRaises(RuntimeError):
+                b.evaluate(self.public,self.private,'3B')
+        self.assertFalse((self.private/'calls.jsonl').exists())
+
     def test_hidden_hot_after_drop_and_gap_and_spam(self):
         runner=lambda _,rs:[{'mean':38,'lower':37.5,'upper':38.5} for r in rs]
         for _ in range(3): public=b.evaluate(self.public,self.private,'3B',False,runner)
