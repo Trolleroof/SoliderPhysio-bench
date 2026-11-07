@@ -99,16 +99,28 @@ class BeatECTempTests(unittest.TestCase):
         for _ in range(3): public=b.evaluate(self.public,self.private,'3B',False,runner)
         hidden=b.evaluate(self.public,self.private,'3B',True,runner)
         self.assertEqual(hidden['public_call_count'],3)
-        self.assertEqual(hidden['primary_count'],150)
-        self.assertEqual(hidden['primary_mae'],.5)
+        self.assertEqual(hidden['primary_count'],200)  # 3B scores every request
+        self.assertEqual(hidden['primary_mae'],.375)
         self.assertEqual(hidden['mae'],.375)
-        self.assertEqual(hidden['public_to_hidden_gap'],.125)
+        self.assertEqual(hidden['public_to_hidden_gap'],0)
         self.assertEqual(len((self.private/'calls.jsonl').read_text().splitlines()),4)
         self.assertEqual(public['primary_count'],200)
         no_drop=rows()
         for r in no_drop:r['watts']=200
         self.assertFalse(any(m for _,_,m in b.requests(no_drop,'3B')))
         self.assertEqual(b.metrics([runner(None,[{}])[0]],[38],[False])['score'],0)
+
+    def test_hidden_3b_scores_every_request_hot_is_a_slice(self):
+        cool=rows()
+        for i,r in enumerate(cool): r['core_temp']=38.5 if i>=20 else 38  # drop at minute 11, hot from 21
+        (self.private/'labels.json').write_text(json.dumps({p:cool for p in b.TRAIN+b.DEV+b.TEST}))
+        runner=lambda _,rs:[{'mean':38,'lower':37.5,'upper':38.5} for r in rs]
+        hidden=b.evaluate(self.public,self.private,'3B',True,runner)
+        self.assertEqual(hidden['primary_count'],200)      # all 40 minutes x 5 people, drop or not
+        self.assertAlmostEqual(hidden['primary_mae'],20*.5/40)
+        self.assertEqual(hidden['hot_count'],100)
+        self.assertEqual(hidden['hot_mae'],.5)
+        self.assertEqual(set(hidden['person_mae']),set(b.TEST))
 
     @unittest.skipUnless(b.sys.platform=='darwin' and b.shutil.which('sandbox-exec'),'macOS sandbox required')
     def test_real_sandbox_blocks_labels_network_and_budget(self):

@@ -188,14 +188,14 @@ class EndToEnd(unittest.TestCase):
             {'task': 'keep_going', 'case_id': 'KG-01', 'answer': KG_ANSWER},
             {'task': 'rulebook_vs_body', 'case_id': 'RB-01', 'answer': RB_ANSWER},
             {'task': 'beat_ectemp', 'case_id': '3A', 'answer': 'explanation',
-             'grader': {'valid': True, 'person_balanced_mae': 0.25}, 'materials': EC_MATERIALS},
+             'grader': {'valid': True, 'person_mae': {'H13': 0.25}}, 'materials': EC_MATERIALS},
             {'task': 'keep_going', 'case_id': 'KG-02', 'answer': ''},
         ]}
         run = J.run_submissions(subs, J.FakeJudgeClient(score=5))
         run = json.loads(json.dumps(run))  # must survive a run-file round trip
-        scores = cs.score_runs([run], {'E_c': 1.0, 'ectemp_B': {'3A': 0.5}})['m1']
+        scores = cs.score_runs([run], {'E_c': 1.0, 'ectemp_B': {'3A': {'H13': 0.5}}})['m1']
         self.assertTrue(all(r['status'] == 'scored' for r in scores.values()))
-        self.assertAlmostEqual(scores[('beat_ectemp', '3A')]['combined'], 0.6 * 0.5 + 0.4)
+        self.assertAlmostEqual(scores[('beat_ectemp', '3A/H13')]['combined'], 0.6 * 0.5 + 0.4)
         self.assertEqual(run['cases'][3]['judge'], {'decision': 0, 'reasoning': 0})
 
     def test_judge_failure_blocks_case_in_combined_score(self):

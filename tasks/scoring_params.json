@@ -1,12 +1,45 @@
 {
-  "version": "draft-2026-11-07",
-  "E_c": null,
+  "version": "v3-2026-11-07",
+  "E_c": 0.1712,
   "ectemp_B": {
-    "3A": 0.9324716025455134,
-    "3B": 0.9404389690886925
+    "3A": {
+      "H06": 0.15732556388647248,
+      "H13": 0.9324716025455134
+    },
+    "3B": {
+      "H06": 0.176378,
+      "H13": 0.865265,
+      "H18": 0.626188,
+      "H22": 0.55783,
+      "H25": 0.302303
+    }
   },
+  "required_cases": [
+    "keep_going/KG-01",
+    "keep_going/KG-02",
+    "keep_going/KG-04",
+    "keep_going/KG-05",
+    "keep_going/KG-06",
+    "keep_going/KG-07",
+    "keep_going/KG-08",
+    "keep_going/KG-09",
+    "keep_going/KG-10",
+    "keep_going/KG-11",
+    "keep_going/KG-12",
+    "keep_going/KG-13",
+    "rulebook_vs_body/RB-01",
+    "rulebook_vs_body/RB-02",
+    "beat_ectemp/3A/H06",
+    "beat_ectemp/3A/H13",
+    "beat_ectemp/3B/H06",
+    "beat_ectemp/3B/H13",
+    "beat_ectemp/3B/H18",
+    "beat_ectemp/3B/H22",
+    "beat_ectemp/3B/H25"
+  ],
   "provenance": {
-    "E_c": "Not frozen. Awaiting user approval; evidence in docs/SCORING_AND_ELO.md#calibration-evidence-2026-11-07 and docs/forecast_e_calibration.json (tasks/calibrate_forecast_e.py).",
-    "ectemp_B": "tasks/beat_ectemp/ectemp_baseline.py (via template.py as submission.py) scored with benchmark.evaluate(hidden=True) on the frozen test split, person_balanced_mae. Workbook MD5 01214bfc835215fe1a5d3f5da1e9ad52. Two hidden runs per task with independent random time offsets gave identical values; the baseline never reads time_min. Only one test person (H13) passes the hidden gate, so B is that person's MAE (3A: 21 requests, 3B: 36)."
+    "E_c": "Constant-guess rule approved on PR #3 (replaces v1 E_c = 0.30). One constant, 38.7015 C, = person-balanced mean +15-minute target over 175 development windows from the 11 people in no keep_going task; E_c = that constant's person-balanced MAE on the same windows, 0.1712 C. A forecast as bad as the constant guess on average earns zero forecast credit on average. Formula unchanged: max(0, 1 - err/E_c). Source: tasks/calibrate_forecast_e.py -> docs/forecast_e_calibration.json frozen_E_c.",
+    "ectemp_B": "Per-person baseline MAE: tasks/beat_ectemp/ectemp_baseline.py (via template.py as submission.py) through benchmark.evaluate(hidden=True), person_mae over scored requests (3A: every request after the first watts drop; 3B: every request, approved 2026-11-07). Workbook MD5 01214bfc835215fe1a5d3f5da1e9ad52. Two hidden runs per variant with independent random time offsets gave identical values; the baseline never reads time_min. Only H06 and H13 ever drop watts, so 3A has 2 people (57 requests); 3B has all 5 test people (300 requests). 3B values recomputed for v3 (6 decimals); identical across two random time offsets.",
+    "required_cases": "12 scored keep_going cases (KG-03 edge case excluded), RB-01, RB-02, and 7 per-person Beat ECTemp cases (3A: H06, H13; 3B: all 5 test people)."
   }
 }

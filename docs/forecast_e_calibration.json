@@ -38,6 +38,11 @@
     "credit": "max(0, 1 - abs_error / E), averaged per person then across people",
     "population_statistics": "leave-one-person-out over development people only"
   },
+  "frozen_E_c": {
+    "constant_c": 38.7015,
+    "E_c": 0.1712,
+    "rule": "constant = person-balanced mean target over development windows; E_c = person-balanced MAE of that constant on the same windows (in-sample)"
+  },
   "all_windows": {
     "constant_population_mean": {
       "n_windows": 175,

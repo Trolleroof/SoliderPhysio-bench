@@ -16,19 +16,20 @@ each component to a value in [0, 1], then compute the weighted sum:
 | Rulebook versus body | Table lookup | 0.30 | Fraction of predeclared required fields correct |
 | | Override decision | 0.40 | Judge score / 5 |
 | | Reasoning | 0.30 | Judge score / 5 |
-| Beat ECTemp | Predictor performance | 0.60 | max(0, min(1, 1 - MAE / B)) |
+| Beat ECTemp | Predictor performance | 0.60 | Per test person: max(0, min(1, 1 - MAE_p / B_p)) |
 | | Research explanation | 0.40 | Judge score / 5 |
 
 E is an error in °C at which forecast credit reaches zero; B is the frozen
 ECTemp MAE on the same held-out people and prediction requests. Neither is a
 clinical threshold. Choose E from development evidence and document its
 rationale before freezing; no arbitrary value is approved here. For Beat
-ECTemp, compute MAE per person then average people equally. Require a valid,
+ECTemp, score each test person as a separate case against that person's
+baseline B (see "Calibration evidence" below). Require a valid,
 finite, positive baseline B; otherwise report not scorable. A predictor that
 matches ECTemp receives zero performance credit under this provisional mapping;
 report raw error and relative improvement prominently so the mapping is clear.
 Freeze slice definitions and report each slice separately; the performance
-component uses the predeclared overall person-balanced MAE. Report uncertainty
+component uses each person's MAE over all post-drop requests. Report uncertainty
 metrics and validity separately; do not silently invent a weighting for them.
 The judge's forecast assessment is reported separately from deterministic
 forecast error and does not override it.
@@ -70,30 +71,44 @@ before requesting model responses. These steps are not yet completed.
 
 ## Calibration evidence (2026-11-07)
 
-Frozen values live in `tasks/scoring_params.json`. B is filled in. E_c is
-`null` until the user approves a value, so keep_going cases stay not scorable.
+Frozen values live in `tasks/scoring_params.json` (version `v2-2026-11-07`).
+That file holds E_c, per-person B values, and `required_cases`, the frozen case
+list every model must cover. v3 replaces v2 (3B gated on the watts drop) and v1 (E_c = 0.30 °C, one B per
+variant, hot-only gate), following the decisions on PR #3.
 
-### ECTemp baseline B
+### Beat ECTemp: gate, per-person cases and B
 
-`ectemp_baseline.py`, run as the submission through `benchmark.evaluate` with
-`hidden=True` on the frozen test split. The value is `person_balanced_mae`.
+- **Scored requests (v3).** 3A covers every request after the first watts
+  drop (the falling-power forecast starts there). 3B covers every request, drop
+  or not, because a current-core estimate has no reason to wait for a drop
+  (approved 2026-11-07). Core ≥38.5 °C is reported as a separate slice
+  (`hot_mae`, `hot_person_balanced_mae`, `hot_count`). It does not gate the score.
+- **Per-person cases.** `benchmark.evaluate` also returns `person_mae`, a map
+  from each person to their MAE on scored requests. `combined_score` splits
+  each run's `3A` and `3B` case into one case per test person (`3A/<person>`).
+  Each copy shares the same research-explanation judge score. The predictor
+  component is max(0, min(1, 1 − MAE_p / B_p)), where B_p is the baseline's MAE
+  for that person on the same requests.
+- **7 Beat ECTemp cases.** Only H06 and H13 ever drop watts, so 3A has 2
+  people; 3B has all 5 test people. (v2 gated 3B on the drop too and had 4.)
 
-| Variant | B (°C) | Gated requests | People in gate |
-| --- | ---: | ---: | --- |
-| 3A | 0.9325 | 21 | H13 only |
-| 3B | 0.9404 | 36 | H13 only |
+| Case | B_p (°C) | Scored requests |
+| --- | ---: | ---: |
+| 3A/H06 | 0.1573 | 36 |
+| 3A/H13 | 0.9325 | 21 |
+| 3B/H06 | 0.1764 | 60 |
+| 3B/H13 | 0.8653 | 60 |
+| 3B/H18 | 0.6262 | 60 |
+| 3B/H22 | 0.5578 | 60 |
+| 3B/H25 | 0.3023 | 60 |
 
-- **Stable under time offsets.** The baseline reads only `hr`, `skin_temp`
-  and `watts`, never `time_min`. Two hidden runs per task, each with a fresh
-  random offset, gave identical results. Calling `predict` directly with offsets
-  0 and 98765 on all 357 test requests gave a maximum difference of 0.
-- **Caveat: one person.** The hidden gate (true core ≥38.5 °C after the first
-  watts drop) admits only H13 among the five test people. "Person-balanced" B
-  is one person's MAE, so the Beat ECTemp predictor score also depends on one
-  person. This needs a decision before freezing.
-- B is large because the baseline starts at 37 °C and lags. A predictor needs
-  MAE below about 0.93 °C to get any predictor credit. Half credit needs about
-  0.47 °C.
+- B is stable under the hidden random time offsets. The baseline reads only
+  `hr`, `skin_temp` and `watts`, never `time_min`. Two hidden runs per variant
+  gave identical values.
+- B_p varies about sixfold between the two people. A predictor needs MAE below
+  0.157 °C on H06 to earn any credit there, and below 0.93 °C on H13.
+- For reference, the baseline's person-balanced MAE over 3A's scored requests
+  is 0.5449 °C. Only H13 is ever hot.
 
 ### Forecast cutoff E_c
 
@@ -108,7 +123,7 @@ statistics are leave-one-person-out within these people. Credit is
 max(0, 1 − err/E), averaged per person, then across people.
 
 **Baselines.**
-- Constant: the pooled population mean, about 38.4 °C. Uses no information.
+- Constant: the pooled mean core over minutes 40 to 60 of the other development people (about 38.7 °C). Uses no information. Fitted leave-one-person-out.
 - Elapsed-time-only: the mean core of other people at minute t+15.
 - ECTemp-style: the 3A forecast from `ectemp_baseline.py`.
 - Two oracle references that read current core, which keep_going never shows:
@@ -141,8 +156,8 @@ development windows are.
 
 **Findings.**
 1. On this protocol, core temperature 25 to 60 minutes in is tightly
-   clustered. A model that answers "about 38.4 °C" every time already gets a
-   development MAE of 0.18 °C. Elapsed time adds nothing on development data.
+   clustered. A model that gives the same population constant every time
+   already gets a development MAE of 0.18 °C. Elapsed time adds nothing on development data.
    This matches `FALLING_POWER_DUEL.md` (fe57873), where elapsed time beat every
    wearable model.
 2. Under every candidate E, the no-information forecast gets about as much
@@ -156,20 +171,27 @@ development windows are.
    It also gives zero credit to errors typical of the best oracle reference
    (p90 0.26).
 
-**Recommended range: E_c = 0.25 to 0.35 °C (point suggestion 0.30).**
-- At 0.30, an error equal to the median for informed baselines (about
-  0.15 °C) earns half credit. An error at their p90 (about 0.3 to 0.37 °C)
-  earns zero.
-- The no-information answer earns about half the forecast component on
-  development data and about a quarter on the test cases.
-- The ECTemp-style comparator earns almost nothing on development data.
-
-An alternative is a skill-relative mapping that gives zero credit at the
-constant-baseline error. It would remove the free credit, but it changes the
-documented formula, so it is not proposed here. The user must approve E_c
-before any official run.
+**Frozen rule (v2): E_c = the constant guess's error = 0.1712 °C.**
+- The constant is 38.7015 °C: the person-balanced mean +15-minute target over
+  the 175 development windows, using only the 11 people in no keep_going task.
+- E_c is that constant's person-balanced MAE on the same windows. This is
+  in-sample. The leave-one-person-out version in the table is 0.177 °C.
+- **Why:** with formula max(0, 1 − err/E_c), a forecast whose error equals the
+  constant guess's average error earns zero. Credit now means beating a
+  population prior. The formula is unchanged.
+- One E is used for all cases. A per-case denominator (the constant's error on
+  each case) is rejected: it blows up when the truth sits near the constant.
+- **Change from v1:** E_c was 0.30 °C. At 0.30 the constant guess earned about
+  half the forecast credit on development data.
+- **Caveat:** 0.17 °C is close to rectal-probe and minute-to-minute noise
+  (finding 4). Small forecast differences between models will look like large
+  credit differences.
 
 ## Fit stress test (synthetic, 2026-11-07)
+
+> The numbers below were computed with the earlier 17-case layout (13 keep_going,
+> 2 rulebook, 2 beat_ectemp). `tasks/elo_stress.py` now uses the v3 21-case
+> layout (12 + 2 + 7); rerun it (~6 min) to refresh them.
 
 No model outputs exist yet, so the pinned `FIT` choices in
 `tasks/combined_score.py` were stress-tested on synthetic rosters of 3-10

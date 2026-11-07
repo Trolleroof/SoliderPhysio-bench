@@ -88,18 +88,35 @@ def components(task, case_id, grader, judge, params):
     elif task == 'rulebook_vs_body':
         comp['table_lookup'] = float(grader['rulebook']['score'])
     else:
-        B = (params.get('ectemp_B') or {}).get(case_id)
+        # Per-person case "3A/<person>"; B is that person's baseline MAE on the same requests.
+        variant, _, person = case_id.partition('/')
+        B = ((params.get('ectemp_B') or {}).get(variant) or {}).get(person) if person else None
         if not isinstance(B, (int, float)) or not math.isfinite(B) or B <= 0:
             raise NotScorable(f'no valid ECTemp baseline B for {case_id!r}')
         if not grader.get('valid'):
             flags.append('invalid_artifact')
             comp['predictor'] = 0.0
         else:
-            mae = grader.get('person_balanced_mae')
+            mae = grader.get('person_mae')
             if mae is None:
-                raise NotScorable('grader output lacks person_balanced_mae')
+                raise NotScorable(f'grader output has no scored requests for {case_id!r}')
             comp['predictor'] = max(0.0, min(1.0, 1 - mae / B))
     return comp, flags
+
+
+def expand_case(case, params):
+    """Split a whole-variant beat_ectemp case ("3A", grader = benchmark.evaluate output) into one
+    case per test person ("3A/<person>"), people taken from params ectemp_B[variant]. Each copy
+    shares the judge scores and carries that person's MAE. Other cases pass through unchanged."""
+    if case['task'] != 'beat_ectemp' or '/' in case['case_id']:
+        return [case]
+    people = (params.get('ectemp_B') or {}).get(case['case_id'])
+    if not isinstance(people, dict) or not people:
+        return [case]  # components() reports it as not scorable
+    g = case['grader']
+    return [{**case, 'case_id': f"{case['case_id']}/{p}",
+             'grader': {'valid': g.get('valid'), 'person_mae': (g.get('person_mae') or {}).get(p)}}
+            for p in sorted(people)]
 
 
 def combined(task, comp):
@@ -125,7 +142,7 @@ def score_runs(runs, params):
     check_judge_off_roster(runs)
     raw = {}
     for run in runs:
-        for c in run['cases']:
+        for c in (x for case in run['cases'] for x in expand_case(case, params)):
             key = (c['task'], c['case_id'])
             rec = {'task': c['task'], 'case_id': c['case_id'], 'run': c.get('run', 0)}
             try:

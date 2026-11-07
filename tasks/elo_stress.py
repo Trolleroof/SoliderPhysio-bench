@@ -20,9 +20,10 @@ import time
 
 from tasks import combined_score as cs
 
-CASES = {'keep_going': [f'KG-{i:02d}' for i in range(1, 14)],
+# Matches tasks/scoring_params.json v3 required_cases (21 cases).
+CASES = {'keep_going': [f'KG-{i:02d}' for i in range(1, 14) if i != 3],
          'rulebook_vs_body': ['RB-01', 'RB-02'],
-         'beat_ectemp': ['3A', '3B']}
+         'beat_ectemp': ['3A/H06', '3A/H13'] + [f'3B/{q}' for q in ('H06', 'H13', 'H18', 'H22', 'H25')]}
 N_FIELDS = 4  # rulebook_vs_body.RULEBOOK_FIELDS
 
 SCENARIOS = {
@@ -311,7 +312,7 @@ def check_bootstrap_by_task(reps, n_boot, rng):
           'same task with 400 cases.')
     sc = SCENARIOS['typical']
     n = 5
-    for t, k in (('keep_going', 13), ('rulebook_vs_body', 2), ('beat_ectemp', 2)):
+    for t, k in ((t, len(c)) for t, c in CASES.items()):
         cover = {False: 0, True: 0}
         total = 0
         for rep in range(reps):

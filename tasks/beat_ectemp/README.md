@@ -43,7 +43,7 @@ Rectal temperature is the target, YSI is skin temperature. Exercise HR and Watta
 
 ## Scoring and cheat blocks
 
-Public scoring uses all eligible dev targets. Hidden primary MAE uses **true core temperature >=38.5 C AND a strictly lower observed wattage at or before the prediction origin**. After the first drop the gate remains active. For 3A the gate applies to the forecast target temperature. Missing watts do not create a drop. No eligible hidden minutes yields a null MAE and zero score. Score is `1/(1+primary_mae)`; overall MAE, interval coverage, and the proper 90% interval score (width plus 20 times each missed tail) are reported separately.
+Public scoring uses all eligible dev targets. Hidden primary MAE uses, for 3A, **every request with a strictly lower observed wattage at or before the prediction origin** (all requests after the first watts drop) and, for 3B, **every request**. Missing watts do not create a drop. Results include `person_mae` (MAE per test person over these requests), which `tasks/combined_score.py` scores as one case per person. True core temperature >=38.5 C (for 3A, at the forecast target) is reported as a separate slice: `hot_mae`, `hot_person_balanced_mae`, `hot_count`. In the frozen test split only H06 and H13 have a watts drop, so 3A scores 2 people and 3B scores all 5. No eligible hidden minutes yields a null MAE and zero score. Score is `1/(1+primary_mae)`; overall MAE, interval coverage, and the proper 90% interval score (width plus 20 times each missed tail) are reported separately.
 
 1. Dev-label training: dev labels exist only outside the participant folder, and submission sandbox reads are denied.
 2. Clock shortcut: hidden requests add an independent random integer offset per person to all time_min values, preserving relative spacing. This defeats absolute-clock lookup; it does not eliminate shortcuts based on elapsed duration or history length.
@@ -51,7 +51,7 @@ Public scoring uses all eligible dev targets. Hidden primary MAE uses **true cor
 4. Garbage intervals: missing fields, nonnumeric/bool values, NaN/inf, unordered bounds, zero widths or widths above 5 C invalidate the entire evaluation and score zero. Runtime/JSON failures also score zero.
 5. Public scorer spam: allowed. Every attempt is appended to organizer-only calls.jsonl before execution, including failures. Results report cumulative public_call_count. Hidden results report public_to_hidden_gap = hidden primary MAE minus latest public overall MAE for the same task (null if unavailable). Lower is better for all MAE/interval metrics.
 
-Tests include real workbook export, causal request boundaries, all five cheat blocks, inclusive hot threshold and persistent post-drop gate, baseline clock invariance/body sensitivity, and a real sandbox label/network denial probe.
+Tests include real workbook export, causal request boundaries, all five cheat blocks, persistent post-drop gate, separately reported inclusive hot slice, per-person MAE, baseline clock invariance/body sensitivity, and a real sandbox label/network denial probe.
 
 ```sh
 .venv-research/bin/python -m unittest tests/test_beat_ectemp.py -v
