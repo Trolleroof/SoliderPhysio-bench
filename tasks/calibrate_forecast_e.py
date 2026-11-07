@@ -111,6 +111,17 @@ def summarize(ws, fns):
     return out
 
 
+def constant_guess_E(ws):
+    """Frozen E_c rule: one constant fitted on development people (person-balanced mean of
+    their +15-minute targets), and E_c = its person-balanced MAE on the same windows."""
+    owners = [w['person'] for w in ws]
+    c = balanced([w['target'] for w in ws], owners)
+    return {'constant_c': round(c, 4),
+            'E_c': round(balanced([abs(w['target'] - c) for w in ws], owners), 4),
+            'rule': 'constant = person-balanced mean target over development windows; '
+                    'E_c = person-balanced MAE of that constant on the same windows (in-sample)'}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--workbook', type=Path, default=ROOT / 'sources' / 'figshare-heat' / 'core_cycling_2025.xlsx')
@@ -130,6 +141,7 @@ def main(argv=None):
             'credit': 'max(0, 1 - abs_error / E), averaged per person then across people',
             'population_statistics': 'leave-one-person-out over development people only',
         },
+        'frozen_E_c': constant_guess_E(ws),
         'all_windows': summarize(ws, fns),
         'falling_power_windows': summarize([w for w in ws if w['falling']], fns),
         'target_at_or_above_38.5': summarize([w for w in ws if w['target'] >= 38.5], fns),

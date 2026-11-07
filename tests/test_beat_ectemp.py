@@ -110,6 +110,18 @@ class BeatECTempTests(unittest.TestCase):
         self.assertFalse(any(m for _,_,m in b.requests(no_drop,'3B')))
         self.assertEqual(b.metrics([runner(None,[{}])[0]],[38],[False])['score'],0)
 
+    def test_hidden_scores_every_request_after_drop_hot_is_a_slice(self):
+        cool=rows()
+        for i,r in enumerate(cool): r['core_temp']=38.5 if i>=20 else 38  # drop at minute 11, hot from 21
+        (self.private/'labels.json').write_text(json.dumps({p:cool for p in b.TRAIN+b.DEV+b.TEST}))
+        runner=lambda _,rs:[{'mean':38,'lower':37.5,'upper':38.5} for r in rs]
+        hidden=b.evaluate(self.public,self.private,'3B',True,runner)
+        self.assertEqual(hidden['primary_count'],150)      # 30 post-drop minutes x 5 people
+        self.assertAlmostEqual(hidden['primary_mae'],20*.5/30)
+        self.assertEqual(hidden['hot_count'],100)
+        self.assertEqual(hidden['hot_mae'],.5)
+        self.assertEqual(set(hidden['person_mae']),set(b.TEST))
+
     @unittest.skipUnless(b.sys.platform=='darwin' and b.shutil.which('sandbox-exec'),'macOS sandbox required')
     def test_real_sandbox_blocks_labels_network_and_budget(self):
         self.public.mkdir()

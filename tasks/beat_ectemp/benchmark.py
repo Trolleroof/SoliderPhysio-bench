@@ -103,25 +103,41 @@ def valid(output):
 
 def person_balanced_mae(errors, people):
     """MAE per person, then the unweighted mean over people."""
+    by = person_mae(errors, people)
+    return sum(by.values())/len(by) if by else None
+
+
+def person_mae(errors, people):
+    """{person: MAE over that person's errors}."""
     by = {}
     for e, p in zip(errors, people):
         by.setdefault(p, []).append(e)
-    return sum(sum(v)/len(v) for v in by.values())/len(by) if by else None
+    return {p: sum(v)/len(v) for p, v in sorted(by.items())}
 
 
-def metrics(outputs, targets, mask, people=None):
+def metrics(outputs, targets, mask, people=None, hot=None):
+    """mask selects scored (primary) requests; hot is a separately reported slice."""
     if len(outputs) != len(targets) or not all(valid(o) for o in outputs):
-        return {'score': 0, 'valid': False, 'mae': None, 'primary_mae': None, 'person_balanced_mae': None}
+        return {'score': 0, 'valid': False, 'mae': None, 'primary_mae': None, 'person_balanced_mae': None,
+                'person_mae': None, 'hot_mae': None, 'hot_person_balanced_mae': None}
     errors = [abs(o['mean']-y) for o,y in zip(outputs,targets)]
     selected = [e for e,m in zip(errors,mask) if m]
     primary = sum(selected)/len(selected) if selected else None
-    balanced = None if people is None else person_balanced_mae(
-        [e for e,m in zip(errors,mask) if m], [p for p,m in zip(people,mask) if m])
+    result = {'valid': True, 'score': 1/(1+primary) if primary is not None else 0, 'mae': sum(errors)/len(errors) if errors else None,
+              'primary_mae': primary, 'person_balanced_mae': None, 'person_mae': None, 'primary_count': len(selected)}
+    if people is not None:
+        owners = [p for p,m in zip(people,mask) if m]
+        result['person_balanced_mae'] = person_balanced_mae(selected, owners)
+        result['person_mae'] = person_mae(selected, owners)
+    if hot is not None:
+        hot_e = [e for e,h in zip(errors,hot) if h]
+        result.update(hot_count=len(hot_e), hot_mae=sum(hot_e)/len(hot_e) if hot_e else None,
+                      hot_person_balanced_mae=None if people is None else person_balanced_mae(
+                          hot_e, [p for p,h in zip(people,hot) if h]))
     coverage = sum(o['lower'] <= y <= o['upper'] for o,y in zip(outputs,targets))/len(targets) if targets else None
     interval = [o['upper']-o['lower'] + 20*max(o['lower']-y,0) + 20*max(y-o['upper'],0) for o,y in zip(outputs,targets)]
-    return {'valid': True, 'score': 1/(1+primary) if primary is not None else 0, 'mae': sum(errors)/len(errors) if errors else None,
-            'primary_mae': primary, 'person_balanced_mae': balanced, 'primary_count': len(selected), 'coverage_90': coverage,
-            'interval_score_90': sum(interval)/len(interval) if interval else None}
+    result.update(coverage_90=coverage, interval_score_90=sum(interval)/len(interval) if interval else None)
+    return result
 
 
 WORKER = '''import sys,json,resource,importlib.util
@@ -170,16 +186,18 @@ def evaluate(public, private, task, hidden=False, runner=run_submission):
     with log.open('a') as f:
         f.write(json.dumps({'time':time.time(),'hidden':hidden,'task':task,'public_call_count':call_count})+'\n')
     people = json.loads((private/'labels.json').read_text())
-    batch=[]; targets=[]; mask=[]; owners=[]
+    batch=[]; targets=[]; mask=[]; hot=[]; owners=[]
     for p in TEST if hidden else DEV:
         offset = random.SystemRandom().randint(-100000,100000) if hidden else 0
         for r,y,after_drop in requests(people[p],task,offset):
-            batch.append(r); targets.append(y); owners.append(p); mask.append(y >= 38.5 and after_drop if hidden else True)
+            # Hidden scoring: every request after the first watts drop. Core >= 38.5 C is a reported slice.
+            batch.append(r); targets.append(y); owners.append(p)
+            mask.append(after_drop if hidden else True); hot.append(y >= 38.5 and (after_drop or not hidden))
     try:
         outputs = runner(public,batch,private) if runner is run_submission else runner(public,batch)
-        result = metrics(outputs,targets,mask,owners)
+        result = metrics(outputs,targets,mask,owners,hot)
     except (ValueError, TypeError, subprocess.TimeoutExpired):
-        result = metrics([],targets,mask,owners)
+        result = metrics([],targets,mask,owners,hot)
     result['public_call_count'] = call_count
     report = private/('public_'+task+'.json')
     if hidden:
