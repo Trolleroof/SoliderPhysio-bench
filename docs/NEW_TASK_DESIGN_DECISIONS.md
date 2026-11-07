@@ -71,5 +71,11 @@ blockers still apply; the table, rubric and combination remain to be defined.
 
 ## Beat ECTemp
 
-This task has not yet been designed in this discussion. Its existing
-specification and readiness blockers still apply.
+Compare prediction performance with ECTemp deterministically on held-out
+measured data. An independent LLM judge separately scores the final research
+explanation. Record tool calls and available reasoning for inspection, without
+grading the trajectory. Preserve individual results and use a combined score
+for final Elo. The existing specification and readiness blockers still apply.
+
+The draft [judge rubrics](LLM_JUDGE_RUBRICS.md) cover all three tasks; they
+require calibration and freezing before official comparisons.
