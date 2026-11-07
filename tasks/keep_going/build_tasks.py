@@ -23,30 +23,52 @@ THRESHOLD_C = 38.5          # pull if core at cutoff+HORIZON is at or above this
 HORIZON_MIN = 15            # decision horizon in minutes
 WINDOW_MIN = 25             # rows shown to the model: cutoff-24 .. cutoff, re-zeroed to 0..24
 HR_RANGE = (30, 240)        # HR outside this is a source error (e.g. 1176) and is omitted
+MIN_MARGIN_C = 0.15         # scored labels must sit at least this far from the threshold
+MAX_STEP_C = 0.3            # scored horizons must not contain a one-minute core jump above this
 
 PUBLIC_ROW_KEYS = ('time_min', 'hr_bpm', 'skin_c', 'room_temp_c', 'humidity_pct', 'watts')
 
 # Case design. Subject numbers are the original workbook column labels; they never reach
-# the public files. Roles: 'primary' (the three scored tasks) and 'edge_case' (Subject 4,
-# whose core fell after the power drop; see README for the label caveat).
+# the public files. Roles: 'primary' (scored) and 'edge_case' (Subject 4, whose core fell
+# after the power drop; reported separately, see README for the label caveat).
+# Scored cases: 12 different people, 6 KEEP and 6 PULL, and within each answer 3 cases with
+# a power drop and 3 with steady power, so neither "always PULL" nor "watts dropped" is free.
+# Task ids are interleaved so the id order does not reveal the design.
+def _case(task_id, subject, cutoff, design, note, role='primary'):
+    return {'task_id': task_id, 'subject': subject, 'cutoff': cutoff, 'role': role,
+            'design': design, 'note': note}
+
+
 CASES = [
-    {'task_id': 'KG-01', 'subject': 21, 'cutoff': 30, 'role': 'primary',
-     'design': 'steady_power_safe',
-     'note': 'Steady 140 W for the whole window; core climbs slowly and stays under threshold.'},
-    {'task_id': 'KG-02', 'subject': 3, 'cutoff': 30, 'role': 'primary',
-     'design': 'falling_power_thermal_lag',
-     'note': 'Power cut from 215 W to 180 W five minutes before the cutoff; core keeps rising '
-             'through the threshold over the next 15 minutes (thermal lag).'},
-    {'task_id': 'KG-03', 'subject': 4, 'cutoff': 44, 'role': 'edge_case',
-     'design': 'falling_power_core_fell',
-     'note': 'Power cut from 205 W to 188 W three minutes before the cutoff; core peaks then '
-             'falls below threshold by cutoff+15. The only falling-power person in the workbook '
-             'whose core fell. Final-minute values are steep enough to suggest probe movement; '
-             'label confidence is low.'},
-    {'task_id': 'KG-04', 'subject': 23, 'cutoff': 30, 'role': 'primary',
-     'design': 'steady_power_rising',
-     'note': 'Steady 123 W; heart rate drifts upward at constant power and core is already '
-             'well above threshold at cutoff+15.'},
+    _case('KG-01', 21, 30, 'steady_power_safe',
+          'Steady 140 W; core climbs slowly and stays under threshold.'),
+    _case('KG-02', 3, 30, 'falling_power_thermal_lag',
+          'Power cut 215 to 180 W five minutes before the cutoff; core keeps rising through '
+          'the threshold over the next 15 minutes.'),
+    _case('KG-03', 4, 44, 'falling_power_core_fell',
+          'Power cut 205 to 188 W; core peaks then falls below threshold by cutoff+15. The only '
+          'falling-power person whose core fell. Late values look like probe movement; label '
+          'confidence is low.', role='edge_case'),
+    _case('KG-04', 23, 30, 'steady_power_rising',
+          'Steady 123 W; heart rate drifts up at constant power; core well above threshold.'),
+    _case('KG-05', 14, 33, 'falling_power_safe',
+          'Power stepped down 169 to 141 W; core plateaus near 38.1 C and stays under threshold.'),
+    _case('KG-06', 22, 27, 'steady_power_rising',
+          'Steady 277 W, very high for a 46 kg rider; core rises 0.64 C in 15 minutes.'),
+    _case('KG-07', 1, 35, 'falling_power_thermal_lag',
+          'Power cut 190 to 174 W at the window midpoint; core keeps rising 0.5 C.'),
+    _case('KG-08', 25, 25, 'steady_power_safe',
+          'Steady 195 W, early in the session; core rising but still under threshold at +15.'),
+    _case('KG-09', 17, 25, 'falling_power_safe',
+          'Power cut 105 to 96 W; core flat near 38.05 C.'),
+    _case('KG-10', 18, 33, 'steady_power_rising',
+          'Steady 152 W; core already just above threshold and still rising slowly.'),
+    _case('KG-11', 12, 25, 'steady_power_safe',
+          'Steady 122 W; core rises slowly, ends 0.18 C under threshold.'),
+    _case('KG-12', 13, 25, 'falling_power_thermal_lag',
+          'Power cut 164 to 151 W at the cutoff; core rises 0.40 C anyway.'),
+    _case('KG-13', 6, 25, 'falling_power_safe',
+          'Power cut 151 to 139 W early; core rises but ends 0.18 C under threshold.'),
 ]
 
 
@@ -157,13 +179,13 @@ ANSWER_FORMAT = {
 
 def render_prompt(rows, demo):
     last = rows[-1]['time_min']
-    return f"""You are the medic watching one soldier on a stationary bike inside a heat chamber. He has been riding for a while already. The table below is the last {len(rows)} minutes of his wearable and chamber log, ending now (minute {last}). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.
+    return f"""You are the medic watching one soldier on a stationary bike inside a heat chamber. The soldier has been riding for a while already. The table below is the last {len(rows)} minutes of the soldier's wearable and chamber log, ending now (minute {last}). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.
 
 Soldier: age {demo['age_years']} years, body mass {demo['mass_kg']} kg.
 
 {render_table(rows)}
 
-Rule: he must be pulled now if his core temperature {HORIZON_MIN} minutes from now would be at or above {THRESHOLD_C:.1f} C. Otherwise he keeps going at whatever workload he is currently holding.
+Rule: the soldier must be pulled now if core temperature {HORIZON_MIN} minutes from now would be at or above {THRESHOLD_C:.1f} C. Otherwise the soldier keeps going at the workload currently being held.
 
 Decide: KEEP or PULL. Do not run code. Reason from the trace and from physiology.
 
@@ -183,6 +205,11 @@ def build(source=DEFAULT_SOURCE, out_dir=HERE):
         demo = {'age_years': _ri(p['demo']['age_years']), 'mass_kg': _ri(p['demo']['mass_kg'])}
         core_now = p['core'][cutoff]
         core_later = p['core'][cutoff + HORIZON_MIN]
+        horizon = [p['core'][t] for t in range(cutoff, cutoff + HORIZON_MIN + 1)]
+        max_step = max(abs(b - a) for a, b in zip(horizon, horizon[1:]))
+        margin = round(abs(core_later - THRESHOLD_C), 2)
+        if case['role'] == 'primary' and (margin < MIN_MARGIN_C or max_step > MAX_STEP_C):
+            raise ValueError(f"{case['task_id']}: label too close to threshold or horizon has a probe glitch")
         future = [p['core'][t] for t in range(cutoff + 1, cutoff + HORIZON_MIN + 1)]
         watts_window = [r['watts'] for r in rows]
         public.append({
@@ -214,6 +241,8 @@ def build(source=DEFAULT_SOURCE, out_dir=HERE):
             'watts_first': watts_window[0],
             'watts_last': watts_window[-1],
             'expected_decision': 'PULL' if core_later >= THRESHOLD_C else 'KEEP',
+            'label_margin_c': margin,
+            'max_core_step_c': round(max_step, 2),
             'scorer': 'tasks.keep_going.evaluator.grade',
         })
     (out_dir / 'prompts').mkdir(parents=True, exist_ok=True)

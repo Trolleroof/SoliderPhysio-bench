@@ -155,13 +155,19 @@ def score_all(responses, ground_truth=None):
     primary = [r for r in results if r['role'] == 'primary']
     edge = [r for r in results if r['role'] == 'edge_case']
     errors = [r['core_abs_error_c'] for r in results if r['core_abs_error_c'] is not None]
-    by_design = {r['design']: r['decision_correct'] for r in results}
+    by_design = {}
+    for r in results:
+        by_design.setdefault(r['design'], []).append(r['score'])
+    traps = by_design.get('falling_power_thermal_lag', [])
     return {
         'n_tasks': len(results),
+        'n_primary': len(primary),
         'primary_accuracy': sum(r['score'] for r in primary) / len(primary) if primary else None,
         'overall_accuracy': sum(r['score'] for r in results) / len(results),
+        'accuracy_by_design': {d: sum(v) / len(v) for d, v in sorted(by_design.items())},
         'edge_case_correct': all(r['decision_correct'] for r in edge) if edge else None,
-        'thermal_lag_trap_caught': by_design.get('falling_power_thermal_lag'),
+        'thermal_lag_traps_caught': int(sum(traps)),
+        'thermal_lag_traps_total': len(traps),
         'false_pulls': sum(r['error_type'] == 'false_pull' for r in results),
         'missed_pulls': sum(r['error_type'] == 'missed_pull' for r in results),
         'unparsed': sum(r['error_type'] == 'unparsed' for r in results),

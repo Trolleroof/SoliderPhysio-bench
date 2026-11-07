@@ -26,11 +26,14 @@ class TestSuiteShape(unittest.TestCase):
         prompts = sorted(p.stem for p in (TASK_DIR / 'prompts').glob('*.md'))
         self.assertEqual(prompts, sorted(PUBLIC_BY_ID))
 
-    def test_three_primary_tasks_plus_edge_case(self):
+    def test_at_least_ten_primary_tasks_plus_edge_case(self):
         roles = [t['role'] for t in PRIVATE['tasks']]
-        self.assertEqual(roles.count('primary'), 3)
+        self.assertGreaterEqual(roles.count('primary'), 10)
         self.assertEqual(roles.count('edge_case'), 1)
-        self.assertEqual(len(roles), 4)
+
+    def test_primary_tasks_use_distinct_people(self):
+        subjects = [t['subject_id'] for t in PRIVATE['tasks'] if t['role'] == 'primary']
+        self.assertEqual(len(subjects), len(set(subjects)))
 
     def test_prompt_file_matches_json_prompt(self):
         for tid, task in PUBLIC_BY_ID.items():
@@ -138,39 +141,65 @@ class TestRezeroAndRounding(unittest.TestCase):
 
 
 class TestEdgeCaseCoverage(unittest.TestCase):
+    PRIMARY = [t for t in PRIVATE['tasks'] if t['role'] == 'primary']
+
     def _watts(self, tid):
         return [r['watts'] for r in PUBLIC_BY_ID[tid]['rows']]
 
+    def _design(self, name):
+        return [t for t in PRIVATE['tasks'] if t['design'] == name]
+
     def test_designs_present(self):
         designs = {t['design'] for t in PRIVATE['tasks']}
-        self.assertEqual(designs, {'steady_power_safe', 'falling_power_thermal_lag',
-                                   'falling_power_core_fell', 'steady_power_rising'})
+        self.assertEqual(designs, {'steady_power_safe', 'steady_power_rising', 'falling_power_safe',
+                                   'falling_power_thermal_lag', 'falling_power_core_fell'})
 
-    def test_thermal_lag_trap(self):
-        gt = next(t for t in PRIVATE['tasks'] if t['design'] == 'falling_power_thermal_lag')
-        watts = self._watts(gt['task_id'])
-        self.assertLess(watts[-1], max(watts))
-        self.assertTrue(gt['power_dropped_in_window'])
-        self.assertLess(gt['core_at_cutoff_c'], build_tasks.THRESHOLD_C)
-        self.assertGreaterEqual(gt['core_at_cutoff_plus_15_c'], build_tasks.THRESHOLD_C)
-        self.assertGreater(gt['core_change_15_c'], 0.3)
-        self.assertEqual(gt['expected_decision'], 'PULL')
-        self.assertEqual(gt['role'], 'primary')
+    def test_balanced_answers_so_constant_guess_scores_half(self):
+        answers = [t['expected_decision'] for t in self.PRIMARY]
+        self.assertEqual(answers.count('PULL'), answers.count('KEEP'))
 
-    def test_two_steady_power_controls(self):
-        steady = [t for t in PRIVATE['tasks'] if t['design'].startswith('steady_power')]
-        self.assertEqual(len(steady), 2)
+    def test_power_drop_is_not_a_giveaway(self):
+        for answer in ('KEEP', 'PULL'):
+            group = [t for t in self.PRIMARY if t['expected_decision'] == answer]
+            drops = [t['power_dropped_in_window'] for t in group]
+            self.assertTrue(any(drops) and not all(drops), answer)
+
+    def test_thermal_lag_traps(self):
+        traps = self._design('falling_power_thermal_lag')
+        self.assertGreaterEqual(len(traps), 2)
+        for gt in traps:
+            watts = self._watts(gt['task_id'])
+            self.assertLess(watts[-1], max(watts), gt['task_id'])
+            self.assertTrue(gt['power_dropped_in_window'])
+            self.assertLessEqual(gt['core_at_cutoff_c'], build_tasks.THRESHOLD_C)
+            self.assertGreaterEqual(gt['core_at_cutoff_plus_15_c'], build_tasks.THRESHOLD_C)
+            self.assertGreater(gt['core_change_15_c'], 0.3)
+            self.assertEqual(gt['expected_decision'], 'PULL')
+            self.assertEqual(gt['role'], 'primary')
+
+    def test_falling_power_safe_cases(self):
+        cases = self._design('falling_power_safe')
+        self.assertGreaterEqual(len(cases), 2)
+        for gt in cases:
+            self.assertTrue(gt['power_dropped_in_window'], gt['task_id'])
+            self.assertLess(gt['peak_core_next_15_c'], build_tasks.THRESHOLD_C)
+            self.assertEqual(gt['expected_decision'], 'KEEP')
+
+    def test_steady_power_controls(self):
+        steady = [t for t in self.PRIMARY if t['design'].startswith('steady_power')]
+        self.assertGreaterEqual(len(steady), 2)
         for gt in steady:
             self.assertEqual(len(set(self._watts(gt['task_id']))), 1, gt['task_id'])
             self.assertFalse(gt['power_dropped_in_window'])
-            self.assertEqual(gt['role'], 'primary')
-        decisions = {t['design']: t['expected_decision'] for t in steady}
-        self.assertEqual(decisions, {'steady_power_safe': 'KEEP', 'steady_power_rising': 'PULL'})
-        safe = next(t for t in steady if t['design'] == 'steady_power_safe')
-        self.assertLess(safe['peak_core_next_15_c'], build_tasks.THRESHOLD_C)
+        for gt in self._design('steady_power_safe'):
+            self.assertEqual(gt['expected_decision'], 'KEEP')
+            self.assertLess(gt['peak_core_next_15_c'], build_tasks.THRESHOLD_C)
+        for gt in self._design('steady_power_rising'):
+            self.assertEqual(gt['expected_decision'], 'PULL')
+        self.assertTrue(self._design('steady_power_safe') and self._design('steady_power_rising'))
 
     def test_subject_four_core_fell_edge_case(self):
-        gt = next(t for t in PRIVATE['tasks'] if t['design'] == 'falling_power_core_fell')
+        (gt,) = self._design('falling_power_core_fell')
         self.assertEqual(gt['subject_id'], 4)
         self.assertEqual(gt['person_code'], 'H04')
         self.assertTrue(42 <= gt['cutoff_min'] <= 45)
@@ -180,14 +209,18 @@ class TestEdgeCaseCoverage(unittest.TestCase):
         self.assertEqual(gt['expected_decision'], 'KEEP')
         self.assertEqual(gt['role'], 'edge_case')
 
+    def test_scored_labels_are_clear_and_glitch_free(self):
+        for gt in self.PRIMARY:
+            self.assertGreaterEqual(gt['label_margin_c'], build_tasks.MIN_MARGIN_C, gt['task_id'])
+            self.assertLessEqual(gt['max_core_step_c'], build_tasks.MAX_STEP_C, gt['task_id'])
+            self.assertAlmostEqual(gt['label_margin_c'],
+                                   abs(gt['core_at_cutoff_plus_15_c'] - build_tasks.THRESHOLD_C), 2)
+
     def test_expected_decisions_follow_threshold_rule(self):
         for gt in PRIVATE['tasks']:
             want = 'PULL' if gt['core_at_cutoff_plus_15_c'] >= build_tasks.THRESHOLD_C else 'KEEP'
             self.assertEqual(gt['expected_decision'], want, gt['task_id'])
             self.assertEqual(gt['scorer'], 'tasks.keep_going.evaluator.grade')
-
-    def test_both_decisions_represented(self):
-        self.assertEqual({t['expected_decision'] for t in PRIVATE['tasks']}, {'KEEP', 'PULL'})
 
 
 class TestBuilderDeterminism(unittest.TestCase):
@@ -278,29 +311,33 @@ class TestGrading(unittest.TestCase):
         self.assertEqual(s['primary_accuracy'], 1.0)
         self.assertEqual(s['overall_accuracy'], 1.0)
         self.assertTrue(s['edge_case_correct'])
-        self.assertTrue(s['thermal_lag_trap_caught'])
+        self.assertEqual(s['thermal_lag_traps_caught'], s['thermal_lag_traps_total'])
+        self.assertTrue(all(v == 1.0 for v in s['accuracy_by_design'].values()))
         self.assertEqual(s['core_mae_c'], 0.0)
         self.assertEqual((s['false_pulls'], s['missed_pulls'], s['unparsed']), (0, 0, 0))
 
-    def test_score_all_always_keep_misses_trap(self):
-        s = evaluator.score_all({t['task_id']: 'KEEP' for t in PRIVATE['tasks']})
-        self.assertFalse(s['thermal_lag_trap_caught'])
-        self.assertTrue(s['edge_case_correct'])
-        self.assertAlmostEqual(s['primary_accuracy'], 1 / 3)
-        self.assertEqual(s['missed_pulls'], 2)
-        self.assertIsNone(s['core_mae_c'])
+    def test_constant_guesses_score_half(self):
+        keep = evaluator.score_all({t['task_id']: 'KEEP' for t in PRIVATE['tasks']})
+        pull = evaluator.score_all({t['task_id']: 'PULL' for t in PRIVATE['tasks']})
+        self.assertEqual(keep['primary_accuracy'], 0.5)
+        self.assertEqual(pull['primary_accuracy'], 0.5)
+        self.assertEqual(keep['thermal_lag_traps_caught'], 0)
+        self.assertTrue(keep['edge_case_correct'])
+        self.assertFalse(pull['edge_case_correct'])
+        self.assertIsNone(keep['core_mae_c'])
 
-    def test_score_all_always_pull_fails_edge_case(self):
-        s = evaluator.score_all({t['task_id']: 'PULL' for t in PRIVATE['tasks']})
-        self.assertTrue(s['thermal_lag_trap_caught'])
-        self.assertFalse(s['edge_case_correct'])
-        self.assertAlmostEqual(s['primary_accuracy'], 2 / 3)
-        self.assertEqual(s['false_pulls'], 2)
+    def test_power_drop_heuristic_scores_half(self):
+        """'Power dropped means he is cooling, keep him' should not beat a coin flip."""
+        responses = {t['task_id']: 'KEEP' if t['power_dropped_in_window'] else 'PULL'
+                     for t in PRIVATE['tasks']}
+        s = evaluator.score_all(responses)
+        self.assertEqual(s['primary_accuracy'], 0.5)
+        self.assertEqual(s['thermal_lag_traps_caught'], 0)
 
     def test_score_all_accepts_list_and_missing(self):
         s = evaluator.score_all([{'task_id': 'KG-01', 'response': 'KEEP'}])
-        self.assertEqual(s['n_tasks'], 4)
-        self.assertEqual(s['unparsed'], 3)
+        self.assertEqual(s['n_tasks'], len(PRIVATE['tasks']))
+        self.assertEqual(s['unparsed'], len(PRIVATE['tasks']) - 1)
 
     def test_cli_writes_summary(self):
         with tempfile.TemporaryDirectory() as tmp:
