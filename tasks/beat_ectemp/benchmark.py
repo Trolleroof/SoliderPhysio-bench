@@ -101,16 +101,26 @@ def valid(output):
         return False
 
 
-def metrics(outputs, targets, mask):
+def person_balanced_mae(errors, people):
+    """MAE per person, then the unweighted mean over people."""
+    by = {}
+    for e, p in zip(errors, people):
+        by.setdefault(p, []).append(e)
+    return sum(sum(v)/len(v) for v in by.values())/len(by) if by else None
+
+
+def metrics(outputs, targets, mask, people=None):
     if len(outputs) != len(targets) or not all(valid(o) for o in outputs):
-        return {'score': 0, 'valid': False, 'mae': None, 'primary_mae': None}
+        return {'score': 0, 'valid': False, 'mae': None, 'primary_mae': None, 'person_balanced_mae': None}
     errors = [abs(o['mean']-y) for o,y in zip(outputs,targets)]
     selected = [e for e,m in zip(errors,mask) if m]
     primary = sum(selected)/len(selected) if selected else None
+    balanced = None if people is None else person_balanced_mae(
+        [e for e,m in zip(errors,mask) if m], [p for p,m in zip(people,mask) if m])
     coverage = sum(o['lower'] <= y <= o['upper'] for o,y in zip(outputs,targets))/len(targets) if targets else None
     interval = [o['upper']-o['lower'] + 20*max(o['lower']-y,0) + 20*max(y-o['upper'],0) for o,y in zip(outputs,targets)]
     return {'valid': True, 'score': 1/(1+primary) if primary is not None else 0, 'mae': sum(errors)/len(errors) if errors else None,
-            'primary_mae': primary, 'primary_count': len(selected), 'coverage_90': coverage,
+            'primary_mae': primary, 'person_balanced_mae': balanced, 'primary_count': len(selected), 'coverage_90': coverage,
             'interval_score_90': sum(interval)/len(interval) if interval else None}
 
 
@@ -160,16 +170,16 @@ def evaluate(public, private, task, hidden=False, runner=run_submission):
     with log.open('a') as f:
         f.write(json.dumps({'time':time.time(),'hidden':hidden,'task':task,'public_call_count':call_count})+'\n')
     people = json.loads((private/'labels.json').read_text())
-    batch=[]; targets=[]; mask=[]
+    batch=[]; targets=[]; mask=[]; owners=[]
     for p in TEST if hidden else DEV:
         offset = random.SystemRandom().randint(-100000,100000) if hidden else 0
         for r,y,after_drop in requests(people[p],task,offset):
-            batch.append(r); targets.append(y); mask.append(y >= 38.5 and after_drop if hidden else True)
+            batch.append(r); targets.append(y); owners.append(p); mask.append(y >= 38.5 and after_drop if hidden else True)
     try:
         outputs = runner(public,batch,private) if runner is run_submission else runner(public,batch)
-        result = metrics(outputs,targets,mask)
+        result = metrics(outputs,targets,mask,owners)
     except (ValueError, TypeError, subprocess.TimeoutExpired):
-        result = metrics([],targets,mask)
+        result = metrics([],targets,mask,owners)
     result['public_call_count'] = call_count
     report = private/('public_'+task+'.json')
     if hidden:
