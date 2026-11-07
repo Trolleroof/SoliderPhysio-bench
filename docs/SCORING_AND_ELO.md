@@ -70,8 +70,9 @@ before requesting model responses. These steps are not yet completed.
 
 ## Calibration evidence (2026-11-07)
 
-Frozen values live in `tasks/scoring_params.json`. B is filled in. E_c is
-`null` until the user approves a value, so keep_going cases stay not scorable.
+Frozen values live in `tasks/scoring_params.json` (version `v1-2026-11-07`):
+E_c = 0.30 °C and the B values below. All three were approved by the project
+owner on PR #3.
 
 ### ECTemp baseline B
 
@@ -90,7 +91,7 @@ Frozen values live in `tasks/scoring_params.json`. B is filled in. E_c is
 - **Caveat: one person.** The hidden gate (true core ≥38.5 °C after the first
   watts drop) admits only H13 among the five test people. "Person-balanced" B
   is one person's MAE, so the Beat ECTemp predictor score also depends on one
-  person. This needs a decision before freezing.
+  person. Accepted as-is on PR #3; report it as a limitation.
 - B is large because the baseline starts at 37 °C and lags. A predictor needs
   MAE below about 0.93 °C to get any predictor credit. Half credit needs about
   0.47 °C.
@@ -156,7 +157,7 @@ development windows are.
    It also gives zero credit to errors typical of the best oracle reference
    (p90 0.26).
 
-**Recommended range: E_c = 0.25 to 0.35 °C (point suggestion 0.30).**
+**Recommended range: E_c = 0.25 to 0.35 °C. Frozen at 0.30 °C (approved on PR #3).**
 - At 0.30, an error equal to the median for informed baselines (about
   0.15 °C) earns half credit. An error at their p90 (about 0.3 to 0.37 °C)
   earns zero.
@@ -166,5 +167,5 @@ development windows are.
 
 An alternative is a skill-relative mapping that gives zero credit at the
 constant-baseline error. It would remove the free credit, but it changes the
-documented formula, so it is not proposed here. The user must approve E_c
-before any official run.
+documented formula. It was rejected on PR #3; the formula stays
+max(0, 1 − err/E).

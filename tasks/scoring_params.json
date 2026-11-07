@@ -1,12 +1,12 @@
 {
-  "version": "draft-2026-11-07",
-  "E_c": null,
+  "version": "v1-2026-11-07",
+  "E_c": 0.3,
   "ectemp_B": {
     "3A": 0.9324716025455134,
     "3B": 0.9404389690886925
   },
   "provenance": {
-    "E_c": "Not frozen. Awaiting user approval; evidence in docs/SCORING_AND_ELO.md#calibration-evidence-2026-11-07 and docs/forecast_e_calibration.json (tasks/calibrate_forecast_e.py).",
-    "ectemp_B": "tasks/beat_ectemp/ectemp_baseline.py (via template.py as submission.py) scored with benchmark.evaluate(hidden=True) on the frozen test split, person_balanced_mae. Workbook MD5 01214bfc835215fe1a5d3f5da1e9ad52. Two hidden runs per task with independent random time offsets gave identical values; the baseline never reads time_min. Only one test person (H13) passes the hidden gate, so B is that person's MAE (3A: 21 requests, 3B: 36)."
+    "E_c": "Approved on PR #3 from the recommended 0.25-0.35 C range; evidence in docs/SCORING_AND_ELO.md (Calibration evidence 2026-11-07) and docs/forecast_e_calibration.json (tasks/calibrate_forecast_e.py).",
+    "ectemp_B": "tasks/beat_ectemp/ectemp_baseline.py (via template.py as submission.py) scored with benchmark.evaluate(hidden=True) on the frozen test split, person_balanced_mae. Workbook MD5 01214bfc835215fe1a5d3f5da1e9ad52. Two hidden runs per task with independent random time offsets gave identical values; the baseline never reads time_min. Only one test person (H13) passes the hidden gate, so B is that person's MAE (3A: 21 requests, 3B: 36). Single-person gate accepted as a reported limitation on PR #3."
   }
 }

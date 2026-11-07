@@ -132,5 +132,18 @@ class Ratings(unittest.TestCase):
         self.assertIsNone(r['ratings'])
 
 
+class FrozenParams(unittest.TestCase):
+    def test_frozen_params_are_valid_and_scorable(self):
+        from pathlib import Path
+        params = json.loads((Path(cs.__file__).parent / 'scoring_params.json').read_text())
+        self.assertEqual(params['E_c'], 0.30)
+        self.assertEqual(set(params['ectemp_B']), {'3A', '3B'})
+        for B in params['ectemp_B'].values():
+            self.assertTrue(math.isfinite(B) and B > 0)
+        comp, _ = cs.components('keep_going', 'KG-01', {'core_abs_error_c': 0.15},
+                                {'decision': 5, 'reasoning': 5}, params)
+        self.assertAlmostEqual(comp['forecast'], 0.5)
+
+
 if __name__ == '__main__':
     unittest.main()
