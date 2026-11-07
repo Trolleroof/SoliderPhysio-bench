@@ -37,8 +37,9 @@ to weigh current observations and predicted outcomes.
   Assess the decision using what was knowable at minute 30, rather than
   penalizing a defensible decision based on the later outcome.
 - Preserve and display individual scores for granularity, and produce a combined
-  score for the final Elo. The combination, weights and Elo procedure remain to
-  be specified and frozen before comparisons.
+  score for the final Elo. Forecast counts 30%, decision 40%, and reasoning 30%.
+  Normalization and the Elo procedure remain to be specified and frozen before
+  comparisons.
 - Record a viewable, ordered trajectory, including tool calls, arguments,
   results and errors, the final answer, and any intermediate reasoning or
   reasoning summaries the provider exposes. Mark withheld or unavailable
@@ -66,7 +67,8 @@ to weigh current observations and predicted outcomes.
 Score the work/rest table lookup deterministically. An independent LLM judge
 scores the individual override decision and its reasoning separately on a 0–5
 scale, with supporting evidence. Preserve the individual results alongside the
-combined score used for final Elo. The existing specification and readiness
+combined score used for final Elo. Table lookup counts 30%, override decision
+40%, and reasoning 30%. The existing specification and readiness
 blockers still apply; the table, rubric and combination remain to be defined.
 
 ## Beat ECTemp
@@ -75,7 +77,8 @@ Compare prediction performance with ECTemp deterministically on held-out
 measured data. An independent LLM judge separately scores the final research
 explanation. Record tool calls and available reasoning for inspection, without
 grading the trajectory. Preserve individual results and use a combined score
-for final Elo. The existing specification and readiness blockers still apply.
+for final Elo. Measured predictor performance counts 60% and research
+explanation 40%. The existing specification and readiness blockers still apply.
 
 The draft [judge rubrics](LLM_JUDGE_RUBRICS.md) cover all three tasks; they
 require calibration and freezing before official comparisons.
