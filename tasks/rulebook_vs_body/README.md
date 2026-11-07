@@ -30,7 +30,7 @@ that always overrides, or always follows, scores 1 of 2 on the body half.
 |---|---|---|
 | `tb_med_507.json` | reference | Both TB MED 507 tables, Heat Categories 1 to 5 (White, Green, Yellow, Red, Black) by work category, with source and notes. |
 | `build_task.py` | builder | Reads the Figshare workbook through the Task Type 1 builder and writes the files below. Deterministic. |
-| `task.json` | public | Per task: scenario inputs, subject age and mass, the 25 rounded re-zeroed rows, full prompt text, answer format. |
+| `task.json` | public | Per task: scenario inputs, subject age and mass, the 25 rounded rows in real ride minutes, full prompt text, answer format. |
 | `prompts/RB-0x.md` | public | The same prompts as rendered markdown, one file per task. |
 | `private_ground_truth.json` | private | Per task: role, original subject number, protocol cutoff minute, measured rectal at cutoff and cutoff+15, expected decision, expected rulebook cells, vendor-sensor estimate for failure analysis. |
 | `evaluator.py` | private | Table lookup, answer parsing, grading, prompt rendering, CLI. |
@@ -89,7 +89,7 @@ single cell.
 CC BY 4.0. 24 people cycled about 60 minutes in a 35 to 37 C chamber with a rectal probe
 sampled every minute. The trace is produced by `tasks.keep_going.build_tasks.make_window`,
 so the de-identified format is identical to Task Type 1: 25 rows ending at the cutoff,
-timestamps re-zeroed to 0..24, heart rate / watts / humidity / age / mass rounded to
+real ride minutes (cutoff-24 to cutoff, as a medic on site knows elapsed time), heart rate / watts / humidity / age / mass rounded to
 integers, skin and room temperature to one decimal, room conditions carried forward only
 after they were observed, heart rate blank outside the logged blocks. No core temperature
 of any kind, no subject number, no sex, no height, no VO2peak.
@@ -98,8 +98,7 @@ The flag and work category are scenario inputs for the rulebook half. They are n
 from the chamber: 35 C at about 20 percent humidity is below Heat Category 1 on the WBGT
 scale, and no cell of the card applies to it. Moderate work at Yellow flag was chosen
 because it is a no-limit cell in both tables, so the prescription does not depend on how
-long the soldier has already been working and the protocol clock can stay hidden, as in
-Task Type 1.
+long the soldier has already been working.
 
 The work category is a given input, not a measurement of these riders. RB-01 holds about
 3.3 W/kg, which an expert would call heavy work. Recognizing that the card was read in the
@@ -113,8 +112,13 @@ half still grades the cell the leader's card names, because the question asks fo
 | RB-01 | trap | 195 W flat, 3.3 W/kg | 149 to 159 bpm | 38.40 to 38.92 C | OVERRIDE |
 | RB-02 | control | 122 W flat, 1.6 W/kg | 169 to 180 bpm | 38.22 to 38.36 C | FOLLOW |
 
-Neither person is used by Task Type 1 (which uses subjects 3, 4, 21 and 23). Public ids
-carry no hint of the design, and both prompts are identical above the soldier line.
+Task Type 1 also uses both people, at an earlier cutoff (minute 25 for each). Prediction
+targets never coincide: Task Type 1 asks about minute 40 for both, this task asks about
+minutes 59 and 45. RB-02's window shares 20 rows with Task Type 1's subject 12 window, and
+RB-01's shares 6 rows with its subject 25 window. These are the only people in the workbook
+that fit each design, so the overlap is kept and disclosed; a test asserts the targets
+differ. Public ids carry no hint of the design, and both prompts are identical above the
+soldier line except for the ride minutes.
 
 **RB-01** is a 59 kg rider holding 195 W in a 35 to 36 C room. Heart rate drifts only from
 the high 140s to the high 150s and power never changes, so nothing in the wearable looks
@@ -172,16 +176,16 @@ has it is not cheating.
 
 **Why the body half is hard to look up.**
 
-1. Timestamps are re-zeroed. The prompt shows minutes 0 to 24; the protocol minute of the
-   cutoffs (44 and 30) appear nowhere public.
+1. Elapsed ride time is shown, as a medic would know it. A model that has memorised the
+   sheet could use it to find the row; the rounding below still blocks exact cell matching.
 2. Values are rounded. Skin temperature is stored to two decimals in the sheet and shown to
    one, so cell-value matching fails for most rows.
 3. No subject number, person code, sex, height, VO2peak or sheet reference appears in
    `task.json` or `prompts/`. Those live only in `private_ground_truth.json`.
 4. No core temperature of any kind (rectal or vendor estimate) appears in public files, and
    the prompt says core is not measured.
-5. The tests assert all of the above on the built files and that the subject is not one
-   used by Task Type 1.
+5. The tests assert all of the above on the built files, and that no prediction target
+   coincides with a Task Type 1 target.
 
 **Residual risk.** Heart rate and watts are unrounded integers in the sheet, so a logged
 heart-rate block plus the watt level (195 W, 122 W) is a near-unique fingerprint for a model that has

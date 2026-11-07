@@ -2,6 +2,7 @@
 import contextlib
 import io
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -18,7 +19,6 @@ TRUTH = evaluator.load_ground_truth(TASK_DIR / "private_ground_truth.json")
 PUBLIC_TEXT = (TASK_DIR / "task.json").read_text() + "".join(
     p.read_text() for p in sorted((TASK_DIR / "prompts").glob("*.md")))
 SOURCE = build_task.DEFAULT_SOURCE
-TASK_TYPE_1_SUBJECTS = {3, 4, 21, 23}
 
 RULEBOOK = {"work_rest_min": "NL", "water_qt_per_hr": 0.75,
             "continuous_work_min": "NL", "continuous_water_qt_per_hr": 1.0}
@@ -122,10 +122,16 @@ class TestSuiteShape(unittest.TestCase):
         hr = {tid: max(r["hr_bpm"] for r in t["rows"] if r["hr_bpm"] is not None) for tid, t in TASKS.items()}
         self.assertGreater(hr["RB-02"], hr["RB-01"] + 15)
 
-    def test_no_reuse_of_task_type_1_people(self):
+    def test_two_different_people(self):
         subjects = {t["subject_id"] for t in TRUTH.values()}
         self.assertEqual(len(subjects), len(TRUTH))
-        self.assertFalse(subjects & TASK_TYPE_1_SUBJECTS)
+
+    def test_labels_differ_from_task_type_1_on_same_person(self):
+        # Task Type 1 reuses these people at other cutoffs; no prediction target may coincide.
+        from tasks.keep_going import build_tasks as kg
+        kg_targets = {(c["subject"], c["cutoff"] + kg.HORIZON_MIN) for c in kg.CASES}
+        for truth in TRUTH.values():
+            self.assertNotIn((truth["subject_id"], truth["cutoff_min"] + truth["horizon_min"]), kg_targets)
 
 
 class TestPublicFiles(unittest.TestCase):
@@ -140,7 +146,10 @@ class TestPublicFiles(unittest.TestCase):
         for task in TASKS.values():
             rows = task["rows"]
             self.assertEqual(len(rows), build_task.WINDOW_MIN)
-            self.assertEqual([r["time_min"] for r in rows], list(range(build_task.WINDOW_MIN)))
+            # Real ride minutes, as in Task Type 1: the window ends at the cutoff minute.
+            cutoff = TRUTH[task["task_id"]]["cutoff_min"]
+            self.assertEqual([r["time_min"] for r in rows],
+                             list(range(cutoff - build_task.WINDOW_MIN + 1, cutoff + 1)))
             for r in rows:
                 self.assertEqual(tuple(r), evaluator.PUBLIC_ROW_KEYS)
                 self.assertIsInstance(r["watts"], int)
@@ -160,7 +169,7 @@ class TestPublicFiles(unittest.TestCase):
             p = task["prompt"]
             for needle in ("Yellow", "Heat Category 3", "Moderate", "TB MED 507", "12 April 2022",
                            "Table 1", "Table 2", "FOLLOW", "OVERRIDE", "38.5 C", "15 minutes",
-                           "Core temperature is NOT measured", evaluator.render_table(task["rows"])):
+                           "Core temperature is NOT measured", "ride minute", evaluator.render_table(task["rows"])):
                 self.assertIn(needle, p)
             self.assertNotIn("Reference, TB MED 507", p, "default prompt is closed-book")
 
@@ -183,8 +192,10 @@ class TestPublicFiles(unittest.TestCase):
 
     def test_public_ids_carry_no_design_hint(self):
         self.assertEqual(sorted(TASKS), ["RB-01", "RB-02"])
-        prompts = [t["prompt"] for t in TASKS.values()]
-        self.assertEqual(prompts[0].split("Soldier:")[0], prompts[1].split("Soldier:")[0])
+        # Only the ride-minute numbers may differ above the soldier line.
+        heads = [re.sub(r"\d+ minutes|ride minute \d+", "N", t["prompt"].split("Soldier:")[0])
+                 for t in TASKS.values()]
+        self.assertEqual(heads[0], heads[1])
 
 
 class TestPrivateFile(unittest.TestCase):

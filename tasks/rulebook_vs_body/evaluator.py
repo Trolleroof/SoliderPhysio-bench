@@ -404,7 +404,7 @@ ANSWER_FORMAT = {
         "continuous_water_qt_per_hr": "Table 2 water intake, quarts per hour, one number",
     },
     "decision": "FOLLOW or OVERRIDE",
-    "predicted_core_c": "your best estimate of his rectal core temperature (C) 15 minutes from now, one number",
+    "predicted_core_c": "your best estimate of the soldier's rectal core temperature (C) 15 minutes from now, one number",
     "confidence": "probability (0 to 1) that OVERRIDE is the correct call",
     "reasoning": "two to five sentences",
 }
@@ -415,7 +415,7 @@ def _fmt(v: Any) -> str:
 
 
 def render_table(rows: list[dict[str, Any]]) -> str:
-    head = "| min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |"
+    head = "| ride min | HR (bpm) | skin (C) | room (C) | RH (%) | watts |"
     sep = "|---:|---:|---:|---:|---:|---:|"
     body = ["| " + " | ".join(_fmt(r[k]) for k in PUBLIC_ROW_KEYS) + " |" for r in rows]
     return "\n".join([head, sep] + body)
@@ -462,7 +462,7 @@ def render_prompt(task: dict[str, Any], table: dict[str, Any] | None = None, inc
         reference = "\nReference, TB MED 507 (12 April 2022):\n\n" + render_reference_table(table or load_json(TABLE_PATH)) + "\n"
     return f"""You are the medic advising a small-unit leader during a hot-weather training session. The session runs under the unit's {inputs['heat_category']} flag (Heat Category {inputs['heat_category_number']}) and the leader's risk card classifies the activity as {inputs['work_category']} work. Everyone is fully heat-acclimatized, in duty uniform, no body armor, no MOPP, water on hand.
 
-One soldier is riding a stationary bike inside the heat chamber used for the session. He has been riding for a while already. The table below is the last {len(rows)} minutes of his wearable and chamber log, ending now (minute {last}). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.
+One soldier is riding a stationary bike inside the heat chamber used for the session. The soldier has been riding for {last} minutes. The table below is the last {len(rows)} minutes of the soldier's wearable and chamber log, ending now (ride minute {last}). Core temperature is NOT measured. Blank cells mean that value was not logged that minute.
 
 Soldier: age {demo['age_years']} years, body mass {demo['mass_kg']} kg.
 
@@ -472,7 +472,7 @@ Two questions.
 
 (a) Rulebook. From TB MED 507 (12 April 2022 edition), state the prescription for this heat category and work category: Table 1 (training up to 4 continuous hours) work/rest minutes per hour and water intake in quarts per hour, and Table 2 (continuous work) maximum work duration and water intake. Write NL where the table sets no limit.
 
-(b) Body. Decide whether to FOLLOW the Table 1 prescription for this soldier over the next {horizon} minutes (he keeps riding at his current workload with the prescribed water) or OVERRIDE it (pull him off the bike now, rest, cool and monitor, whatever the table allows). Rule: OVERRIDE is correct if his rectal core temperature {horizon} minutes from now would be at or above {threshold:.1f} C if he keeps going; otherwise FOLLOW is correct. Also estimate that core temperature.
+(b) Body. Decide whether to FOLLOW the Table 1 prescription for this soldier over the next {horizon} minutes (the soldier keeps riding at the current workload with the prescribed water) or OVERRIDE it (pull the soldier off the bike now, rest, cool and monitor, whatever the table allows). Rule: OVERRIDE is correct if the soldier's rectal core temperature {horizon} minutes from now would be at or above {threshold:.1f} C with no intervention; otherwise FOLLOW is correct. Also estimate that core temperature.
 
 Do not run code. Reason from the trace and from physiology.
 
