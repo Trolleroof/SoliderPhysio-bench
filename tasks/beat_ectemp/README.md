@@ -2,7 +2,7 @@
 
 Two causal code tasks, with one `submission.py` exposing `predict(request)`:
 
-- **3A:** At each observed watts decrease, forecast rectal core temperature 15 minutes later and a 90% prediction interval. Only transitions with an observed target 15 minutes later are scored.
+- **3A:** At every minute from the first observed watts decrease onward, forecast rectal core temperature 15 minutes later and a 90% prediction interval. Only origins with an observed target 15 minutes later are scored.
 - **3B:** Estimate current core temperature and a 90% interval online, from the available history. Each call receives a prefix, never future measurements.
 
 Return `{"mean": 38.0, "lower": 37.5, "upper": 38.5}`. Requests contain `task`, `horizon_min`, and `history`. History fields: `time_min`, `hr`, `skin_temp`, `watts`, `ambient_temp`, `humidity`, `age`, `mass`, `height`. Units are minutes, bpm, Celsius, watts, Celsius, percent, years, kg, cm. Missing inputs are null. Predict must be stateless across calls; use the supplied history.

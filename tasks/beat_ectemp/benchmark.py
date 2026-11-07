@@ -63,7 +63,7 @@ def requests(rows, task, offset=0):
     for i, row in enumerate(rows):
         drop = i > 0 and row['watts'] is not None and rows[i-1]['watts'] is not None and row['watts'] < rows[i-1]['watts']
         dropped |= drop
-        if task == '3A' and not drop:
+        if task == '3A' and not dropped:  # every origin from the first drop onward
             continue
         j = i + 15 if task == '3A' else i
         if j >= len(rows) or rows[j]['core_temp'] is None:

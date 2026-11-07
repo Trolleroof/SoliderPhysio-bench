@@ -53,8 +53,9 @@ class BeatECTempTests(unittest.TestCase):
 
     def test_causal_forecast_and_online(self):
         a=list(b.requests(rows(),'3A')); c=list(b.requests(rows(),'3B'))
-        self.assertEqual(len(a),1); self.assertEqual(len(a[0][0]['history']),11)
-        self.assertEqual(a[0][1],rows()[25]['core_temp'])
+        # 3A: every origin from the first drop (minute 11) whose +15 target exists.
+        self.assertEqual([len(x[0]['history']) for x in a],list(range(11,26)))
+        self.assertEqual([x[1] for x in a],[r['core_temp'] for r in rows()[25:40]])
         self.assertEqual(len(c),40)
         self.assertEqual([len(x[0]['history']) for x in c],list(range(1,41)))
 
