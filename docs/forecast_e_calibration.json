@@ -1,0 +1,509 @@
+{
+  "definition": {
+    "development_people": [
+      "H02",
+      "H05",
+      "H07",
+      "H08",
+      "H09",
+      "H10",
+      "H15",
+      "H16",
+      "H19",
+      "H20",
+      "H24"
+    ],
+    "excluded_keep_going_subjects": [
+      1,
+      3,
+      4,
+      6,
+      12,
+      13,
+      14,
+      17,
+      18,
+      21,
+      22,
+      23,
+      25
+    ],
+    "cutoffs_min": [
+      25,
+      45
+    ],
+    "horizon_min": 15,
+    "window_screen": "core observed at t and t+15; no one-minute core step > 0.3 C in horizon",
+    "falling_power": "last watts in the 25-row window below its max",
+    "credit": "max(0, 1 - abs_error / E), averaged per person then across people",
+    "population_statistics": "leave-one-person-out over development people only"
+  },
+  "all_windows": {
+    "constant_population_mean": {
+      "n_windows": 175,
+      "n_people": 11,
+      "mae": 0.169,
+      "person_balanced_mae": 0.177,
+      "abs_error_pct": {
+        "p25": 0.047,
+        "p50": 0.128,
+        "p75": 0.267,
+        "p90": 0.325
+      },
+      "abs_error_max": 0.734,
+      "mean_credit_by_E": {
+        "0.2": 0.404,
+        "0.25": 0.458,
+        "0.3": 0.512,
+        "0.4": 0.605,
+        "0.5": 0.666,
+        "0.6": 0.711,
+        "0.75": 0.764,
+        "1.0": 0.823
+      }
+    },
+    "elapsed_time_only": {
+      "n_windows": 175,
+      "n_people": 11,
+      "mae": 0.188,
+      "person_balanced_mae": 0.194,
+      "abs_error_pct": {
+        "p25": 0.067,
+        "p50": 0.144,
+        "p75": 0.269,
+        "p90": 0.366
+      },
+      "abs_error_max": 0.918,
+      "mean_credit_by_E": {
+        "0.2": 0.381,
+        "0.25": 0.44,
+        "0.3": 0.493,
+        "0.4": 0.584,
+        "0.5": 0.647,
+        "0.6": 0.69,
+        "0.75": 0.744,
+        "1.0": 0.806
+      }
+    },
+    "ectemp_style": {
+      "n_windows": 175,
+      "n_people": 11,
+      "mae": 0.602,
+      "person_balanced_mae": 0.639,
+      "abs_error_pct": {
+        "p25": 0.479,
+        "p50": 0.574,
+        "p75": 0.721,
+        "p90": 0.931
+      },
+      "abs_error_max": 1.174,
+      "mean_credit_by_E": {
+        "0.2": 0.001,
+        "0.25": 0.004,
+        "0.3": 0.01,
+        "0.4": 0.038,
+        "0.5": 0.066,
+        "0.6": 0.112,
+        "0.75": 0.206,
+        "1.0": 0.367
+      }
+    },
+    "oracle_persistence": {
+      "n_windows": 175,
+      "n_people": 11,
+      "mae": 0.193,
+      "person_balanced_mae": 0.226,
+      "abs_error_pct": {
+        "p25": 0.1,
+        "p50": 0.16,
+        "p75": 0.28,
+        "p90": 0.372
+      },
+      "abs_error_max": 0.54,
+      "mean_credit_by_E": {
+        "0.2": 0.227,
+        "0.25": 0.294,
+        "0.3": 0.352,
+        "0.4": 0.468,
+        "0.5": 0.553,
+        "0.6": 0.623,
+        "0.75": 0.698,
+        "1.0": 0.774
+      }
+    },
+    "oracle_persistence_plus_elapsed_rise": {
+      "n_windows": 175,
+      "n_people": 11,
+      "mae": 0.134,
+      "person_balanced_mae": 0.148,
+      "abs_error_pct": {
+        "p25": 0.042,
+        "p50": 0.116,
+        "p75": 0.178,
+        "p90": 0.263
+      },
+      "abs_error_max": 0.572,
+      "mean_credit_by_E": {
+        "0.2": 0.404,
+        "0.25": 0.479,
+        "0.3": 0.548,
+        "0.4": 0.643,
+        "0.5": 0.706,
+        "0.6": 0.753,
+        "0.75": 0.802,
+        "1.0": 0.852
+      }
+    }
+  },
+  "falling_power_windows": {
+    "constant_population_mean": {
+      "n_windows": 66,
+      "n_people": 5,
+      "mae": 0.199,
+      "person_balanced_mae": 0.162,
+      "abs_error_pct": {
+        "p25": 0.073,
+        "p50": 0.247,
+        "p75": 0.284,
+        "p90": 0.304
+      },
+      "abs_error_max": 0.344,
+      "mean_credit_by_E": {
+        "0.2": 0.344,
+        "0.25": 0.4,
+        "0.3": 0.466,
+        "0.4": 0.595,
+        "0.5": 0.676,
+        "0.6": 0.73,
+        "0.75": 0.784,
+        "1.0": 0.838
+      }
+    },
+    "elapsed_time_only": {
+      "n_windows": 66,
+      "n_people": 5,
+      "mae": 0.208,
+      "person_balanced_mae": 0.172,
+      "abs_error_pct": {
+        "p25": 0.102,
+        "p50": 0.229,
+        "p75": 0.282,
+        "p90": 0.324
+      },
+      "abs_error_max": 0.676,
+      "mean_credit_by_E": {
+        "0.2": 0.312,
+        "0.25": 0.382,
+        "0.3": 0.452,
+        "0.4": 0.578,
+        "0.5": 0.66,
+        "0.6": 0.715,
+        "0.75": 0.771,
+        "1.0": 0.828
+      }
+    },
+    "ectemp_style": {
+      "n_windows": 66,
+      "n_people": 5,
+      "mae": 0.495,
+      "person_balanced_mae": 0.546,
+      "abs_error_pct": {
+        "p25": 0.33,
+        "p50": 0.548,
+        "p75": 0.586,
+        "p90": 0.7
+      },
+      "abs_error_max": 0.769,
+      "mean_credit_by_E": {
+        "0.2": 0.0,
+        "0.25": 0.005,
+        "0.3": 0.016,
+        "0.4": 0.057,
+        "0.5": 0.09,
+        "0.6": 0.144,
+        "0.75": 0.273,
+        "1.0": 0.454
+      }
+    },
+    "oracle_persistence": {
+      "n_windows": 66,
+      "n_people": 5,
+      "mae": 0.148,
+      "person_balanced_mae": 0.157,
+      "abs_error_pct": {
+        "p25": 0.08,
+        "p50": 0.1,
+        "p75": 0.2,
+        "p90": 0.3
+      },
+      "abs_error_max": 0.4,
+      "mean_credit_by_E": {
+        "0.2": 0.354,
+        "0.25": 0.43,
+        "0.3": 0.489,
+        "0.4": 0.608,
+        "0.5": 0.686,
+        "0.6": 0.739,
+        "0.75": 0.791,
+        "1.0": 0.843
+      }
+    },
+    "oracle_persistence_plus_elapsed_rise": {
+      "n_windows": 66,
+      "n_people": 5,
+      "mae": 0.132,
+      "person_balanced_mae": 0.133,
+      "abs_error_pct": {
+        "p25": 0.04,
+        "p50": 0.126,
+        "p75": 0.191,
+        "p90": 0.254
+      },
+      "abs_error_max": 0.492,
+      "mean_credit_by_E": {
+        "0.2": 0.432,
+        "0.25": 0.499,
+        "0.3": 0.571,
+        "0.4": 0.671,
+        "0.5": 0.733,
+        "0.6": 0.778,
+        "0.75": 0.822,
+        "1.0": 0.867
+      }
+    }
+  },
+  "target_at_or_above_38.5": {
+    "constant_population_mean": {
+      "n_windows": 139,
+      "n_people": 11,
+      "mae": 0.14,
+      "person_balanced_mae": 0.161,
+      "abs_error_pct": {
+        "p25": 0.034,
+        "p50": 0.073,
+        "p75": 0.189,
+        "p90": 0.304
+      },
+      "abs_error_max": 0.734,
+      "mean_credit_by_E": {
+        "0.2": 0.424,
+        "0.25": 0.5,
+        "0.3": 0.559,
+        "0.4": 0.644,
+        "0.5": 0.698,
+        "0.6": 0.737,
+        "0.75": 0.785,
+        "1.0": 0.839
+      }
+    },
+    "elapsed_time_only": {
+      "n_windows": 139,
+      "n_people": 11,
+      "mae": 0.162,
+      "person_balanced_mae": 0.181,
+      "abs_error_pct": {
+        "p25": 0.057,
+        "p50": 0.1,
+        "p75": 0.217,
+        "p90": 0.311
+      },
+      "abs_error_max": 0.918,
+      "mean_credit_by_E": {
+        "0.2": 0.398,
+        "0.25": 0.459,
+        "0.3": 0.52,
+        "0.4": 0.615,
+        "0.5": 0.673,
+        "0.6": 0.712,
+        "0.75": 0.761,
+        "1.0": 0.819
+      }
+    },
+    "ectemp_style": {
+      "n_windows": 139,
+      "n_people": 11,
+      "mae": 0.641,
+      "person_balanced_mae": 0.658,
+      "abs_error_pct": {
+        "p25": 0.527,
+        "p50": 0.637,
+        "p75": 0.744,
+        "p90": 0.943
+      },
+      "abs_error_max": 1.174,
+      "mean_credit_by_E": {
+        "0.2": 0.001,
+        "0.25": 0.004,
+        "0.3": 0.009,
+        "0.4": 0.027,
+        "0.5": 0.042,
+        "0.6": 0.084,
+        "0.75": 0.181,
+        "1.0": 0.348
+      }
+    },
+    "oracle_persistence": {
+      "n_windows": 139,
+      "n_people": 11,
+      "mae": 0.206,
+      "person_balanced_mae": 0.228,
+      "abs_error_pct": {
+        "p25": 0.12,
+        "p50": 0.18,
+        "p75": 0.3,
+        "p90": 0.36
+      },
+      "abs_error_max": 0.54,
+      "mean_credit_by_E": {
+        "0.2": 0.196,
+        "0.25": 0.27,
+        "0.3": 0.333,
+        "0.4": 0.458,
+        "0.5": 0.548,
+        "0.6": 0.62,
+        "0.75": 0.696,
+        "1.0": 0.772
+      }
+    },
+    "oracle_persistence_plus_elapsed_rise": {
+      "n_windows": 139,
+      "n_people": 11,
+      "mae": 0.118,
+      "person_balanced_mae": 0.126,
+      "abs_error_pct": {
+        "p25": 0.036,
+        "p50": 0.084,
+        "p75": 0.166,
+        "p90": 0.243
+      },
+      "abs_error_max": 0.572,
+      "mean_credit_by_E": {
+        "0.2": 0.464,
+        "0.25": 0.536,
+        "0.3": 0.602,
+        "0.4": 0.691,
+        "0.5": 0.749,
+        "0.6": 0.79,
+        "0.75": 0.832,
+        "1.0": 0.874
+      }
+    }
+  },
+  "keep_going_scored_cases_reference": {
+    "constant_population_mean": {
+      "n_windows": 12,
+      "n_people": 12,
+      "mae": 0.328,
+      "person_balanced_mae": 0.328,
+      "abs_error_pct": {
+        "p25": 0.173,
+        "p50": 0.362,
+        "p75": 0.446,
+        "p90": 0.588
+      },
+      "abs_error_max": 0.602,
+      "mean_credit_by_E": {
+        "0.2": 0.137,
+        "0.25": 0.187,
+        "0.3": 0.226,
+        "0.4": 0.289,
+        "0.5": 0.377,
+        "0.6": 0.453,
+        "0.75": 0.562,
+        "1.0": 0.672
+      }
+    },
+    "elapsed_time_only": {
+      "n_windows": 12,
+      "n_people": 12,
+      "mae": 0.249,
+      "person_balanced_mae": 0.249,
+      "abs_error_pct": {
+        "p25": 0.055,
+        "p50": 0.174,
+        "p75": 0.438,
+        "p90": 0.619
+      },
+      "abs_error_max": 0.691,
+      "mean_credit_by_E": {
+        "0.2": 0.355,
+        "0.25": 0.413,
+        "0.3": 0.455,
+        "0.4": 0.508,
+        "0.5": 0.556,
+        "0.6": 0.603,
+        "0.75": 0.668,
+        "1.0": 0.751
+      }
+    },
+    "ectemp_style": {
+      "n_windows": 12,
+      "n_people": 12,
+      "mae": 0.397,
+      "person_balanced_mae": 0.397,
+      "abs_error_pct": {
+        "p25": 0.103,
+        "p50": 0.3,
+        "p75": 0.667,
+        "p90": 0.802
+      },
+      "abs_error_max": 0.978,
+      "mean_credit_by_E": {
+        "0.2": 0.253,
+        "0.25": 0.285,
+        "0.3": 0.313,
+        "0.4": 0.376,
+        "0.5": 0.418,
+        "0.6": 0.446,
+        "0.75": 0.503,
+        "1.0": 0.603
+      }
+    },
+    "oracle_persistence": {
+      "n_windows": 12,
+      "n_people": 12,
+      "mae": 0.33,
+      "person_balanced_mae": 0.33,
+      "abs_error_pct": {
+        "p25": 0.19,
+        "p50": 0.37,
+        "p75": 0.47,
+        "p90": 0.572
+      },
+      "abs_error_max": 0.64,
+      "mean_credit_by_E": {
+        "0.2": 0.158,
+        "0.25": 0.203,
+        "0.3": 0.239,
+        "0.4": 0.296,
+        "0.5": 0.377,
+        "0.6": 0.456,
+        "0.75": 0.56,
+        "1.0": 0.67
+      }
+    },
+    "oracle_persistence_plus_elapsed_rise": {
+      "n_windows": 12,
+      "n_people": 12,
+      "mae": 0.234,
+      "person_balanced_mae": 0.234,
+      "abs_error_pct": {
+        "p25": 0.14,
+        "p50": 0.275,
+        "p75": 0.324,
+        "p90": 0.358
+      },
+      "abs_error_max": 0.38,
+      "mean_credit_by_E": {
+        "0.2": 0.192,
+        "0.25": 0.237,
+        "0.3": 0.281,
+        "0.4": 0.416,
+        "0.5": 0.532,
+        "0.6": 0.61,
+        "0.75": 0.688,
+        "1.0": 0.766
+      }
+    }
+  }
+}

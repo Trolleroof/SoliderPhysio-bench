@@ -67,3 +67,104 @@ weight and mapping choices for rank sensitivity. Specify table fields,
 missing-output treatment, repeated-run aggregation, tie implementation and
 confidence interval method. Freeze versioned artifacts and publish limitations
 before requesting model responses. These steps are not yet completed.
+
+## Calibration evidence (2026-11-07)
+
+Frozen values live in `tasks/scoring_params.json`. B is filled in. E_c is
+`null` until the user approves a value, so keep_going cases stay not scorable.
+
+### ECTemp baseline B
+
+`ectemp_baseline.py`, run as the submission through `benchmark.evaluate` with
+`hidden=True` on the frozen test split. The value is `person_balanced_mae`.
+
+| Variant | B (°C) | Gated requests | People in gate |
+| --- | ---: | ---: | --- |
+| 3A | 0.9325 | 21 | H13 only |
+| 3B | 0.9404 | 36 | H13 only |
+
+- **Stable under time offsets.** The baseline reads only `hr`, `skin_temp`
+  and `watts`, never `time_min`. Two hidden runs per task, each with a fresh
+  random offset, gave identical results. Calling `predict` directly with offsets
+  0 and 98765 on all 357 test requests gave a maximum difference of 0.
+- **Caveat: one person.** The hidden gate (true core ≥38.5 °C after the first
+  watts drop) admits only H13 among the five test people. "Person-balanced" B
+  is one person's MAE, so the Beat ECTemp predictor score also depends on one
+  person. This needs a decision before freezing.
+- B is large because the baseline starts at 37 °C and lags. A predictor needs
+  MAE below about 0.93 °C to get any predictor credit. Half credit needs about
+  0.47 °C.
+
+### Forecast cutoff E_c
+
+Script: `tasks/calibrate_forecast_e.py`. Output:
+`docs/forecast_e_calibration.json`.
+
+**Development set.** Eleven people used in no keep_going task: H02, H05, H07,
+H08, H09, H10, H15, H16, H19, H20 and H24. Cutoffs run from 25 to 45 minutes,
+with a +15-minute target. Windows use the same probe-glitch screen as
+keep_going: no one-minute step above 0.3 °C. That gives 175 windows. Population
+statistics are leave-one-person-out within these people. Credit is
+max(0, 1 − err/E), averaged per person, then across people.
+
+**Baselines.**
+- Constant: the pooled population mean, about 38.4 °C. Uses no information.
+- Elapsed-time-only: the mean core of other people at minute t+15.
+- ECTemp-style: the 3A forecast from `ectemp_baseline.py`.
+- Two oracle references that read current core, which keep_going never shows:
+  - Persistence: core(t).
+  - Persistence plus the population's rise over the next 15 minutes.
+
+All 175 development windows, person-balanced:
+
+| Baseline | MAE | p50 | p90 | E=0.2 | 0.25 | 0.3 | 0.4 | 0.5 | 0.75 | 1.0 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Constant (no info) | 0.18 | 0.13 | 0.33 | 0.40 | 0.46 | 0.51 | 0.60 | 0.67 | 0.76 | 0.82 |
+| Elapsed time only | 0.19 | 0.14 | 0.37 | 0.38 | 0.44 | 0.49 | 0.58 | 0.65 | 0.74 | 0.81 |
+| ECTemp-style | 0.64 | 0.57 | 0.93 | 0.00 | 0.00 | 0.01 | 0.04 | 0.07 | 0.21 | 0.37 |
+| Oracle persistence | 0.23 | 0.16 | 0.37 | 0.23 | 0.29 | 0.35 | 0.47 | 0.55 | 0.70 | 0.77 |
+| Oracle persistence + rise | 0.15 | 0.12 | 0.26 | 0.40 | 0.48 | 0.55 | 0.64 | 0.71 | 0.80 | 0.85 |
+
+The falling-power windows (66 windows, 5 people) and the windows with target
+≥38.5 °C (139 windows) show the same ordering; see the JSON.
+
+**Reference only, not used to choose E.** On the 12 scored keep_going cases,
+person-balanced MAE was:
+- Constant: 0.33.
+- Elapsed time: 0.25.
+- ECTemp-style: 0.40.
+- Oracle persistence plus rise: 0.23.
+
+The test cases were selected to sit at least 0.15 °C from the threshold, with
+large rises. That makes them harder for the constant baseline than the
+development windows are.
+
+**Findings.**
+1. On this protocol, core temperature 25 to 60 minutes in is tightly
+   clustered. A model that answers "about 38.4 °C" every time already gets a
+   development MAE of 0.18 °C. Elapsed time adds nothing on development data.
+   This matches `FALLING_POWER_DUEL.md` (fe57873), where elapsed time beat every
+   wearable model.
+2. Under every candidate E, the no-information forecast gets about as much
+   credit as the elapsed-time control. The forecast component cannot reward
+   physiological reasoning over a population prior. Decision and reasoning
+   (70% of the weight) carry that signal.
+3. Larger E mainly hands out free credit. At E=0.5, the constant answer earns
+   0.67 of the forecast component, about 0.20 of the case score, for no work.
+   At E=1.0 it earns 0.82.
+4. E below about 0.2 °C approaches rectal-probe and minute-to-minute noise.
+   It also gives zero credit to errors typical of the best oracle reference
+   (p90 0.26).
+
+**Recommended range: E_c = 0.25 to 0.35 °C (point suggestion 0.30).**
+- At 0.30, an error equal to the median for informed baselines (about
+  0.15 °C) earns half credit. An error at their p90 (about 0.3 to 0.37 °C)
+  earns zero.
+- The no-information answer earns about half the forecast component on
+  development data and about a quarter on the test cases.
+- The ECTemp-style comparator earns almost nothing on development data.
+
+An alternative is a skill-relative mapping that gives zero credit at the
+constant-baseline error. It would remove the free credit, but it changes the
+documented formula, so it is not proposed here. The user must approve E_c
+before any official run.
