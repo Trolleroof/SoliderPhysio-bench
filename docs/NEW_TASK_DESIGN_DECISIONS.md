@@ -24,7 +24,10 @@ to weigh current observations and predicted outcomes.
 - Provide the information realistically available to a medic in the scenario,
   constrained by what the measured record actually contains. Do not invent
   symptoms, observations or history; mark missing information as unavailable.
-  The exact fields and history window require a dataset and scenario audit.
+  Provide the recorded history from minute 0 through minute 30, with the
+  decision at minute 30 and the +15-minute forecast targeting minute 45. Hide
+  core-temperature measurements and all observations after the cutoff. Audit
+  each case for sufficient measured coverage before selecting it.
 - An independent LLM judge assesses forecast, decision and reasoning separately
   using a rubric. Calculate numerical forecast error in code as well. This is
   an expert-style hackathon assessment, not human expert validation.
@@ -40,8 +43,8 @@ to weigh current observations and predicted outcomes.
 ### Open design work
 
 - Select and freeze the actual research documents, measured cases and cutoffs;
-  audit medic-relevant inputs against available data and specify the history
-  window, tools and output schema.
+  audit medic-relevant inputs against available data and specify the tools and
+  output schema.
 - Define and test the judge rubric, scoring scales, judge inputs and handling
   of hindsight; pin the judge and preserve judgments for review.
 - Verify that the measured data support any proposed case categories. A clear
