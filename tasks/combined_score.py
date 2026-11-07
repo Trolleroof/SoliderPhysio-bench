@@ -99,8 +99,23 @@ def combined(task, comp):
     return sum(WEIGHTS[task][k] * comp[k] for k in WEIGHTS[task])
 
 
+def _model_key(name):
+    return str(name).strip().lower().rsplit('/', 1)[-1]  # 'openai/x' and 'x' are the same model
+
+
+def check_judge_off_roster(runs):
+    """The judge must not be any model being rated (self-preference bias)."""
+    rated = {_model_key(r['model']) for r in runs}
+    judges = {_model_key(m) for r in runs for c in r['cases']
+              if (m := (c.get('judge_record') or {}).get('judge_model'))}
+    clash = sorted(rated & judges)
+    if clash:
+        raise ValueError(f'judge model is also on the rated roster: {clash}')
+
+
 def score_runs(runs, params):
     """runs: list of run dicts. Returns {model: {(task, case_id): case record}}."""
+    check_judge_off_roster(runs)
     raw = {}
     for run in runs:
         for c in run['cases']:

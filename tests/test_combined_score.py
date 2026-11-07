@@ -127,6 +127,14 @@ class Ratings(unittest.TestCase):
         self.assertEqual(s['a'][('keep_going', 'KG-01')]['n_runs'], 2)
         self.assertAlmostEqual(s['a'][('keep_going', 'KG-01')]['combined'], s['b'][('keep_going', 'KG-01')]['combined'])
 
+    def test_judge_on_roster_is_rejected(self):
+        a, b = self.run_for('openai/model-x', 0.1, 0.1), self.run_for('model-y', 0.3, 0.3)
+        b['cases'][0]['judge_record'] = {'judge_model': 'model-x'}
+        with self.assertRaisesRegex(ValueError, 'model-x'):
+            cs.score_runs([a, b], PARAMS)
+        b['cases'][0]['judge_record'] = {'judge_model': 'judge-z'}
+        cs.score_runs([a, b], PARAMS)
+
     def test_too_few_models(self):
         r = cs.rate(cs.score_runs([self.run_for('a', 0.1, 0.1)], PARAMS))
         self.assertIsNone(r['ratings'])
