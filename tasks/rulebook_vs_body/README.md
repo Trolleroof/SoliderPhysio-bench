@@ -1,6 +1,6 @@
 # Task type 2: Rulebook versus body
 
-One no-code task, two halves. The evaluated model is the medic advising a small-unit
+Two no-code tasks, each with two halves. In each task the evaluated model is the medic advising a small-unit
 leader. It is told the unit's WBGT flag and the work category on the leader's risk card,
 and it sees the last 25 minutes of one soldier's wearable and chamber log (heart rate, skin
 temperature, room temperature, humidity, pedal watts) plus his age and body mass. It never
@@ -16,18 +16,23 @@ sees core temperature. It must:
 
 The point of the pairing: the Army card is environment-driven and says nothing about the
 individual. A medic who knows the card still has to look at the body in front of them.
-A model can fail by not knowing the current card (the 2003 card had different cells), or
-by trusting the card and a calm-looking wearable over a body that is already hot.
+A model can fail by not knowing the current card (the 2003 card had different cells), by
+trusting the card and a calm-looking wearable over a body that is already hot, or by
+pulling everyone who looks stressed.
+
+Both tasks use the same flag and work category, so the rulebook answer is identical and
+only the body differs. RB-01 is the trap (OVERRIDE). RB-02 is the control (FOLLOW). A model
+that always overrides, or always follows, scores 1 of 2 on the body half.
 
 ## Files
 
 | File | Visibility | Contents |
 |---|---|---|
 | `tb_med_507.json` | reference | Both TB MED 507 tables, Heat Categories 1 to 5 (White, Green, Yellow, Red, Black) by work category, with source and notes. |
-| `build_task.py` | builder | Reads the Figshare workbook through the Task Type 1 builder and writes the three files below. Deterministic. |
-| `task.json` | public | Scenario inputs, subject age and mass, the 25 rounded re-zeroed rows, full prompt text, answer format. |
-| `prompt.md` | public | The same prompt as rendered markdown. |
-| `private_ground_truth.json` | private | Original subject number, protocol cutoff minute, measured rectal at cutoff and cutoff+15, expected decision, expected rulebook cells, vendor-sensor estimate for failure analysis. |
+| `build_task.py` | builder | Reads the Figshare workbook through the Task Type 1 builder and writes the files below. Deterministic. |
+| `task.json` | public | Per task: scenario inputs, subject age and mass, the 25 rounded re-zeroed rows, full prompt text, answer format. |
+| `prompts/RB-0x.md` | public | The same prompts as rendered markdown, one file per task. |
+| `private_ground_truth.json` | private | Per task: role, original subject number, protocol cutoff minute, measured rectal at cutoff and cutoff+15, expected decision, expected rulebook cells, vendor-sensor estimate for failure analysis. |
 | `evaluator.py` | private | Table lookup, answer parsing, grading, prompt rendering, CLI. |
 
 Rebuild (needs `openpyxl`, present in `.venv-research`; the workbook checksum is enforced
@@ -37,18 +42,19 @@ by the Task Type 1 loader):
 .venv-research/bin/python -m tasks.rulebook_vs_body.build_task
 ```
 
-Print the prompt (closed-book by default; `--with-table` appends both tables for an
+Print a prompt (closed-book by default; `--with-table` appends both tables for an
 open-book variant that isolates the body half):
 
 ```sh
-.venv-research/bin/python tasks/rulebook_vs_body/evaluator.py --print-prompt
-.venv-research/bin/python tasks/rulebook_vs_body/evaluator.py --print-prompt --with-table
+.venv-research/bin/python -m tasks.rulebook_vs_body.evaluator --print-prompt RB-01
+.venv-research/bin/python -m tasks.rulebook_vs_body.evaluator --print-prompt RB-02 --with-table
 ```
 
-Grade a raw model reply saved to a file (exit code 0 on pass, 1 otherwise):
+Grade raw model replies, `{"RB-01": "<model text>", "RB-02": "<model text>"}` (exit code 0
+only when both tasks pass both halves):
 
 ```sh
-.venv-research/bin/python tasks/rulebook_vs_body/evaluator.py --response reply.txt --out score.json
+.venv-research/bin/python -m tasks.rulebook_vs_body.evaluator responses.json --out scores.json
 ```
 
 Tests:
@@ -95,31 +101,46 @@ because it is a no-limit cell in both tables, so the prescription does not depen
 long the soldier has already been working and the protocol clock can stay hidden, as in
 Task Type 1.
 
-## The case
+The work category is a given input, not a measurement of these riders. RB-01 holds about
+3.3 W/kg, which an expert would call heavy work. Recognizing that the card was read in the
+wrong column is a valid reason to override, and the body half rewards it. The rulebook
+half still grades the cell the leader's card names, because the question asks for that cell.
 
-| Task | Design | Power in window | Heart rate in window | Measured rectal: cutoff to cutoff+15 | Expected |
+## The cases
+
+| Task | Role | Power in window | Heart rate in window | Measured rectal: cutoff to cutoff+15 | Expected |
 |---|---|---|---|---|---|
-| RB-01 | steady power, quiet wearable, hot core | 195 W flat | 149 to 159 bpm | 38.40 to 38.92 C | OVERRIDE |
+| RB-01 | trap | 195 W flat, 3.3 W/kg | 149 to 159 bpm | 38.40 to 38.92 C | OVERRIDE |
+| RB-02 | control | 122 W flat, 1.6 W/kg | 169 to 180 bpm | 38.22 to 38.36 C | FOLLOW |
 
-The person is not used by Task Type 1 (which uses subjects 3, 4, 21 and 23). He is a
-59 kg rider holding 195 W, about 3.3 W/kg, in a 35 to 36 C room. Heart rate drifts only
-from the high 140s to the high 150s and power never changes, so nothing in the wearable
-looks alarming and the card says no limit. What an expert can read: skin temperature sits
-at 36.5 to 36.7 C, within about two degrees of a normal core, which means the skin-to-core
-gradient that carries heat out of the body has nearly closed, and 3.3 W/kg in that room
-is a large metabolic heat load for a small rider. The measured rectal temperature is
-already 38.40 C at the cutoff and reaches 38.92 C fifteen minutes later, 0.42 C above the
-threshold. The vendor CORE sensor estimate at the same two minutes reads 38.54 C and
-38.62 C, so even the fielded wearable estimator under-reads the rise by 0.30 C.
+Neither person is used by Task Type 1 (which uses subjects 3, 4, 21 and 23). Public ids
+carry no hint of the design, and both prompts are identical above the soldier line.
 
-A model that follows the card here makes the `missed_override` error. A model that
-overrides but says the card is 40/20 makes the rulebook error. Both are reported
-separately.
+**RB-01** is a 59 kg rider holding 195 W in a 35 to 36 C room. Heart rate drifts only from
+the high 140s to the high 150s and power never changes, so nothing in the wearable looks
+alarming and the card says no limit. What an expert can read: skin temperature sits at
+36.5 to 36.7 C, within about two degrees of a normal core. The skin-to-core gradient that
+carries heat out has nearly closed, and 3.3 W/kg in that room is a large heat load for a
+small rider. Measured rectal temperature is 38.40 C at the cutoff and 38.92 C fifteen
+minutes later, 0.42 C above the threshold. The vendor CORE sensor reads 38.54 C and
+38.62 C at the same two minutes, so the fielded wearable estimator under-reads the rise
+by 0.30 C.
+
+**RB-02** is the mirror image. A 75 kg, 46-year-old rider holds a light 122 W while heart
+rate runs at 169 to 180 bpm, close to age-predicted maximum. The wearable looks worse than
+RB-01. But the heat load is small, skin stays near 34 C so the gradient stays open, and
+measured rectal temperature only rises from 38.22 C to 38.36 C, peaking 0.14 C under the
+threshold. High heart rate here reflects low fitness, not heat storage. A model that pulls
+on heart rate alone makes the `false_override` error.
+
+A model that follows the card on RB-01 makes the `missed_override` error. A model that
+gets the decisions right but says the card is 40/20 makes the rulebook error. All three
+are reported separately.
 
 ## Scoring
 
-`evaluator.grade(text)` parses the first JSON object in the reply (code fences and prose
-tolerated) and returns:
+`evaluator.grade(task_id, text)` parses the first JSON object in the reply (code fences and
+prose tolerated) and returns:
 
 - `rulebook`: the four expected cells, the parsed cells, per-field matches, `score`
   (fraction of the four fields right) and `pass` (all four). Parsing accepts `NL`, `null`,
@@ -132,6 +153,12 @@ tolerated) and returns:
   `tasks.keep_going.evaluator.grade`: the decision is the score, the temperature estimate
   is a reported secondary.
 - `total` = 0.5 × rulebook score + 0.5 × body score; `pass` needs both halves to pass.
+
+`evaluator.score_all(responses)` adds `rulebook_accuracy`, `body_accuracy`, `mean_total`,
+`all_pass`, `core_mae_c`, counts of each error type, and
+`discriminates_override_from_follow`, which is true only when the model gets both body
+calls right with different answers. That flag is the headline result for the body half.
+Missing tasks count as unparsed.
 
 No LLM grader. The decision rule and the threshold are stated in the prompt, so the only
 hidden quantity is the measurement.
@@ -146,19 +173,24 @@ has it is not cheating.
 **Why the body half is hard to look up.**
 
 1. Timestamps are re-zeroed. The prompt shows minutes 0 to 24; the protocol minute of the
-   cutoff (44) appears nowhere public.
+   cutoffs (44 and 30) appear nowhere public.
 2. Values are rounded. Skin temperature is stored to two decimals in the sheet and shown to
    one, so cell-value matching fails for most rows.
 3. No subject number, person code, sex, height, VO2peak or sheet reference appears in
-   `task.json` or `prompt.md`. Those live only in `private_ground_truth.json`.
+   `task.json` or `prompts/`. Those live only in `private_ground_truth.json`.
 4. No core temperature of any kind (rectal or vendor estimate) appears in public files, and
    the prompt says core is not measured.
 5. The tests assert all of the above on the built files and that the subject is not one
    used by Task Type 1.
 
-**Residual risk.** Heart rate and watts are unrounded integers in the sheet, so the logged
-heart-rate block plus the 195 W level is a near-unique fingerprint for a model that has
+**Residual risk.** Heart rate and watts are unrounded integers in the sheet, so a logged
+heart-rate block plus the watt level (195 W, 122 W) is a near-unique fingerprint for a model that has
 memorised the workbook. That is the same residual risk documented for Task Type 1 and is
 checked the same way: ask the model to name the dataset or subject before answering, and
-void any run that identifies either. With one task, treat the result as a qualitative read
-on the two failure modes, not an accuracy estimate.
+void any run that identifies either. With two tasks, treat the result as a qualitative read
+on the three failure modes, not an accuracy estimate.
+
+The repository is private on GitHub, so the committed ground truth is not on the public
+web. A submission ZIP that includes `private_ground_truth.json` exposes the answers to
+anyone holding the ZIP; that is expected for judge reproduction, and the evaluated model
+only ever sees the prompt.

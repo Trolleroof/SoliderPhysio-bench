@@ -1,4 +1,4 @@
-"""Unit tests for the 'Rulebook versus body' task (tasks/rulebook_vs_body)."""
+"""Unit tests for the 'Rulebook versus body' task suite (tasks/rulebook_vs_body)."""
 import contextlib
 import io
 import json
@@ -13,24 +13,30 @@ from tasks.rulebook_vs_body import build_task, evaluator
 ROOT = Path(__file__).resolve().parent.parent
 TASK_DIR = ROOT / "tasks" / "rulebook_vs_body"
 TABLE = evaluator.load_json(TASK_DIR / "tb_med_507.json")
-PUBLIC = evaluator.load_json(TASK_DIR / "task.json")
-TASK = evaluator.load_task(TASK_DIR / "task.json")
-PRIVATE = evaluator.load_json(TASK_DIR / "private_ground_truth.json")
-PUBLIC_TEXT = (TASK_DIR / "task.json").read_text() + (TASK_DIR / "prompt.md").read_text()
+TASKS = evaluator.load_tasks(TASK_DIR / "task.json")
+TRUTH = evaluator.load_ground_truth(TASK_DIR / "private_ground_truth.json")
+PUBLIC_TEXT = (TASK_DIR / "task.json").read_text() + "".join(
+    p.read_text() for p in sorted((TASK_DIR / "prompts").glob("*.md")))
 SOURCE = build_task.DEFAULT_SOURCE
+TASK_TYPE_1_SUBJECTS = {3, 4, 21, 23}
 
-PERFECT = {
-    "rulebook": {"work_rest_min": "NL", "water_qt_per_hr": 0.75,
-                 "continuous_work_min": "NL", "continuous_water_qt_per_hr": 1.0},
-    "decision": "OVERRIDE",
-    "predicted_core_c": PRIVATE["core_at_cutoff_plus_15_c"],
-    "confidence": 0.8,
-    "reasoning": "x",
-}
+RULEBOOK = {"work_rest_min": "NL", "water_qt_per_hr": 0.75,
+            "continuous_work_min": "NL", "continuous_water_qt_per_hr": 1.0}
 
 
-def _grade(obj):
-    return evaluator.grade(json.dumps(obj), TASK, PRIVATE, TABLE)
+def answer(task_id, decision=None, core=None, rulebook=None):
+    truth = TRUTH[task_id]
+    return {
+        "rulebook": RULEBOOK if rulebook is None else rulebook,
+        "decision": truth["expected_decision"] if decision is None else decision,
+        "predicted_core_c": truth["core_at_cutoff_plus_15_c"] if core is None else core,
+        "confidence": 0.7,
+        "reasoning": "x",
+    }
+
+
+def grade(task_id, obj):
+    return evaluator.grade(task_id, json.dumps(obj), TASKS, TRUTH, TABLE)
 
 
 class TestRulebookTable(unittest.TestCase):
@@ -54,13 +60,12 @@ class TestRulebookTable(unittest.TestCase):
                     self.assertGreater(cell["water_qt_per_hr"], 0)
 
     def test_spot_checks_against_published_card(self):
-        # Table 1 cells reproduced by DCPH-A (TA-724-MAR23) from TB MED 507, 12 April 2022.
+        # Cells reproduced by DCPH-A (TA-724-MAR23) from TB MED 507, 12 April 2022.
         self.assertEqual(evaluator.lookup(TABLE, "White", "Heavy")["work_rest_min"], "40/20")
         self.assertEqual(evaluator.lookup(TABLE, "Red", "Moderate")["work_rest_min"], "50/10")
         self.assertEqual(evaluator.lookup(TABLE, "Black", "Very Heavy")["work_rest_min"], "10/50")
         self.assertEqual(evaluator.lookup(TABLE, "Black", "Easy")["water_qt_per_hr"], 1.0)
         self.assertEqual(evaluator.lookup(TABLE, "Green", "Moderate")["work_rest_min"], "NL")
-        # Table 2 continuous work.
         self.assertEqual(evaluator.lookup(TABLE, "White", "Heavy")["continuous_work_min"], 100)
         self.assertEqual(evaluator.lookup(TABLE, "Red", "Moderate")["continuous_work_min"], 180)
         self.assertEqual(evaluator.lookup(TABLE, "Red", "Moderate")["continuous_water_qt_per_hr"], 1.25)
@@ -92,106 +97,139 @@ class TestRulebookTable(unittest.TestCase):
         self.assertEqual(evaluator.lookup(TABLE, "Yellow", "Moderate")["work_rest_min"], "NL")
 
 
+class TestSuiteShape(unittest.TestCase):
+    def test_ids_match_across_files(self):
+        self.assertEqual(sorted(TASKS), ["RB-01", "RB-02"])
+        self.assertEqual(sorted(TRUTH), sorted(TASKS))
+        self.assertEqual(sorted(p.stem for p in (TASK_DIR / "prompts").glob("*.md")), sorted(TASKS))
+        self.assertEqual(build_task.TASK_IDS, ["RB-01", "RB-02"])
+
+    def test_one_trap_one_control_with_opposite_answers(self):
+        self.assertEqual(TRUTH["RB-01"]["role"], "trap")
+        self.assertEqual(TRUTH["RB-01"]["expected_decision"], "OVERRIDE")
+        self.assertEqual(TRUTH["RB-02"]["role"], "control")
+        self.assertEqual(TRUTH["RB-02"]["expected_decision"], "FOLLOW")
+
+    def test_same_rulebook_cell_for_both(self):
+        for task in TASKS.values():
+            self.assertEqual(task["inputs"]["heat_category"], "Yellow")
+            self.assertEqual(task["inputs"]["heat_category_number"], 3)
+            self.assertEqual(task["inputs"]["work_category"], "Moderate")
+        self.assertEqual(TRUTH["RB-01"]["expected_rulebook"], TRUTH["RB-02"]["expected_rulebook"])
+
+    def test_control_wearable_looks_worse_than_trap(self):
+        # The point of the pair: heart rate is not the answer.
+        hr = {tid: max(r["hr_bpm"] for r in t["rows"] if r["hr_bpm"] is not None) for tid, t in TASKS.items()}
+        self.assertGreater(hr["RB-02"], hr["RB-01"] + 15)
+
+    def test_no_reuse_of_task_type_1_people(self):
+        subjects = {t["subject_id"] for t in TRUTH.values()}
+        self.assertEqual(len(subjects), len(TRUTH))
+        self.assertFalse(subjects & TASK_TYPE_1_SUBJECTS)
+
+
 class TestPublicFiles(unittest.TestCase):
     def test_shape(self):
-        self.assertEqual(TASK["task_id"], "RB-01")
-        self.assertEqual(TASK["horizon_min"], 15)
-        self.assertEqual(TASK["threshold_c"], 38.5)
-        self.assertEqual(TASK["inputs"]["heat_category"], "Yellow")
-        self.assertEqual(TASK["inputs"]["heat_category_number"], 3)
-        self.assertEqual(TASK["inputs"]["work_category"], "Moderate")
-        self.assertEqual(set(TASK["subject_profile"]), {"age_years", "mass_kg"})
-        self.assertEqual(TASK["answer_format"], evaluator.ANSWER_FORMAT)
+        for task in TASKS.values():
+            self.assertEqual(task["horizon_min"], 15)
+            self.assertEqual(task["threshold_c"], 38.5)
+            self.assertEqual(set(task["subject_profile"]), {"age_years", "mass_kg"})
+            self.assertEqual(task["answer_format"], evaluator.ANSWER_FORMAT)
 
     def test_rows_follow_task_type_1_format(self):
-        rows = TASK["rows"]
-        self.assertEqual(len(rows), build_task.WINDOW_MIN)
-        self.assertEqual([r["time_min"] for r in rows], list(range(build_task.WINDOW_MIN)))
-        for r in rows:
-            self.assertEqual(tuple(r), evaluator.PUBLIC_ROW_KEYS)
-            self.assertIsInstance(r["watts"], int)
-            self.assertEqual(r["skin_c"], round(r["skin_c"], 1))
-            self.assertIsInstance(r["humidity_pct"], int)
-            if r["hr_bpm"] is not None:
-                self.assertIsInstance(r["hr_bpm"], int)
-                self.assertTrue(30 <= r["hr_bpm"] <= 240)
-        self.assertTrue(any(r["hr_bpm"] is None for r in rows), "HR is only logged in blocks")
-        self.assertTrue(any(r["hr_bpm"] is not None for r in rows))
+        for task in TASKS.values():
+            rows = task["rows"]
+            self.assertEqual(len(rows), build_task.WINDOW_MIN)
+            self.assertEqual([r["time_min"] for r in rows], list(range(build_task.WINDOW_MIN)))
+            for r in rows:
+                self.assertEqual(tuple(r), evaluator.PUBLIC_ROW_KEYS)
+                self.assertIsInstance(r["watts"], int)
+                self.assertEqual(r["skin_c"], round(r["skin_c"], 1))
+                self.assertIsInstance(r["humidity_pct"], int)
+                if r["hr_bpm"] is not None:
+                    self.assertIsInstance(r["hr_bpm"], int)
+                    self.assertTrue(30 <= r["hr_bpm"] <= 240)
+            self.assertTrue(any(r["hr_bpm"] is None for r in rows), "HR is only logged in blocks")
 
-    def test_prompt_file_matches_json_prompt(self):
-        self.assertEqual((TASK_DIR / "prompt.md").read_text(), TASK["prompt"])
+    def test_prompt_files_match_json_prompts(self):
+        for tid, task in TASKS.items():
+            self.assertEqual((TASK_DIR / "prompts" / f"{tid}.md").read_text(), task["prompt"])
 
     def test_prompt_contains_scenario_rule_and_table(self):
-        p = TASK["prompt"]
-        for needle in ("Yellow", "Heat Category 3", "Moderate", "TB MED 507", "12 April 2022",
-                       "Table 1", "Table 2", "FOLLOW", "OVERRIDE", "38.5 C", "15 minutes",
-                       "Core temperature is NOT measured", evaluator.render_table(TASK["rows"])):
-            self.assertIn(needle, p)
-        self.assertNotIn("Reference, TB MED 507", p, "default prompt is closed-book")
+        for task in TASKS.values():
+            p = task["prompt"]
+            for needle in ("Yellow", "Heat Category 3", "Moderate", "TB MED 507", "12 April 2022",
+                           "Table 1", "Table 2", "FOLLOW", "OVERRIDE", "38.5 C", "15 minutes",
+                           "Core temperature is NOT measured", evaluator.render_table(task["rows"])):
+                self.assertIn(needle, p)
+            self.assertNotIn("Reference, TB MED 507", p, "default prompt is closed-book")
 
     def test_open_book_prompt_includes_tables(self):
-        p = evaluator.render_prompt(TASK, TABLE, include_table=True)
+        p = evaluator.render_prompt(TASKS["RB-01"], TABLE, include_table=True)
         self.assertIn("Reference, TB MED 507", p)
         self.assertIn("40/20, 0.75 qt", p)
         self.assertIn("| 4 Red |", p)
 
     def test_public_files_leak_nothing(self):
         lower = PUBLIC_TEXT.lower()
-        # "rectal" appears in the prompt only as the quantity to be estimated; the values do not.
-        for needle in ("subject_id", "person_code", "h25", "cutoff", '"sex"', "vo2", "core_at",
-                       "device_estimate", "expected_decision", "override_is_correct"):
+        # "rectal" appears in the prompt only as the quantity to be estimated; values do not.
+        for needle in ("subject_id", "person_code", "cutoff", '"sex"', "vo2", "core_at", "role",
+                       "trap", "control", "device_estimate", "expected_decision", "override_is_correct"):
             self.assertNotIn(needle, lower, needle)
-        self.assertNotIn(str(PRIVATE["subject_id"]) + ",", json.dumps(TASK["subject_profile"]))
-        self.assertNotIn(f"{PRIVATE['core_at_cutoff_plus_15_c']:.2f}", PUBLIC_TEXT)
-        self.assertNotIn(f"{PRIVATE['core_at_cutoff_c']:.2f}", PUBLIC_TEXT)
-        self.assertEqual(TASK["rows"][0]["time_min"], 0)
-        self.assertNotIn(str(PRIVATE["cutoff_min"]), [str(r["time_min"]) for r in TASK["rows"]])
+        for truth in TRUTH.values():
+            self.assertNotIn(truth["person_code"].lower(), lower)
+            self.assertNotIn(f"{truth['core_at_cutoff_plus_15_c']:.2f}", PUBLIC_TEXT)
+            self.assertNotIn(f"{truth['core_at_cutoff_c']:.2f}", PUBLIC_TEXT)
+
+    def test_public_ids_carry_no_design_hint(self):
+        self.assertEqual(sorted(TASKS), ["RB-01", "RB-02"])
+        prompts = [t["prompt"] for t in TASKS.values()]
+        self.assertEqual(prompts[0].split("Soldier:")[0], prompts[1].split("Soldier:")[0])
 
 
 class TestPrivateFile(unittest.TestCase):
     def test_truth_is_consistent(self):
-        self.assertEqual(PRIVATE["task_id"], TASK["task_id"])
-        self.assertIsInstance(PRIVATE["subject_id"], int)
-        self.assertEqual(PRIVATE["horizon_min"], TASK["horizon_min"])
-        self.assertEqual(PRIVATE["threshold_c"], TASK["threshold_c"])
-        self.assertEqual(PRIVATE["window_start_min"], PRIVATE["cutoff_min"] - build_task.WINDOW_MIN + 1)
-        over = PRIVATE["core_at_cutoff_plus_15_c"] >= PRIVATE["threshold_c"]
-        self.assertEqual(PRIVATE["expected_decision"], "OVERRIDE" if over else "FOLLOW")
-        self.assertEqual(PRIVATE["override_is_correct"], over)
-        self.assertAlmostEqual(PRIVATE["core_change_15_c"],
-                               round(PRIVATE["core_at_cutoff_plus_15_c"] - PRIVATE["core_at_cutoff_c"], 2))
-        self.assertEqual(PRIVATE["expected_rulebook"],
-                         {k: v for k, v in evaluator.lookup(TABLE, "Yellow", "Moderate").items()
-                          if k in evaluator.RULEBOOK_FIELDS})
-        self.assertTrue(PRIVATE["rulebook_allows_work_through_horizon"])
-        self.assertEqual(PRIVATE["scorer"], "tasks.rulebook_vs_body.evaluator.grade")
+        for tid, truth in TRUTH.items():
+            self.assertEqual(truth["horizon_min"], TASKS[tid]["horizon_min"])
+            self.assertEqual(truth["threshold_c"], TASKS[tid]["threshold_c"])
+            self.assertEqual(truth["window_start_min"], truth["cutoff_min"] - build_task.WINDOW_MIN + 1)
+            over = truth["core_at_cutoff_plus_15_c"] >= truth["threshold_c"]
+            self.assertEqual(truth["expected_decision"], "OVERRIDE" if over else "FOLLOW")
+            self.assertEqual(truth["override_is_correct"], over)
+            self.assertAlmostEqual(truth["core_change_15_c"],
+                                   round(truth["core_at_cutoff_plus_15_c"] - truth["core_at_cutoff_c"], 2))
+            self.assertEqual(truth["expected_rulebook"], RULEBOOK)
+            self.assertTrue(truth["rulebook_allows_work_through_horizon"])
+            self.assertFalse(truth["power_dropped_in_window"])
 
-    def test_this_case_is_the_override_trap(self):
-        self.assertEqual(PRIVATE["expected_decision"], "OVERRIDE")
-        self.assertLess(PRIVATE["core_at_cutoff_c"], PRIVATE["threshold_c"])
-        self.assertGreaterEqual(PRIVATE["core_at_cutoff_plus_15_c"], PRIVATE["threshold_c"] + 0.3)
-        self.assertFalse(PRIVATE["power_dropped_in_window"])
-        self.assertNotIn(PRIVATE["subject_id"], {3, 4, 21, 23}, "must not reuse a Task Type 1 person")
+    def test_labels_are_not_marginal(self):
+        trap, control = TRUTH["RB-01"], TRUTH["RB-02"]
+        self.assertLess(trap["core_at_cutoff_c"], trap["threshold_c"])
+        self.assertGreaterEqual(trap["core_at_cutoff_plus_15_c"], trap["threshold_c"] + 0.3)
+        self.assertLess(control["peak_core_next_15_c"], control["threshold_c"] - 0.1)
 
 
 @unittest.skipUnless(SOURCE.exists(), "Figshare workbook not present")
 class TestRebuild(unittest.TestCase):
     def test_build_is_deterministic_and_matches_committed_files(self):
-        task, truth = build_task.build(write=False)
-        self.assertEqual(task, TASK)
-        self.assertEqual(truth, PRIVATE)
+        public, private = build_task.build(write=False)
+        self.assertEqual({t["task_id"]: t for t in public}, TASKS)
+        self.assertEqual({t["task_id"]: t for t in private}, TRUTH)
 
-    def test_window_matches_task_type_1_builder(self):
+    def test_windows_match_task_type_1_builder(self):
         from tasks.keep_going import build_tasks as kg
-        person = kg.load_workbook(SOURCE)[PRIVATE["subject_id"]]
-        self.assertEqual(kg.make_window(person, PRIVATE["cutoff_min"]), TASK["rows"])
-        self.assertEqual(person["core"][PRIVATE["cutoff_min"] + 15], PRIVATE["core_at_cutoff_plus_15_c"])
+        people = kg.load_workbook(SOURCE)
+        for tid, truth in TRUTH.items():
+            person = people[truth["subject_id"]]
+            self.assertEqual(kg.make_window(person, truth["cutoff_min"]), TASKS[tid]["rows"])
+            self.assertEqual(person["core"][truth["cutoff_min"] + 15], truth["core_at_cutoff_plus_15_c"])
 
-    def test_build_writes_three_files(self):
+    def test_build_writes_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             build_task.build(out_dir=tmp)
             names = sorted(p.name for p in Path(tmp).iterdir())
-            self.assertEqual(names, ["private_ground_truth.json", "prompt.md", "task.json"])
+            self.assertEqual(names, ["private_ground_truth.json", "prompts", "task.json"])
+            self.assertEqual(sorted(p.name for p in (Path(tmp) / "prompts").iterdir()), ["RB-01.md", "RB-02.md"])
 
 
 class TestParsing(unittest.TestCase):
@@ -229,12 +267,11 @@ class TestParsing(unittest.TestCase):
         self.assertIsNone(evaluator.parse_decision(None))
 
     def test_response_json_in_fence_and_prose(self):
-        text = "Sure.\n```json\n" + json.dumps(PERFECT) + "\n```\nDone."
+        text = "Sure.\n```json\n" + json.dumps(answer("RB-01")) + "\n```\nDone."
         parsed = evaluator.parse_response(text)
         self.assertEqual(parsed["parse_mode"], "json")
         self.assertEqual(parsed["decision"], "OVERRIDE")
         self.assertEqual(parsed["rulebook"]["work_rest_min"], "NL")
-        self.assertAlmostEqual(parsed["predicted_core_c"], PERFECT["predicted_core_c"])
 
     def test_response_plain_text_fallback(self):
         parsed = evaluator.parse_response("I would OVERRIDE the table and pull him.")
@@ -246,104 +283,119 @@ class TestParsing(unittest.TestCase):
 
 
 class TestGrading(unittest.TestCase):
-    def test_perfect_answer(self):
-        g = _grade(PERFECT)
-        self.assertEqual(g["total"], 1.0)
-        self.assertTrue(g["pass"])
-        self.assertTrue(all(g["rulebook"]["matches"].values()))
-        self.assertEqual(g["body"]["core_abs_error_c"], 0.0)
-        self.assertTrue(g["body"]["core_within_tolerance"])
-        self.assertIsNone(g["body"]["error_type"])
+    def test_perfect_answers(self):
+        for tid in TASKS:
+            g = grade(tid, answer(tid))
+            self.assertEqual(g["total"], 1.0, tid)
+            self.assertTrue(g["pass"])
+            self.assertEqual(g["body"]["core_abs_error_c"], 0.0)
+            self.assertIsNone(g["body"]["error_type"])
+            self.assertEqual(g["role"], TRUTH[tid]["role"])
 
     def test_flexible_rulebook_spellings_still_match(self):
-        obj = dict(PERFECT, rulebook={"work_rest": "no limit", "water": "¾ qt/hr",
-                                      "continuous_work": None, "continuous_water": "1 quart/hour"})
-        self.assertTrue(_grade(obj)["rulebook"]["pass"])
+        rb = {"work_rest": "no limit", "water": "¾ qt/hr", "continuous_work": None, "continuous_water": "1 quart/hour"}
+        self.assertTrue(grade("RB-01", answer("RB-01", rulebook=rb))["rulebook"]["pass"])
 
     def test_old_2003_card_fails_rulebook_half(self):
-        obj = dict(PERFECT, rulebook=dict(PERFECT["rulebook"], work_rest_min="40/20"))
-        g = _grade(obj)
+        g = grade("RB-01", answer("RB-01", rulebook=dict(RULEBOOK, work_rest_min="40/20")))
         self.assertFalse(g["rulebook"]["pass"])
         self.assertEqual(g["rulebook"]["score"], 0.75)
-        self.assertFalse(g["rulebook"]["matches"]["work_rest_min"])
         self.assertTrue(g["body"]["pass"])
         self.assertAlmostEqual(g["total"], 0.5 * 0.75 + 0.5)
         self.assertFalse(g["pass"])
 
     def test_missing_rulebook_key_is_not_read_as_no_limit(self):
-        obj = dict(PERFECT, rulebook={"water_qt_per_hr": 0.75, "continuous_water_qt_per_hr": 1})
-        g = _grade(obj)
+        rb = {"water_qt_per_hr": 0.75, "continuous_water_qt_per_hr": 1}
+        g = grade("RB-01", answer("RB-01", rulebook=rb))
         self.assertEqual(g["rulebook"]["score"], 0.5)
         self.assertIsNone(g["rulebook"]["parsed"]["work_rest_min"])
 
-    def test_wrong_decision_is_missed_override(self):
-        obj = dict(PERFECT, decision="FOLLOW", predicted_core_c=38.2)
-        g = _grade(obj)
-        self.assertTrue(g["rulebook"]["pass"])
-        self.assertEqual(g["body"]["score"], 0.0)
+    def test_missed_override_on_trap(self):
+        g = grade("RB-01", answer("RB-01", decision="FOLLOW", core=38.2))
         self.assertEqual(g["body"]["error_type"], "missed_override")
-        self.assertAlmostEqual(g["body"]["core_abs_error_c"], round(PRIVATE["core_at_cutoff_plus_15_c"] - 38.2, 2))
         self.assertFalse(g["body"]["core_within_tolerance"])
         self.assertAlmostEqual(g["total"], 0.5)
-        self.assertFalse(g["pass"])
 
-    def test_false_override_on_a_follow_case(self):
-        truth = dict(PRIVATE, expected_decision="FOLLOW", core_at_cutoff_plus_15_c=38.2, override_is_correct=False)
-        g = evaluator.grade(json.dumps(PERFECT), TASK, truth, TABLE)
+    def test_false_override_on_control(self):
+        g = grade("RB-02", answer("RB-02", decision="OVERRIDE", core=38.7))
         self.assertEqual(g["body"]["error_type"], "false_override")
         self.assertEqual(g["body"]["score"], 0.0)
+        self.assertTrue(g["body"]["core_within_tolerance"])
 
     def test_unparsed_and_garbage(self):
-        g = _grade({"rulebook": PERFECT["rulebook"], "predicted_core_c": 39})
+        g = grade("RB-01", {"rulebook": RULEBOOK, "predicted_core_c": 39})
         self.assertEqual(g["body"]["error_type"], "unparsed")
-        self.assertEqual(g["body"]["score"], 0.0)
         self.assertEqual(g["total"], 0.5)
-        g = evaluator.grade("no json here", TASK, PRIVATE, TABLE)
+        g = evaluator.grade("RB-01", "no json here", TASKS, TRUTH, TABLE)
         self.assertEqual(g["total"], 0.0)
         self.assertEqual(g["body"]["parse_mode"], "none")
-        self.assertFalse(g["pass"])
-        g = evaluator.grade("", TASK, PRIVATE, TABLE)
-        self.assertEqual(g["total"], 0.0)
 
-    def test_grade_uses_committed_files_by_default(self):
-        g = evaluator.grade(json.dumps(PERFECT))
-        self.assertEqual(g["task_id"], "RB-01")
-        self.assertTrue(g["pass"])
+    def test_unknown_task_id_raises(self):
+        with self.assertRaises(KeyError):
+            evaluator.grade("RB-99", "{}", TASKS, TRUTH, TABLE)
 
-    def test_dict_input_accepted(self):
-        self.assertTrue(evaluator.grade(PERFECT, TASK, PRIVATE, TABLE)["pass"])
+    def test_defaults_load_committed_files(self):
+        self.assertTrue(evaluator.grade("RB-02", json.dumps(answer("RB-02")))["pass"])
+
+
+class TestScoreAll(unittest.TestCase):
+    def test_perfect_suite(self):
+        s = evaluator.score_all({tid: json.dumps(answer(tid)) for tid in TASKS})
+        self.assertEqual(s["n_tasks"], 2)
+        self.assertEqual(s["mean_total"], 1.0)
+        self.assertTrue(s["all_pass"])
+        self.assertTrue(s["discriminates_override_from_follow"])
+        self.assertEqual(s["core_mae_c"], 0.0)
+
+    def test_always_override_gets_half_the_body(self):
+        s = evaluator.score_all({tid: json.dumps(answer(tid, decision="OVERRIDE")) for tid in TASKS})
+        self.assertEqual(s["body_accuracy"], 0.5)
+        self.assertEqual(s["false_overrides"], 1)
+        self.assertFalse(s["discriminates_override_from_follow"])
+        self.assertFalse(s["all_pass"])
+
+    def test_always_follow_gets_half_the_body(self):
+        s = evaluator.score_all({tid: json.dumps(answer(tid, decision="FOLLOW")) for tid in TASKS})
+        self.assertEqual(s["body_accuracy"], 0.5)
+        self.assertEqual(s["missed_overrides"], 1)
+        self.assertFalse(s["discriminates_override_from_follow"])
+
+    def test_missing_task_is_unparsed_and_list_input_works(self):
+        s = evaluator.score_all([{"task_id": "RB-01", "response": json.dumps(answer("RB-01"))}])
+        self.assertEqual(s["unparsed"], 1)
+        self.assertEqual(s["rulebook_accuracy"], 0.5)
 
 
 class TestCLI(unittest.TestCase):
-    PY = sys.executable
-    SCRIPT = str(TASK_DIR / "evaluator.py")
+    CMD = [sys.executable, "-m", "tasks.rulebook_vs_body.evaluator"]
 
     def test_print_prompt(self):
-        out = subprocess.run([self.PY, self.SCRIPT, "--print-prompt"], capture_output=True, text=True, cwd=ROOT)
+        out = subprocess.run(self.CMD + ["--print-prompt", "RB-02"], capture_output=True, text=True, cwd=ROOT)
         self.assertEqual(out.returncode, 0, out.stderr)
-        self.assertEqual(out.stdout.strip(), TASK["prompt"].strip())
-        out = subprocess.run([self.PY, self.SCRIPT, "--print-prompt", "--with-table"], capture_output=True, text=True, cwd=ROOT)
+        self.assertEqual(out.stdout.strip(), TASKS["RB-02"]["prompt"].strip())
+        out = subprocess.run(self.CMD + ["--print-prompt", "RB-01", "--with-table"], capture_output=True, text=True, cwd=ROOT)
         self.assertIn("Reference, TB MED 507", out.stdout)
+        out = subprocess.run(self.CMD + ["--print-prompt", "RB-99"], capture_output=True, text=True, cwd=ROOT)
+        self.assertNotEqual(out.returncode, 0)
 
-    def test_grade_file_exit_codes(self):
+    def test_score_file_exit_codes(self):
         with tempfile.TemporaryDirectory() as tmp:
-            good = Path(tmp) / "good.txt"
-            good.write_text("```json\n" + json.dumps(PERFECT) + "\n```")
-            bad = Path(tmp) / "bad.txt"
-            bad.write_text(json.dumps(dict(PERFECT, decision="FOLLOW")))
+            good = Path(tmp) / "good.json"
+            good.write_text(json.dumps({tid: "```json\n" + json.dumps(answer(tid)) + "\n```" for tid in TASKS}))
+            bad = Path(tmp) / "bad.json"
+            bad.write_text(json.dumps({tid: json.dumps(answer(tid, decision="OVERRIDE")) for tid in TASKS}))
             scores = Path(tmp) / "scores.json"
-            out = subprocess.run([self.PY, self.SCRIPT, "--response", str(good), "--out", str(scores)],
-                                 capture_output=True, text=True, cwd=ROOT)
+            out = subprocess.run(self.CMD + [str(good), "--out", str(scores)], capture_output=True, text=True, cwd=ROOT)
             self.assertEqual(out.returncode, 0, out.stderr)
-            self.assertTrue(json.loads(scores.read_text())["pass"])
-            out = subprocess.run([self.PY, self.SCRIPT, "--response", str(bad)], capture_output=True, text=True, cwd=ROOT)
+            self.assertTrue(json.loads(scores.read_text())["all_pass"])
+            out = subprocess.run(self.CMD + [str(bad)], capture_output=True, text=True, cwd=ROOT)
             self.assertEqual(out.returncode, 1)
-            self.assertEqual(json.loads(out.stdout)["body"]["error_type"], "missed_override")
+            self.assertEqual(json.loads(out.stdout)["false_overrides"], 1)
 
     def test_main_in_process(self):
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
-            code = evaluator.main(["--print-prompt"])
+            code = evaluator.main(["--print-prompt", "RB-01"])
         self.assertEqual(code, 0)
         self.assertIn("Answer with one JSON object", buf.getvalue())
 

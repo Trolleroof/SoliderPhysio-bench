@@ -15,13 +15,19 @@ Two halves, each worth half of the total:
 
 No network, no third-party packages, no LLM judge.
 
+Two tasks share the same flag and work category, so the rulebook answer is identical:
+RB-01 is the trap (calm wearable, hot core: OVERRIDE) and RB-02 is the control
+(alarming heart rate, core stays under threshold: FOLLOW). A model that always
+overrides scores 1 of 2 on the body half.
+
 Library use:
     from tasks.rulebook_vs_body import evaluator
-    evaluator.grade(model_text) -> dict
+    evaluator.grade("RB-01", model_text) -> dict
+    evaluator.score_all({"RB-01": text, "RB-02": text}) -> summary dict
 
 CLI:
-    python tasks/rulebook_vs_body/evaluator.py --response reply.txt
-    python tasks/rulebook_vs_body/evaluator.py --print-prompt [--with-table]
+    python -m tasks.rulebook_vs_body.evaluator responses.json [--out scores.json]
+    python -m tasks.rulebook_vs_body.evaluator --print-prompt RB-01 [--with-table]
 """
 from __future__ import annotations
 
@@ -61,10 +67,14 @@ def load_json(path: Path | str) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def load_task(path: Path | str = TASK_PATH) -> dict[str, Any]:
-    """Return the task record; task.json wraps it under 'task' next to source metadata."""
-    data = load_json(path)
-    return data["task"] if "task" in data else data
+def load_tasks(path: Path | str = TASK_PATH) -> dict[str, dict[str, Any]]:
+    """Public task records keyed by task id."""
+    return {t["task_id"]: t for t in load_json(path)["tasks"]}
+
+
+def load_ground_truth(path: Path | str = TRUTH_PATH) -> dict[str, dict[str, Any]]:
+    """Private ground truth keyed by task id."""
+    return {t["task_id"]: t for t in load_json(path)["tasks"]}
 
 
 def normalize_flag(flag: Any) -> str:
@@ -325,25 +335,61 @@ def grade_body(parsed: dict[str, Any], truth: dict[str, Any]) -> dict[str, Any]:
 
 
 def grade(
+    task_id: str,
     response: Any,
-    task: dict[str, Any] | None = None,
-    truth: dict[str, Any] | None = None,
+    tasks: dict[str, dict[str, Any]] | None = None,
+    ground_truth: dict[str, dict[str, Any]] | None = None,
     table: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Grade one raw model reply (string or already-decoded dict)."""
-    task = task if task is not None else load_task(TASK_PATH)
-    truth = truth if truth is not None else load_json(TRUTH_PATH)
+    """Grade one raw model reply (string or decoded dict). Raises KeyError for unknown ids."""
+    task = (tasks if tasks is not None else load_tasks())[task_id]
+    truth = (ground_truth if ground_truth is not None else load_ground_truth())[task_id]
     table = table if table is not None else load_json(TABLE_PATH)
     parsed = parse_response(response)
     expected = lookup(table, task["inputs"]["heat_category"], task["inputs"]["work_category"])
     rulebook = grade_rulebook(parsed["rulebook"], expected)
     body = grade_body(parsed, truth)
     return {
-        "task_id": task["task_id"],
+        "task_id": task_id,
+        "role": truth["role"],
+        "design": truth["design"],
         "rulebook": rulebook,
         "body": body,
         "total": RULEBOOK_WEIGHT * rulebook["score"] + BODY_WEIGHT * body["score"],
         "pass": rulebook["pass"] and body["pass"],
+    }
+
+
+def score_all(
+    responses: dict[str, Any] | list[dict[str, Any]],
+    tasks: dict[str, dict[str, Any]] | None = None,
+    ground_truth: dict[str, dict[str, Any]] | None = None,
+    table: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """responses: {task_id: raw text}. Missing tasks count as unparsed and score 0."""
+    tasks = tasks if tasks is not None else load_tasks()
+    gt = ground_truth if ground_truth is not None else load_ground_truth()
+    table = table if table is not None else load_json(TABLE_PATH)
+    if isinstance(responses, list):
+        responses = {r["task_id"]: r.get("response", "") for r in responses}
+    results = [grade(tid, responses.get(tid, ""), tasks, gt, table) for tid in gt]
+    n = len(results)
+    errors = [r["body"]["core_abs_error_c"] for r in results if r["body"]["core_abs_error_c"] is not None]
+    decisions = {r["body"]["model_decision"] for r in results}
+    return {
+        "n_tasks": n,
+        "mean_total": sum(r["total"] for r in results) / n,
+        "rulebook_accuracy": sum(r["rulebook"]["pass"] for r in results) / n,
+        "body_accuracy": sum(r["body"]["score"] for r in results) / n,
+        "all_pass": all(r["pass"] for r in results),
+        # True only when the model gave different, correct calls on the trap and the control.
+        "discriminates_override_from_follow": all(r["body"]["decision_correct"] for r in results)
+        and len(decisions) > 1,
+        "missed_overrides": sum(r["body"]["error_type"] == "missed_override" for r in results),
+        "false_overrides": sum(r["body"]["error_type"] == "false_override" for r in results),
+        "unparsed": sum(r["body"]["error_type"] == "unparsed" for r in results),
+        "core_mae_c": round(sum(errors) / len(errors), 3) if errors else None,
+        "results": results,
     }
 
 
@@ -440,28 +486,27 @@ Answer with one JSON object and nothing else:
 # --------------------------------------------------------------------------
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--response", type=Path, help="file holding the raw model reply")
-    parser.add_argument("--task", type=Path, default=TASK_PATH)
-    parser.add_argument("--truth", type=Path, default=TRUTH_PATH)
-    parser.add_argument("--table", type=Path, default=TABLE_PATH)
-    parser.add_argument("--out", type=Path, help="write the grade JSON here as well")
-    parser.add_argument("--print-prompt", action="store_true", help="print the public prompt and exit")
+    parser.add_argument("responses", nargs="?", type=Path,
+                        help='JSON file: {"RB-01": "<raw model text>", ...} or a list of {"task_id", "response"}')
+    parser.add_argument("--out", type=Path, help="write the summary JSON here as well")
+    parser.add_argument("--print-prompt", metavar="TASK_ID", help="print one task's public prompt and exit")
     parser.add_argument("--with-table", action="store_true", help="open-book variant: include the TB MED 507 tables")
     args = parser.parse_args(argv)
 
-    task = load_task(args.task)
-    table = load_json(args.table)
     if args.print_prompt:
-        print(render_prompt(task, table, include_table=args.with_table))
+        tasks = load_tasks()
+        if args.print_prompt not in tasks:
+            parser.error(f"unknown task id {args.print_prompt!r}; choose from {sorted(tasks)}")
+        print(render_prompt(tasks[args.print_prompt], load_json(TABLE_PATH), include_table=args.with_table))
         return 0
-    if args.response is None:
-        parser.error("--response is required unless --print-prompt is given")
-    result = grade(args.response.read_text(encoding="utf-8"), task, load_json(args.truth), table)
-    text = json.dumps(result, indent=2)
+    if args.responses is None:
+        parser.error("a responses file is required unless --print-prompt is given")
+    summary = score_all(load_json(args.responses))
+    text = json.dumps(summary, indent=2)
     if args.out:
         args.out.write_text(text + "\n", encoding="utf-8")
     print(text)
-    return 0 if result["pass"] else 1
+    return 0 if summary["all_pass"] else 1
 
 
 if __name__ == "__main__":
