@@ -24,6 +24,29 @@ def reply(action=None,*,calls=None):
 
 
 class NativeActions(unittest.TestCase):
+    def test_early_evaluation_gate_leaves_calls_for_repairs_and_submission(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c=native_config();c.update(max_calls=32,evaluation_after_calls=12)
+            provider=ModelProvider(c,'SECRET',tmp)
+            provider.usage['calls']=12
+            observation={'history':[{'kind':'initial_evidence','event_id':'e00000'}]}
+            decision={'hypothesis':'Test fitted predictor','expected_result':'Valid outputs',
+                      'code_diff':'Baseline fit','evidence_ids':['e00000']}
+            def evaluate(request,**kwargs):
+                body=json.loads(request.data)
+                schema=body['tools'][0]['function']['parameters']
+                self.assertEqual(schema['properties']['operation']['enum'],['evaluate'])
+                self.assertIn('decision',schema['required'])
+                return reply({'operation':'evaluate','decision':decision})
+            with patch('urllib.request.urlopen',side_effect=evaluate):
+                self.assertEqual(provider(observation,0)['operation'],'evaluate')
+            observation['history'].append({'kind':'development_result','result':{'execution_valid':False}})
+            def repair(request,**kwargs):
+                self.assertEqual(json.loads(request.data)['tools'],[ACTION_TOOL])
+                return reply({'operation':'edit','path':'artifact/inference.py','text':'repair'})
+            with patch('urllib.request.urlopen',side_effect=repair):
+                self.assertEqual(provider(observation,0)['operation'],'edit')
+
     def test_tool_conversation_preserves_code_reasoning_and_actual_results_on_resume(self):
         with tempfile.TemporaryDirectory() as tmp:
             c=native_config();c.update(conversation_mode='tools',max_total_tokens=1000000)

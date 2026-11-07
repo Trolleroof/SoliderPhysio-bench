@@ -23,6 +23,14 @@ Reasoning blocks are passed back as described in the
 
 ## Submission phase
 
+The pilot first asks the model to fit and evaluate a documented reference
+(load ridge, heat elapsed, pulse ridge), then improve it using public development
+feedback. If no development evaluation has occurred after 12 paid calls, a
+native evaluate-only phase requires an actual evaluation. A failed result
+reopens research for repairs; this gate never trains or substitutes an artifact.
+It prevents the observed heat failure where the first valid evaluation happened
+on the final available call, leaving no opportunity for submission.
+
 The initial interactive attempt produced a valid load predictor but spent all
 32 calls without submitting it. A soft budget reminder did not prevent further
 code edits. The runner now enters a submission phase when at most four calls
@@ -40,7 +48,7 @@ The command makes paid calls under the persistent shared cap:
 
 ```sh
 .venv-research/bin/python -m scripts.run_research_pilot \
-  .leaderboard-checks/deepseek-interactive-20261106/v3 \
+  .leaderboard-checks/deepseek-interactive-20261106/v4 \
   --spend-path .leaderboard-checks/deepseek-interactive-20261106/spend.sqlite
 ```
 
@@ -70,5 +78,11 @@ The original compact failures are under
 `.leaderboard-checks/deepseek-smoke-20261106/`; the first interactive failure and
 its charges are under `.leaderboard-checks/deepseek-interactive-20261106/`.
 The snapshot-mode `v2/` attempts finished with no submissions on all three tasks.
-The conversation-mode rerun is in `v3/`; its outcome remains pending until sealed
-receipts and independent reviews exist.
+The conversation-mode `v3/` load attempt completed submission, hidden replay and
+independent review, with development MAE 35.81 W (reference ridge: 32.16 W).
+Its heat predictor passed development evaluation on its last call, then failed
+for lack of a submission call. Its long pulse fitting command was explicitly
+interrupted to apply the early-evaluation fix; its partial trace and charges are
+preserved as an interrupted diagnostic, not a scored prediction attempt.
+The baseline-first/early-evaluation rerun is in `v4/`; outcomes remain pending
+until sealed receipts and independent reviews exist.

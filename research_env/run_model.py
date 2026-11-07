@@ -89,6 +89,10 @@ class ModelProvider:
             raise ValueError('Unknown participant conversation mode')
         if config.get('conversation_mode') == 'tools' and config.get('action_transport') != 'tools':
             raise ValueError('Tool conversations require native tool transport')
+        deadline=config.get('evaluation_after_calls')
+        if deadline is not None and (type(deadline) is not int or not 0 < deadline < config['max_calls']-3
+                                     or config.get('action_transport') != 'tools'):
+            raise ValueError('Evaluation deadline needs native tools and calls reserved for submission')
         p=self.root/'provider-usage.json'
         self.usage=read(p) if p.exists() else {'calls':0,'tokens':0}
         self.last_call_id = None
@@ -118,6 +122,12 @@ class ModelProvider:
                       if e.get('kind') == 'development_result' and e.get('result', {}).get('execution_valid')
                       and e['result'].get('candidate_id')}
         submission_phase = bool(candidates) and (remaining_calls <= 4 or observation['inference_budget']['near_limit'])
+        deadline=self.config.get('evaluation_after_calls')
+        evaluation_phase=(not submission_phase and deadline is not None and self.usage['calls'] >= deadline
+                          and not any(e.get('kind') == 'development_result' for e in observation.get('history', [])))
+        if evaluation_phase:
+            observation['evaluation_phase']='Evaluate your current artifact now; use the observed result to repair or improve it with the remaining calls.'
+            system += '\nEVALUATION PHASE: call evaluate now with your decision and public evidence. Further research resumes after the actual evaluation result.'
         if submission_phase:
             observation['submission_phase'] = {'valid_candidates':candidates,
                 'instruction':'Research is closed. Choose and submit a valid candidate now using public development loss (lower is better).'}
@@ -149,6 +159,13 @@ class ModelProvider:
                     'reason':{'type':'string'},
                     'evidence_ids':{'type':'array', 'items':{'type':'string'}}},
                     'required':['operation','candidate_id','reason','evidence_ids']}}}]
+        elif evaluation_phase:
+            body['tools']=[{'type':'function','function':{'name':'take_action',
+                'description':'Evaluate the current artifact and receive actual development feedback.',
+                'parameters':{'type':'object','properties':{
+                    'operation':{'type':'string','enum':['evaluate']},
+                    'decision':deepcopy(ACTION_TOOL['function']['parameters']['properties']['decision'])},
+                    'required':['operation','decision']}}}]
         if self.config.get('seed_mode','send')=='send':
             body['seed']=seed
         reservation=(len(canonical(body)) if self.config.get('conversation_mode') == 'tools'
@@ -208,6 +225,8 @@ class ModelProvider:
                 raise ActionProtocolError('Controller action must be an object; no action was executed')
             if submission_phase and (action.get('operation') != 'submit' or action.get('candidate_id') not in candidates):
                 raise ActionProtocolError('Research is closed: submit one of the valid evaluated candidates; no action was executed')
+            if evaluation_phase and action.get('operation') != 'evaluate':
+                raise ActionProtocolError('Evaluation is due: call evaluate with your public decision; no action was executed')
             if self.config.get('conversation_mode') == 'tools':
                 if not isinstance(calls[0].get('id'), str) or not calls[0]['id']:
                     raise ActionProtocolError('Tool conversation requires a tool call ID')
