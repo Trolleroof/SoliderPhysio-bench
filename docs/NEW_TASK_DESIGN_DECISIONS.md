@@ -36,6 +36,9 @@ to weigh current observations and predicted outcomes.
   and numerical error in °C; the judge also assesses forecast uncertainty.
   Assess the decision using what was knowable at minute 30, rather than
   penalizing a defensible decision based on the later outcome.
+- Preserve and display individual scores for granularity, and produce a combined
+  score for the final Elo. The combination, weights and Elo procedure remain to
+  be specified and frozen before comparisons.
 - Record a viewable, ordered trajectory, including tool calls, arguments,
   results and errors, the final answer, and any intermediate reasoning or
   reasoning summaries the provider exposes. Mark withheld or unavailable
@@ -55,8 +58,8 @@ to weigh current observations and predicted outcomes.
 - Verify that the measured data support any proposed case categories. A clear
   stop/cool case, an ambiguous case and a continue control were suggested, but
   have not been confirmed or selected.
-- Decide how the three scores are reported or combined, and define completion,
-  invalid response and missing-data handling.
+- Define the combined score and Elo procedure, completion, invalid response
+  and missing-data handling.
 
 ## Other tasks
 
