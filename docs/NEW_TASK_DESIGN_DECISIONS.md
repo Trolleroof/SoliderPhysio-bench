@@ -82,3 +82,7 @@ explanation 40%. The existing specification and readiness blockers still apply.
 
 The draft [judge rubrics](LLM_JUDGE_RUBRICS.md) cover all three tasks; they
 require calibration and freezing before official comparisons.
+
+The [scoring and Elo design](SCORING_AND_ELO.md) specifies a proposed
+normalization and matched-comparison procedure. Data-dependent calibration,
+invalid-run policy and implementation remain open.
