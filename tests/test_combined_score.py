@@ -231,7 +231,7 @@ class Ratings(unittest.TestCase):
         self.assertEqual(flags, {'top': 'wins_all', 'mid': None, 'low': 'loses_all'})
         self.assertIn('prior', [x for x in r['ratings'] if x['model'] == 'top'][0]['separation_note'])
         self.assertIsNone([x for x in r['ratings'] if x['model'] == 'mid'][0]['separation_note'])
-        self.assertIn('70%', r['ci95_note'])
+        self.assertIn('75-80%', r['ci95_note'])
         self.assertIn('exploratory', r['ci95_note'])
         # A tie with a winner means "did not win every comparison".
         tied = [self.run_for('a', 0.1, 0.1), self.run_for('b', 0.1, 0.1), self.run_for('c', 0.5, 0.4)]

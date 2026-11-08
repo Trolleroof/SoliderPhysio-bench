@@ -189,22 +189,21 @@ development windows are.
 
 ## Fit stress test (synthetic, 2026-11-07)
 
-> The numbers below were computed with the earlier 17-case layout (13 keep_going,
-> 2 rulebook, 2 beat_ectemp). `tasks/elo_stress.py` now uses the v3 21-case
-> layout (12 + 2 + 7); rerun it (~6 min) to refresh them.
-
 No model outputs exist yet, so the pinned `FIT` choices in
 `tasks/combined_score.py` were stress-tested on synthetic rosters of 3-10
-models with the real case counts (13 keep_going incl. KG-03, 2 rulebook, 2
-beat_ectemp). Raw measurements (forecast error rounded to 0.01 °C, integer
+models with the v3 `required_cases` layout (21 cases: 12 keep_going, 2 rulebook,
+7 per-person beat_ectemp; rerun 2026-11-08). The 7 beat_ectemp cases are
+simulated as independent; in reality 3A/H06 and 3B/H06 share a person, so
+true beat_ectemp variance is somewhat higher than simulated. The simulator also
+uses forecast E = 1.0 °C, not the frozen E_c = 0.1712 °C. Raw measurements (forecast error rounded to 0.01 °C, integer
 judge scores, 4-field table fraction, MAE/B) are simulated per model and case,
 then go through the production normalization, pairing and Davidson fit.
 Scenarios: `typical` (moderate skill spread), `close` (small spread),
 `ceiling` (judges near 5) and `tie_heavy` (judges saturate, nobody beats
 ECTemp; ~36% of pair weight is ties). Reproduce with
 `python3 -m tasks.elo_stress --only {extremes,priors,rmse,bootstrap,mapping}`
-(seed 20261107; each section is reproducible on its own; the full run takes ~6 min
-with sections in parallel). These are properties of the procedure under an
+(seed 20261107; each section is reproducible on its own; the full run takes ~10 min
+with sections in parallel, bootstrap being the slowest). These are properties of the procedure under an
 assumed data model, not evidence about real models.
 
 ### Bugs fixed (with tests)
@@ -238,18 +237,19 @@ only sets the spacing and the intervals. A test locks in this property.
 **(1) Davidson vs ties-as-half-win.** Same ranks. Davidson spreads ratings a
 little more when ties are common, because a high tie rate means a given
 win/loss margin implies a bigger strength gap. Median Elo spread, Davidson vs
-half-win: typical n=5 496 vs 463; ceiling n=10 504 vs 434; tie_heavy n=10 435
-vs 267 (median max shift 95 Elo). **Recommend: keep Davidson.** It models the
+half-win: typical n=5 479 vs 449; ceiling n=10 505 vs 437; tie_heavy n=10 423
+vs 253 (median max shift 94 Elo). **Recommend: keep Davidson.** It models the
 ties judges' integer scores produce instead of hiding them, and reports nu.
 
 **(2) Prior sensitivity.** `log_nu_prior_precision` hardly matters: 0.001-0.1
-moves any rating by ≤ 5 Elo (median ≤ 3); 1.0 moves the most-shifted rating by up to 26 (median across scenarios ≤ 26). **Keep
+moves the most-shifted rating by a median ≤ 4 Elo (95th percentile ≤ 14); 1.0
+moves it by a median ≤ 25 (95th percentile ≤ 69). **Keep
 0.01.** `theta_prior_precision` shrinks the spread: at typical n=5 the median
-spread is 531 / 496 / 439 / 329 for 0.01 / 0.1 / 0.3 / 1.0. Against the
+spread is 507 / 479 / 429 / 325 for 0.01 / 0.1 / 0.3 / 1.0. Against the
 infinite-case rating, RMSE is lowest at 0.1-0.3 when skills are spread out
-(typical n=5: 96 / 79 / 75 / 92 Elo for 0.01 / 0.1 / 0.3 / 1.0) and at 1.0 when
-models are close (close n=5: 80 / 76 / 69 / 56). Interval coverage is about the
-same for 0.01-0.3 and drops at 1.0 (typical n=3: 0.39). **Recommend: keep 0.1.**
+(typical n=5: 65 / 61 / 65 / 90 Elo for 0.01 / 0.1 / 0.3 / 1.0) and at 1.0 when
+models are close (close n=5: 67 / 64 / 59 / 51). Interval coverage is about the
+same for 0.01-0.3 and drops at 1.0 (typical n=3: 0.47). **Recommend: keep 0.1.**
 It is near-optimal in the spread-out case, safe in the close case, and never
 reorders models. Note that each pair carries only 3 units of evidence however
 many cases there are, so the prior never washes out. Report that Elo gaps are
@@ -257,20 +257,19 @@ shrunk by a fixed amount.
 
 **(3) Within-task case bootstrap.** No crashes or degenerate output. All-ties
 resamples give [1500, 1500] and separated resamples stay finite. A 2-case task
-has only 3 distinct resamples (AA 1/4, AB 1/2, BB 1/4), so the two small tasks
-give at most 9 configurations. **The intervals under-cover.** Coverage of
-the infinite-case rating at nominal 95% is 0.65-0.79 for the full suite. It is
-0.90 for keep_going alone (13 cases) but 0.49 for rulebook alone and 0.41 for
-beat_ectemp alone (2 cases each). Two causes: (a) a 2-case bootstrap
-underestimates case variance by half (factor (n-1)/n), and (b) finite-case
-ratings overstate gaps (median sample/population spread 1.12-1.81), a bias the
-bootstrap does not see. Drawing n-1 cases per task (rescaled bootstrap) adds
-2-5 points of coverage and makes intervals ~20% wider: not worth changing the
-pin. The point estimate was never outside its interval. **Decided: keep the
-method; intervals are exploratory, with about 70% real coverage of the nominal
-95%.** `rate()` output carries this as `ci95_note`. Do not call two models
-different because their intervals don't overlap. The only real fix is more rulebook and
-beat_ectemp cases.
+has only 3 distinct resamples (AA 1/4, AB 1/2, BB 1/4); rulebook is now the
+only 2-case task. **The intervals under-cover.** Coverage of the infinite-case
+rating at nominal 95% is 0.76-0.79 for the full suite (was 0.65-0.79 with 2
+beat_ectemp cases). It is 0.88 for keep_going alone (12 cases), 0.78 for
+beat_ectemp alone (7 cases) and 0.46 for rulebook alone (2 cases). Two causes:
+(a) a 2-case bootstrap underestimates case variance by half (factor (n-1)/n),
+and (b) finite-case ratings overstate gaps (median sample/population spread
+1.07-1.36), a bias the bootstrap does not see. Drawing n-1 cases per task
+(rescaled bootstrap) adds 3-6 points of coverage and makes intervals ~15% wider:
+not worth changing the pin. The point estimate was never outside its interval. **Decided: keep the
+method; intervals are exploratory.** Real coverage of the nominal 95% is now
+about 75-80% (was ~70% on the 17-case layout). `rate()` output carries this as `ci95_note`. Do not call two models
+different because their intervals don't overlap. The only real fix is more rulebook cases.
 
 **(4) Perfect separation and all ties.** Both behave. Under total separation the
 prior alone sets the gap (Elo spread at theta precision 0.1: 527 for 2 models,
@@ -296,13 +295,13 @@ changes):
 
 | Alternative | typical | close |
 | --- | ---: | ---: |
-| Equal component weights | 4% / 28% | 10% / 46% |
-| Deterministic-heavy (0.5/0.3/0.2; ECTemp 0.8/0.2) | 12% / 53% | 20% / 75% |
-| Judge-heavy (0.2/0.5/0.3; ECTemp 0.4/0.6) | 7% / 39% | 14% / 56% |
-| E = 0.5 °C (vs 1.0) | 3% / 19% | 6% / 30% |
-| E = 2.0 °C | 1% / 16% | 5% / 25% |
-| ECTemp B × 2 (parity earns 0.5) | 5% / 32% | 12% / 43% |
-| Case-proportional instead of equal task weights | 29% / 84% | 34% / 94% |
+| Equal component weights | 5% / 20% | 8% / 38% |
+| Deterministic-heavy (0.5/0.3/0.2; ECTemp 0.8/0.2) | 9% / 49% | 21% / 74% |
+| Judge-heavy (0.2/0.5/0.3; ECTemp 0.4/0.6) | 7% / 38% | 14% / 60% |
+| E = 0.5 °C (vs 1.0) | 4% / 19% | 5% / 37% |
+| E = 2.0 °C | 3% / 15% | 5% / 29% |
+| ECTemp B × 2 (parity earns 0.5) | 4% / 21% | 8% / 39% |
+| Case-proportional instead of equal task weights | 17% / 74% | 28% / 86% |
 
 Mid-table order is fragile under any plausible reweighting. The top model is
 fairly stable except under task weighting. The equal-task-weight rule matters
@@ -314,6 +313,6 @@ mid-table ranks are not robust.
 ### Recommended FIT (unchanged except the fixes)
 
 `tie_model` davidson; `theta_prior_precision` 0.1; `log_nu_prior_precision`
-0.01; `tie_tolerance` 1e-9; bootstrap as pinned, labelled exploratory (~70%
+0.01; `tie_tolerance` 1e-9; bootstrap as pinned, labelled exploratory (~75-80%
 real coverage); a frozen `required_cases` in params without KG-03, required for
 official runs; separation flags on every rating.

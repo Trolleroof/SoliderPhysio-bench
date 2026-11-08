@@ -305,8 +305,8 @@ def percentile(xs, q):
     return xs[lo] + (xs[hi] - xs[lo]) * (pos - lo)
 
 
-CI_NOTE = ('exploratory: case-resampling interval; in simulation it covers the true rating about 70% '
-           'of the time, not 95%, because two tasks have very few cases (docs/SCORING_AND_ELO.md)')
+CI_NOTE = ('exploratory: case-resampling interval; in simulation it covers the true rating about 75-80% '
+           'of the time, not 95%, mainly because rulebook_vs_body has only 2 cases (docs/SCORING_AND_ELO.md)')
 PRIOR_GAP_NOTE = ('won or lost every matched comparison: the size of its rating gap is set by the '
                   'prior (theta_prior_precision), not by the data')
 
