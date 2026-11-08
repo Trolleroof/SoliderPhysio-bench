@@ -104,7 +104,9 @@ def execute(workspace, command, *, timeout_s, cpus=8, memory_gb=32,
             resource.setrlimit(resource.RLIMIT_FSIZE, (16*1024*1024,)*2)
             if backend == 'local':
                 resource.setrlimit(resource.RLIMIT_AS, (int(memory_gb*1024**3),)*2)
-                resource.setrlimit(resource.RLIMIT_NPROC, (64,)*2)
+                # RLIMIT_NPROC counts every process of this UID on the host, not just the
+                # worker's; 64 broke every fork on shared hosts (~1250 same-UID processes).
+                resource.setrlimit(resource.RLIMIT_NPROC, (16384,)*2)
                 restrict(root, tmp)
 
         peak_rss_bytes = 0
