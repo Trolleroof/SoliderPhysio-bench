@@ -21,17 +21,20 @@ class FrontierJudge(OpenRouterJudgeClient):
         self.settings['max_tokens'] = 32768
 
 
-def run(path, out, cap):
+def run(path, out, cap, *, allow_partial=False):
     submission = read(path)
-    if submission.get('status') != 'complete':
-        raise ValueError('Only completed model runs may be judged')
+    if submission.get('status') != 'complete' and not allow_partial:
+        raise ValueError('Only completed model runs may be judged unless --allow-partial is set')
+    if not submission.get('cases'):
+        raise ValueError('No completed cases to judge')
     check_judge_model(FrontierJudge.model, [submission['model']])
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     rubric = load_rubric()
     client = FrontierJudge()
     identity = {'submission_sha256': digest(submission), 'rubric_sha256': rubric['sha256'],
-                'judge_model': client.model, 'settings': client.settings}
+                'judge_model': client.model, 'settings': client.settings,
+                'source_status': submission.get('status')}
     meta = out/'identity.json'
     if meta.exists() and read(meta) != identity:
         raise ValueError('Submission or judge settings changed; use a new output directory')
@@ -65,9 +68,10 @@ def main():
     p.add_argument('submission')
     p.add_argument('--out', required=True)
     p.add_argument('--spend-cap-usd', required=True, type=float)
+    p.add_argument('--allow-partial', action='store_true', help='judge saved cases from an incomplete run')
     a = p.parse_args()
     import json
-    print(json.dumps(run(a.submission, a.out, a.spend_cap_usd), indent=2))
+    print(json.dumps(run(a.submission, a.out, a.spend_cap_usd, allow_partial=a.allow_partial), indent=2))
 
 
 if __name__ == '__main__':
