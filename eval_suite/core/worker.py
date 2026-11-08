@@ -103,7 +103,9 @@ def execute(workspace, command, *, timeout_s, cpus=8, memory_gb=32,
             resource.setrlimit(resource.RLIMIT_CPU, (max(1, int(timeout_s*cpus)),)*2)
             resource.setrlimit(resource.RLIMIT_FSIZE, (16*1024*1024,)*2)
             if backend == 'local':
-                resource.setrlimit(resource.RLIMIT_AS, (int(memory_gb*1024**3),)*2)
+                # RLIMIT_AS caps virtual address space, far stricter than Docker's RSS limit:
+                # 1 GB made threaded numpy/scikit-learn solvers (HiGHS) abort. Allow 4x, >= 4 GB.
+                resource.setrlimit(resource.RLIMIT_AS, (int(max(4*memory_gb, 4)*1024**3),)*2)
                 # RLIMIT_NPROC counts every process of this UID on the host, not just the
                 # worker's; 64 broke every fork on shared hosts (~1250 same-UID processes).
                 resource.setrlimit(resource.RLIMIT_NPROC, (16384,)*2)
