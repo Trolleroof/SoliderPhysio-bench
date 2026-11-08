@@ -43,6 +43,10 @@ def restrict(workspace, temporary):
     read = (1 << 0) | (1 << 2) | (1 << 3)  # execute, read file, read directory
     paths = [(Path(p), read) for p in ('/usr', '/bin', '/lib', '/lib64')]
     paths += [(Path(sys.prefix)/'lib', read), (Path(sys.prefix)/'pyvenv.cfg', read)]
+    # The venv's bin (python3 on the worker PATH) and its base interpreter, so the
+    # model gets the locked research packages instead of a system python.
+    paths += [(Path(sys.executable).parent, read), (Path(sys.base_prefix), read),
+              (Path(sys.executable).resolve().parent.parent, read)]
     paths += [(Path(p), read) for p in ('/etc/ld.so.cache', '/dev/urandom')]
     paths += [(Path('/dev/null'), read | (1 << 1))]
     paths += [(Path(workspace), handled), (Path(temporary), handled)]
