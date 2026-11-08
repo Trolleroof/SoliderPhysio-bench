@@ -61,6 +61,9 @@ class TransportTests(unittest.TestCase):
 
     def test_roster_and_selection(self):
         self.assertEqual(roster_model('6'), roster_model('deepseek/deepseek-v4.1-flash-1017'))
+        self.assertEqual(roster_model('7')['openrouter_id'], 'google/gemini-3.8-flash')
+        with self.assertRaisesRegex(ValueError, 'Unknown roster model'):
+            roster_model('google/gemini-3.7-flash')
         with self.assertRaisesRegex(ValueError, 'Skipped.*no openrouter_id'):
             roster_model('1')
         missing_id = dict(roster_model('6'))

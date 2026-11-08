@@ -3,7 +3,7 @@
  "source": "https://www.mercor.com/apex/apex-agents-leaderboard/ (APEX-Agents, ranked by mean score, as the leaderboard does)",
  "retrieved": "2026-11-08",
  "pricing_source": "https://openrouter.ai/api/v1/models (retrieved 2026-11-08)",
- "rule": "Top 15 APEX-Agents entries by mean score; each is a distinct model. A judge must not be on this roster. Ties on mean score are broken by Pass@1.",
+ "rule": "APEX-Agents-derived roster, with Gemini 3.8 Flash substituted for Gemini 3.7 Flash at the user’s request. Rank is the original roster slot, not a new leaderboard ranking. A judge must not be on this roster.",
  "models": [
   {
    "rank": 1,
@@ -89,17 +89,15 @@
   },
   {
    "rank": 7,
-   "model": "Gemini 3.7 Flash",
+   "model": "Gemini 3.8 Flash",
    "provider": "Google",
    "effort": "high",
-   "apex_mean_score": 79.4,
-   "apex_mean_error": 3.8,
-   "apex_pass1": 67.8,
-   "apex_model_id": "gemini-3.7-flash",
-   "openrouter_id": "google/gemini-3.7-flash",
-   "usd_per_mtok_in": 0.75,
-   "usd_per_mtok_out": 3.75,
-   "max_output_tokens": 65536
+   "apex_model_id": "gemini-3.8-flash",
+   "openrouter_id": "google/gemini-3.8-flash",
+   "usd_per_mtok_in": 0.825,
+   "usd_per_mtok_out": 4.125,
+   "max_output_tokens": 65536,
+   "note": "User-directed replacement for Gemini 3.7 Flash; leaderboard scores and rank have not been established."
   },
   {
    "rank": 8,
