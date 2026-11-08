@@ -142,6 +142,20 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(result['spend']['requests_with_reserved_cost'], 1)
             self.assertEqual(result['spend']['requests'], 2)
 
+    def test_wrapped_broken_pipe_and_tls_failure_are_retried(self):
+        import ssl
+        failures = [urllib.error.URLError(BrokenPipeError(32, 'broken pipe')),
+                    ssl.SSLError('bad record mac')]
+        for error in failures:
+            with self.subTest(error=error), tempfile.TemporaryDirectory() as tmp:
+                fake = FakeModelClient()
+                response = fake.complete({'messages': []})
+                with patch.object(fake, 'complete', side_effect=[error, response]) as call:
+                    result = run('6', tmp, 1, cases='KG-01', client=fake)
+                self.assertEqual(call.call_count, 2)
+                self.assertEqual(result['spend']['requests_with_reserved_cost'], 1)
+                self.assertEqual(len(result['cases']), 1)
+
     def test_failed_request_keeps_reservation_and_partial_results(self):
         with tempfile.TemporaryDirectory() as tmp:
             fake = FakeModelClient()

@@ -6,6 +6,8 @@ import shutil
 import signal
 import tempfile
 import time
+import ssl
+import urllib.error
 
 from eval_suite.core.common import digest, read, tree_hashes, write
 from eval_suite.core.openrouter import OpenRouterClient, api_key
@@ -136,7 +138,9 @@ def run(model, out, spend_cap_usd, *, task_ids='all', cases=None, client=None,
                 return response
             except BaseException as exc:
                 transcript.append('model_error', {'reservation': reservation, 'attempt': attempt, 'error': str(exc)})
-                if not isinstance(exc, (ConnectionResetError, BrokenPipeError)) or attempt == 3:
+                if not (isinstance(exc, (ConnectionResetError, BrokenPipeError, ssl.SSLError)) or
+                        (isinstance(exc, urllib.error.URLError) and
+                         isinstance(exc.reason, (ConnectionResetError, BrokenPipeError, ssl.SSLError)))) or attempt == 3:
                     raise
             finally:
                 signal.setitimer(signal.ITIMER_REAL, 0)
