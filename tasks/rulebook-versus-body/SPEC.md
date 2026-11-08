@@ -1,6 +1,6 @@
 # Rulebook versus body
 
-Status: preserved design; reference table, runner and grader are not implemented.
+Status: historical design notes. Current implementation and data contract: [README](../rulebook_vs_body/README.md). Run with `python -m eval_suite run`; runtime readiness is checked by preflight.
 
 Give the model a weather flag, work category, a versioned TB MED 507 reference
 table and a permitted wearable/workload trace. Ask for the prescribed work/rest

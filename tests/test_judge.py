@@ -1,8 +1,12 @@
-"""Tests for the LLM judging harness (offline fake judge only; no API calls)."""
+"""Offline judging tests: fake judge and mocked OpenRouter HTTP; no API calls."""
+import contextlib
+import io
 import json
 import tempfile
 import unittest
+import urllib.error
 from pathlib import Path
+from unittest.mock import patch
 
 from eval_suite.core.spend import SpendLedger, SpendLimitReached
 from eval_suite.core.transcript import Transcript
@@ -74,9 +78,23 @@ class NoGroundTruthLeak(unittest.TestCase):
         truth = kg.load_ground_truth()['KG-02']['core_at_cutoff_plus_15_c']
         self.assertEqual(set(case['judge']), {'decision', 'reasoning'})
         self.assertEqual(case['judge_reported'], {'forecast_assessment': 4})
-        self.assertNotIn(str(truth), case['judge_record']['prompt'].replace(KG_ANSWER, ''))
+        self.assertIn(f'{truth} C', case['judge_record']['prompt'])  # outcome-first judging
         self.assertIn(f'{truth} C', case['judge_reported_record']['prompt'])
         self.assertEqual(len(client.calls), 2)
+
+    def test_run_case_puts_verified_outcome_first(self):
+        gt = kg.load_ground_truth()['KG-02']
+        case = J.run_case({'task': 'keep_going', 'case_id': 'KG-02', 'answer': KG_ANSWER}, J.FakeJudgeClient())
+        p = case['judge_record']['prompt']
+        self.assertTrue(p.startswith('===== VERIFIED OUTCOME'))
+        self.assertIn(f"Correct decision: {gt['expected_decision']}", p)
+        self.assertIn(case['judge_record']['input_hashes']['outcome'], [J._sha(p.split('\n\n')[0].split('\n', 1)[1])])
+        rb_case = J.run_case({'task': 'rulebook_vs_body', 'case_id': 'RB-01', 'answer': RB_ANSWER}, J.FakeJudgeClient())
+        self.assertIn('Correct TB MED 507 lookup', rb_case['judge_record']['prompt'])
+        be = J.run_case({'task': 'beat_ectemp', 'case_id': '3B/H18', 'answer': 'explanation',
+                         'grader': {'valid': True, 'person_mae': 0.9},
+                         'materials': {'task_statement': 'x'}}, J.FakeJudgeClient())
+        self.assertIn('ECTemp baseline MAE B: 0.626188 C -> DID NOT BEAT ECTemp', be['judge_record']['prompt'])
 
     def test_hidden_ectemp_results_rejected(self):
         with self.assertRaises(ValueError):
@@ -213,6 +231,177 @@ class EndToEnd(unittest.TestCase):
             run = json.loads(dst.read_text())
             self.assertEqual(run['cases'][0]['judge'], {'override_decision': 4, 'reasoning': 4})
             self.assertEqual(run['cases'][0]['grader']['rulebook']['score'], 1.0)
+
+
+class OpenRouter(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.ledger = SpendLedger(Path(self.tmp.name) / 'spend.sqlite', 0.50)
+        self.addCleanup(self.ledger.close)
+        self.client = J.OpenRouterJudgeClient(api_key='test-secret')
+        self.http = self.enterContext(patch('tasks.judge.urllib.request.urlopen'))
+        self.sleep = self.enterContext(patch('tasks.judge.time.sleep'))
+
+    def response(self, text=None, cost=0.0123):
+        if text is None:
+            text = out(dim('decision', 4), dim('reasoning', 3))
+        return io.BytesIO(json.dumps({'choices': [{'message': {'content': text}}],
+                                     'usage': {'cost': cost, 'prompt_tokens': 600,
+                                               'completion_tokens': 110}}).encode())
+
+    def run_judge(self, **kw):
+        return J.judge('keep_going', 'KG-01', KG_ANSWER, self.client, ledger=self.ledger, **kw)
+
+    def http_error(self, code):
+        return urllib.error.HTTPError(self.client.endpoint, code, 'test error', {}, io.BytesIO(b'test-secret'))
+
+    def test_request_audit_and_cost_settlement(self):
+        self.http.return_value = self.response()
+        rec = self.run_judge()
+        req = self.http.call_args.args[0]
+        body = json.loads(req.data)
+        self.assertEqual(req.full_url, 'https://openrouter.ai/api/v1/chat/completions')
+        self.assertEqual(req.get_method(), 'POST')
+        self.assertEqual(req.get_header('Authorization'), 'Bearer test-secret')
+        self.assertEqual(req.get_header('Content-type'), 'application/json')
+        self.assertEqual(self.http.call_args.kwargs['timeout'], 120)
+        self.assertEqual(body, {'model': 'openai/gpt-6.1-sol',
+                               'messages': [{'role': 'user', 'content': rec['prompt']}],
+                               'reasoning': {'effort': 'high'},
+                               'max_tokens': 8192, 'response_format': {'type': 'json_object'},
+                               'usage': {'include': True}, 'stream': False,
+                               'provider': {'require_parameters': True}})
+        self.assertEqual(rec['scores'], {'decision': 4, 'reasoning': 3})
+        self.assertEqual(rec['attempts'][0]['request_body'], body)
+        self.assertEqual(rec['judge_settings'], {**self.client.settings, 'max_attempts': 2})
+        self.assertNotIn('test-secret', json.dumps(rec))
+        self.assertEqual(self.ledger.summary()['accounted_usd'], 0.0123)
+        self.assertEqual(self.ledger.summary()['requests_with_reserved_cost'], 0)
+
+    def test_429_and_5xx_retry_with_separate_reservations(self):
+        self.http.side_effect = [self.http_error(429), self.http_error(503), self.response()]
+        rec = self.run_judge(max_attempts=3)
+        self.assertEqual(rec['status'], 'scored')
+        self.assertEqual(len(rec['attempts']), 3)
+        self.assertEqual(self.ledger.summary()['requests'], 3)
+        self.assertEqual(self.ledger.summary()['requests_with_reserved_cost'], 2)
+        self.assertGreater(self.ledger.summary()['accounted_usd'], 0.0123)
+        self.assertEqual([c.args[0] for c in self.sleep.call_args_list], [1, 2])
+        self.assertNotIn('test-secret', json.dumps(rec))
+
+    def test_retry_bound(self):
+        self.http.side_effect = [self.http_error(500), self.http_error(502)]
+        rec = self.run_judge(max_attempts=2)
+        self.assertEqual(rec['status'], 'not_scorable')
+        self.assertEqual(self.http.call_count, 2)
+        self.assertEqual(self.sleep.call_count, 1)
+
+    def test_nonretryable_failures(self):
+        for error in [self.http_error(400), self.http_error(401), self.http_error(403),
+                      urllib.error.URLError('test-secret'), TimeoutError('test-secret')]:
+            with self.subTest(error=type(error).__name__):
+                self.http.reset_mock()
+                self.http.side_effect = error
+                # Each failed call retains its ceiling; use a fresh ledger per case.
+                with tempfile.TemporaryDirectory() as tmp:
+                    ledger = SpendLedger(Path(tmp) / 'spend.sqlite', 0.5)
+                    try:
+                        rec = J.judge('keep_going', 'KG-01', KG_ANSWER, self.client, ledger=ledger)
+                    finally:
+                        ledger.close()
+                self.assertEqual(rec['status'], 'not_scorable')
+                self.assertEqual(self.http.call_count, 1)
+                self.assertNotIn('test-secret', json.dumps(rec))
+
+    def test_malformed_judgment_settles_without_retry(self):
+        self.http.return_value = self.response('not json')
+        rec = self.run_judge()
+        self.assertEqual(rec['scores'], dict.fromkeys(J.JUDGED['keep_going'], 'not_scorable'))
+        self.assertEqual(rec['attempts'][0]['raw_output'], 'not json')
+        self.assertEqual(self.http.call_count, 1)
+        self.assertEqual(self.ledger.summary()['accounted_usd'], 0.0123)
+
+    def test_missing_message_still_settles_usage(self):
+        self.http.return_value = io.BytesIO(b'{"usage":{"cost":0.004},"choices":[]}')
+        self.assertEqual(self.run_judge()['status'], 'not_scorable')
+        self.assertEqual(self.http.call_count, 1)
+        self.assertEqual(self.ledger.summary()['accounted_usd'], 0.004)
+
+    def test_invalid_provider_json_keeps_reservation_without_retry(self):
+        self.http.return_value = io.BytesIO(b'{')
+        self.assertEqual(self.run_judge()['status'], 'not_scorable')
+        self.assertEqual(self.http.call_count, 1)
+        self.assertEqual(self.ledger.summary()['requests_with_reserved_cost'], 1)
+
+    def test_missing_cost_keeps_ceiling(self):
+        self.http.return_value = self.response(cost=None)
+        self.assertEqual(self.run_judge()['status'], 'scored')
+        self.assertEqual(self.ledger.summary()['requests_with_reserved_cost'], 1)
+
+    def test_price_overrun_halts_and_keeps_audit(self):
+        self.http.return_value = self.response(cost=0.20)
+        transcript = Transcript(Path(self.tmp.name) / 'audit')
+        self.addCleanup(transcript.close)
+        with self.assertRaises(SpendLimitReached):
+            self.run_judge(transcript=transcript)
+        records = transcript.records()
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]['data']['usage']['cost'], 0.20)
+        self.assertIn('SpendLimitReached', records[0]['data']['error'])
+        self.assertEqual(self.http.call_count, 1)
+
+    def test_budget_blocks_http_including_retry(self):
+        with self.assertRaisesRegex(ValueError, 'SpendLedger'):
+            J.judge('keep_going', 'KG-01', KG_ANSWER, self.client)
+        self.http.assert_not_called()
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = SpendLedger(Path(tmp) / 'spend.sqlite', 0.000001)
+            try:
+                with self.assertRaises(SpendLimitReached):
+                    J.judge('keep_going', 'KG-01', KG_ANSWER, self.client, ledger=ledger)
+            finally:
+                ledger.close()
+        self.http.assert_not_called()
+        # Exactly one reservation fits; a 503 must not allow a second paid call.
+        self.http.side_effect = self.http_error(503)
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = SpendLedger(Path(tmp) / 'spend.sqlite', 0.15)
+            try:
+                with self.assertRaises(SpendLimitReached):
+                    J.judge('keep_going', 'KG-01', KG_ANSWER, self.client, ledger=ledger)
+                self.assertEqual(self.http.call_count, 1)
+            finally:
+                ledger.close()
+
+    def test_roster_exclusion_before_http_and_when_scoring_subset(self):
+        roster = json.loads((J.ROOT / 'eval_suite' / 'roster.json').read_text())
+        ids = [m['openrouter_id'] for m in roster['models'] if m.get('openrouter_id')]
+        self.assertNotIn(self.client.model, ids)
+        for model in ids:
+            with self.subTest(model=model):
+                self.client.model = model
+                with self.assertRaisesRegex(ValueError, 'rated roster'):
+                    self.run_judge()
+                with self.assertRaisesRegex(ValueError, 'rated roster'):
+                    cs.check_judge_off_roster([{'model': 'different-model', 'cases': [
+                        {'judge_record': {'judge_model': model}}]}])
+        self.http.assert_not_called()
+
+    def test_cli_requires_cap_and_reports_cost(self):
+        src, dst = Path(self.tmp.name) / 'subs.json', Path(self.tmp.name) / 'run.json'
+        src.write_text(json.dumps({'model': 'handwritten', 'cases': [
+            {'task': 'keep_going', 'case_id': 'KG-01', 'answer': KG_ANSWER}]}))
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+            J.main([str(src), '--judge', 'openrouter'])
+        self.assertEqual(error.exception.code, 2)
+        self.http.assert_not_called()
+        self.http.return_value = self.response()
+        with patch.dict(J.os.environ, {'OPENROUTER_API_KEY': 'test-secret'}):
+            self.assertEqual(J.main([str(src), '--judge', 'openrouter', '--spend-cap-usd', '0.5',
+                                     '--out', str(dst)]), 0)
+        self.assertEqual(json.loads(dst.read_text())['spend']['accounted_usd'], 0.0123)
+        self.assertNotIn('test-secret', dst.read_text())
 
 
 if __name__ == '__main__':

@@ -29,7 +29,7 @@ Destinations must be separate; public must be empty. (If `--splits` is passed, i
   --public /path/to/participant --private /path/to/private --task 3A --hidden
 ```
 
-The runner requires macOS sandbox-exec and fails closed elsewhere. It denies network, private-label reads and filesystem writes, limits CPU to 1200 seconds, and adds a 1200-second wall timeout. Runtime system directories and Python environments must contain no benchmark labels. Run evaluations serially. Each predict invocation sees only its causal request; no labels are sent over stdin. The scorer retains labels in its own process. Test requests are never exported to the public folder.
+The standalone `benchmark.py score` command requires macOS sandbox-exec and fails closed elsewhere. The integrated `python -m eval_suite run` runner supplies `benchmark.evaluate` with the shared worker backend instead: Docker for official isolation, or Linux `local` / `macos-development` for explicitly unofficial development runs (see the root README). The standalone sandbox denies network, private-label reads and filesystem writes, limits CPU to 1200 seconds, and adds a 1200-second wall timeout. Runtime system directories and Python environments must contain no benchmark labels. Run evaluations serially. Each predict invocation sees only its causal request; no labels are sent over stdin. The scorer retains labels in its own process. Test requests are never exported to the public folder.
 
 ## Data contract
 

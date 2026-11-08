@@ -1,11 +1,11 @@
 """Stress test of the pinned Elo fitting choices in tasks/combined_score.py.
 
 Synthetic rosters only: no model outputs exist yet. Case counts match the real
-suite (13 keep_going incl. the KG-03 edge case, 2 rulebook_vs_body, 2
-beat_ectemp). Raw measurements are simulated per model and case, then pushed
+suite's v3 required_cases (12 keep_going, 2 rulebook_vs_body, 7 per-person
+beat_ectemp; 21 cases). Raw measurements are simulated per model and case, then pushed
 through the same normalization, pairwise and Davidson code as real runs.
 
-    python3 -m tasks.elo_stress            # all checks, ~12 min serial
+    python3 -m tasks.elo_stress            # all checks, ~18 min serial, ~10 min with sections in parallel
     python3 -m tasks.elo_stress --only rmse   # one section (each is reproducible alone)
     python3 -m tasks.elo_stress --quick    # fewer replicates
 
@@ -276,8 +276,8 @@ def bootstrap_ci(scores, n_boot, seed, minus_one=False):
 def check_bootstrap(reps, n_boot, rng):
     print('\n## 3. Within-task case bootstrap')
     # Degeneracy: with 2 cases a task has 3 distinct resamples (AA 1/4, AB 1/2, BB 1/4).
-    print('Two-case task resamples: P(both draws same case) = 0.5; the task contributes only '
-          '3 distinct outcome sets, so both 2-case tasks together give at most 9 configurations.')
+    print('Two-case task resamples (rulebook_vs_body): P(both draws same case) = 0.5; the task '
+          'contributes only 3 distinct outcome sets.')
     print('Estimand: the same fit applied to 400 cases per task from the same case distribution.')
     print('| scenario | n | method | coverage | median CI width | point outside CI | '
           'median spread: sample / population |')
@@ -328,10 +328,10 @@ def check_bootstrap_by_task(reps, n_boot, rng):
 
 
 def check_prior_rmse(reps, rng):
-    """Which theta prior makes the 17-case Elo closest to the infinite-case (unpenalised) Elo?"""
+    """Which theta prior makes the 21-case Elo closest to the infinite-case (unpenalised) Elo?"""
     print('\n## 2b. Theta prior vs accuracy and coverage against the population rating')
     print('Truth: near-unpenalised fit (theta precision 1e-6) to 400 cases per task. Estimate: '
-          'the fit on one 13/2/2 benchmark. CI: pinned bootstrap (200 draws) under the same prior.')
+          'the fit on one 12/2/7 benchmark. CI: pinned bootstrap (200 draws) under the same prior.')
     lams = (0.01, 0.03, 0.1, 0.3, 1.0)
     for name in ('typical', 'close'):
         sc = SCENARIOS[name]
@@ -403,7 +403,7 @@ def check_mapping(reps, rng):
                     w = {'wins_a': 0.0, 'wins_b': 0.0, 'ties': 0.0}
                     for key in sc_[models[0]]:
                         x, y = sc_[models[a]][key]['combined'], sc_[models[b]][key]['combined']
-                        w['wins_a' if x > y + 1e-9 else 'wins_b' if y > x + 1e-9 else 'ties'] += 3 / 17
+                        w['wins_a' if x > y + 1e-9 else 'wins_b' if y > x + 1e-9 else 'ties'] += 3 / len(sc_[models[0]])
                     pairs[(a, b)] = w
             e = cs.to_elo(cs.fit_davidson(n, pairs)[0])
             k = 'case-proportional tasks'

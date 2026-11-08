@@ -127,14 +127,22 @@ def _model_key(name):
     return str(name).strip().lower().rsplit('/', 1)[-1]  # 'openai/x' and 'x' are the same model
 
 
+def check_judge_model(model, rated=()):
+    """Reject roster members even when only a subset of models is being scored."""
+    roster = json.loads((Path(__file__).resolve().parent.parent / 'eval_suite' / 'roster.json').read_text())
+    ids = [m['openrouter_id'] for m in roster['models'] if m.get('openrouter_id')]
+    if model and _model_key(model) in {_model_key(m) for m in [*ids, *rated]}:
+        raise ValueError(f'judge model is also on the rated roster: {model}')
+
+
 def check_judge_off_roster(runs):
     """The judge must not be any model being rated (self-preference bias)."""
-    rated = {_model_key(r['model']) for r in runs}
-    judges = {_model_key(m) for r in runs for c in r['cases']
-              if (m := (c.get('judge_record') or {}).get('judge_model'))}
-    clash = sorted(rated & judges)
-    if clash:
-        raise ValueError(f'judge model is also on the rated roster: {clash}')
+    rated = [r['model'] for r in runs]
+    judges = {m for r in runs for c in r['cases']
+              for key in ('judge_record', 'judge_reported_record')
+              if (m := (c.get(key) or {}).get('judge_model'))}
+    for model in judges:
+        check_judge_model(model, rated)
 
 
 def score_runs(runs, params):
@@ -305,8 +313,8 @@ def percentile(xs, q):
     return xs[lo] + (xs[hi] - xs[lo]) * (pos - lo)
 
 
-CI_NOTE = ('exploratory: case-resampling interval; in simulation it covers the true rating about 70% '
-           'of the time, not 95%, because two tasks have very few cases (docs/SCORING_AND_ELO.md)')
+CI_NOTE = ('exploratory: case-resampling interval; in simulation it covers the true rating about 75-80% '
+           'of the time, not 95%, mainly because rulebook_vs_body has only 2 cases (docs/SCORING_AND_ELO.md)')
 PRIOR_GAP_NOTE = ('won or lost every matched comparison: the size of its rating gap is set by the '
                   'prior (theta_prior_precision), not by the data')
 

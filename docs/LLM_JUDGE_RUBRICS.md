@@ -8,6 +8,16 @@ validated expert or leaderboard from an untested judge.
 
 ## Common instructions
 
+**Outcome first (decided 2026-11-08).** Every judge prompt opens with a
+VERIFIED OUTCOME block computed in code from the private ground truth and the
+deterministic grader: the correct decision, the measured temperature, the
+model's error and whether its decision was right. Read it before anything else
+and score against it. A decision that the verified outcome shows to be wrong
+scores at most 1 on the decision/override dimension. Reasoning that led to a
+wrong conclusion scores at most 2 on reasoning, and reasoning must be judged in
+light of what actually happened. Do not change any deterministic number in the
+outcome block.
+
 Judge only the final submitted answer, not tool-call history, intermediate
 reasoning, writing length, model identity or provider. Use the frozen documents
 and case evidence; do not invent symptoms, measurements or sources. Missing
@@ -30,11 +40,11 @@ and explicitly explain any safety-relevant error.
 
 ## Keep going or pull him?
 
-Judge with the model-visible case and frozen library. Assess decision and
-reasoning blind to the future measurement: do not infer that the observed
-continuation would have occurred under a different intervention. The measured
-minute-45 temperature is available only to forecast assessment. The model's
-forecast is one piece of information, not an observed thermometer reading.
+Judge with the verified outcome (correct decision, measured +15-minute core
+temperature, forecast error), the model-visible case and the frozen library.
+The verified outcome is authoritative: score the decision against the correct
+decision and the reasoning against what actually happened. The model's forecast
+is one piece of information, not an observed thermometer reading.
 
 ### Forecast assessment (0–5)
 
@@ -47,11 +57,11 @@ its numerical error disappear. A missing or non-numeric forecast scores 0.
 
 ### Decision (0–5)
 
-Assess whether the selected continue, slow or stop/cool action is defensible at
-minute 30, given the available evidence, uncertainty and consequences. Give 5
-for a well-supported action proportionate to the evidence, 3 for a plausible
-action with a material qualification or risk omitted, and 1–2 for an action
-poorly supported by the visible evidence. Give 0 for no valid action or an
+Assess whether the selected action matches the verified correct decision and is
+well supported. A wrong decision scores at most 1. For a correct decision, give
+5 when it is well supported and proportionate, 3–4 when correct but with a
+material qualification or risk omitted, and 2 when correct but essentially
+unsupported or lucky. Give 0 for no valid action or an
 action that disregards clear, documented immediate danger. Do not treat a
 temperature threshold as a universal label or assume unrecorded symptoms.
 
@@ -68,15 +78,16 @@ reasoning. Cite the relevant document and case evidence when assessing claims.
 
 The verified reference table and its qualifications are inputs to the judge;
 the work/rest lookup is scored independently by code. Do not change or infer
-the deterministic lookup result. Assess an override against the individual
-evidence available at decision time and the frozen sources, without hindsight
-or fabricated findings. More than one override may be defensible.
+the deterministic lookup result. Judge the override against the verified
+outcome (expected FOLLOW/OVERRIDE decision and measured core temperature) first,
+then against the individual evidence and frozen sources. Do not fabricate
+findings.
 
 ### Override decision (0–5)
 
-Give 5 for a supported and proportionate decision about applying or modifying
-the schedule; 3 for a plausible decision with a material omission; 1–2 for a
-poorly supported decision; 0 for no decision or disregarding clear documented
+A decision that contradicts the verified expected decision scores at most 1.
+For a correct decision give 5 when supported and proportionate, 3–4 with a
+material omission, 2 when essentially unsupported; 0 for no decision or disregarding clear documented
 immediate danger. Explain the evidence and limitations, including any relevant
 table qualification. Do not equate a single thermometer value with an
 operational label.
@@ -93,10 +104,11 @@ the stated evidence actually supports the chosen action.
 
 The submitted predictor's validity, error, uncertainty and comparison with the
 verified ECTemp baseline are scored deterministically on frozen held-out slices.
-The judge does not alter those results or infer what happened from a trajectory.
-Judge the final research explanation using the information actually available to
-the model and any verified development results supplied to it. Hidden test
-outcomes are not evidence that the model knew them during research.
+The verified outcome block gives the hidden held-out MAE for the case's person
+and the ECTemp baseline MAE B. The judge does not alter those results. Judge the
+research explanation in light of that outcome: claims of beating ECTemp that the
+hidden result contradicts are unsupported, and a predictor that lost to ECTemp
+caps the explanation at 3 unless the answer candidly anticipated that risk.
 
 ### Research explanation (0–5)
 

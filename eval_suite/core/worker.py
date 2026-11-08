@@ -36,7 +36,7 @@ def execute(workspace, command, *, timeout_s, cpus=8, memory_gb=32,
     """
     root = Path(workspace).resolve()
     tree_hashes(root)  # Reject symlinks, including indirect private-file access.
-    if not command or any(not isinstance(x, str) for x in command):
+    if not isinstance(command, (list, tuple)) or not command or any(not isinstance(x, str) for x in command):
         raise ValueError('Command must be a nonempty argv list')
     actual_cpus = len(os.sched_getaffinity(0)) if hasattr(os, 'sched_getaffinity') else (os.cpu_count() or 1)
     actual_memory = 32.
@@ -74,6 +74,11 @@ def execute(workspace, command, *, timeout_s, cpus=8, memory_gb=32,
             for key, value in env.items():
                 cmd.extend(['-e', f'{key}={value}'])
             cmd.extend([image, *command])
+        elif backend == 'local':
+            from eval_suite.core.linux_sandbox import restrict
+            cmd = command
+            env.update(PATH=str(Path(sys.executable).parent)+':/usr/local/bin:/usr/bin:/bin',
+                       HOME=str(tmp), TMPDIR=str(tmp))
         elif backend == 'macos-development':
             if sys.platform != 'darwin' or not shutil.which('sandbox-exec'):
                 raise RuntimeError('macOS sandbox unavailable')
@@ -97,6 +102,10 @@ def execute(workspace, command, *, timeout_s, cpus=8, memory_gb=32,
             import resource
             resource.setrlimit(resource.RLIMIT_CPU, (max(1, int(timeout_s*cpus)),)*2)
             resource.setrlimit(resource.RLIMIT_FSIZE, (16*1024*1024,)*2)
+            if backend == 'local':
+                resource.setrlimit(resource.RLIMIT_AS, (int(memory_gb*1024**3),)*2)
+                resource.setrlimit(resource.RLIMIT_NPROC, (64,)*2)
+                restrict(root, tmp)
 
         peak_rss_bytes = 0
         last_sample = 0.
@@ -146,6 +155,10 @@ def execute(workspace, command, *, timeout_s, cpus=8, memory_gb=32,
                     if proc.poll() is None:
                         os.killpg(proc.pid, signal.SIGKILL)
                     proc.wait()
+                    try:
+                        os.killpg(proc.pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
                 if streaming:
                     exchange_thread.join(timeout=2)
                     if exchange_thread.is_alive():

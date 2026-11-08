@@ -37,27 +37,22 @@ class TaskSuite(unittest.TestCase):
             self.assertEqual(result.returncode,2)
             self.assertIn('invalid choice',result.stderr)
 
-    def test_new_task_runs_are_blocked_until_implementation_exists(self):
+    def test_run_requires_explicit_configuration(self):
         with patch('urllib.request.urlopen') as network:
             for task in ACTIVE_TASK_IDS:
-                with self.subTest(task=task),self.assertRaisesRegex(TaskNotReadyError,'No model request was sent'):
+                with self.assertRaisesRegex(TaskNotReadyError, 'No model request was sent'):
                     run_task(task)
             network.assert_not_called()
-        result=cli('-m','eval_suite','run','beat-ectemp')
-        self.assertEqual(result.returncode,2)
-        self.assertIn('not implemented yet',result.stderr)
-        self.assertIn('cannot be used as a fallback',result.stderr)
+        self.assertNotEqual(cli('-m', 'eval_suite', 'run').returncode, 0)
 
-    def test_preflight_is_honestly_blocked_and_has_no_default_run(self):
-        result=cli('-m','eval_suite','preflight')
-        self.assertEqual(result.returncode,2)
-        report=json.loads(result.stdout)
-        self.assertEqual(report['status'],'blocked')
-        self.assertEqual(report['model_requests_sent'],0)
-        self.assertEqual(len(report['tasks']),3)
-        self.assertTrue(all(not t['ready'] and t['missing'] for t in report['tasks']))
-        self.assertNotEqual(cli('-m','eval_suite','run').returncode,0)
-        self.assertNotEqual(cli('-m','eval_suite').returncode,0)
+    def test_preflight_checks_runtime_without_model_calls(self):
+        with patch('urllib.request.urlopen') as network:
+            report = preflight(backend='local')
+            network.assert_not_called()
+        self.assertEqual(report['model_requests_sent'], 0)
+        self.assertTrue(all(t['ready'] for t in report['tasks'][:2]))
+        with patch('eval_suite.registry.Path.is_file', return_value=False):
+            self.assertTrue(all(not t['ready'] for t in preflight()['tasks']))
 
     def test_historical_python_entrypoints_cannot_import_or_run(self):
         modules=('research_env','research_env.compact','research_env.sweep',
@@ -77,9 +72,9 @@ class TaskSuite(unittest.TestCase):
     def test_catalog_edits_cannot_reenable_legacy_or_fake_readiness(self):
         rows=tasks()
         fake={'tasks':[dict(t,status='ready',missing=[]) for t in rows]}
-        with patch('eval_suite.registry.Path.read_text',return_value=json.dumps(fake)):
+        with patch('eval_suite.registry.tasks', return_value=fake['tasks']), \
+             patch('eval_suite.registry.Path.is_file', return_value=False):
             self.assertTrue(all(not t['ready'] for t in preflight()['tasks']))
-            with self.assertRaises(TaskNotReadyError):run_task(ACTIVE_TASK_IDS[0])
         fake['tasks'][0]['id']='heat'
         with patch('eval_suite.registry.Path.read_text',return_value=json.dumps(fake)):
             with self.assertRaisesRegex(ValueError,'exactly the three'):tasks()

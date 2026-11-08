@@ -1,6 +1,6 @@
 # Beat ECTemp
 
-Status: preserved design; baseline, data export, runner and grader are not implemented.
+Status: historical design notes. Current implementation and data contract: [README](../beat_ectemp/README.md). Run with `python -m eval_suite run`; runtime readiness is checked by preflight.
 
 Give the model measured training data, a verified ECTemp baseline, a public
 development scorer and a 20-minute offline CPU research budget. It must build
