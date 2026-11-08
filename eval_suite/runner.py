@@ -74,10 +74,10 @@ def select_cases(task_ids='all', cases=None):
 
 
 def run(model, out, spend_cap_usd, *, task_ids='all', cases=None, client=None,
-        backend='docker', image=None, research_seconds=1200, max_steps=64, max_tokens=131072):
+        backend='docker', image=None, research_seconds=1200, max_steps=64, max_tokens=131072, request_timeout=900):
     row = roster_model(model)
     selected = select_cases(task_ids, cases)
-    if not 0 < research_seconds <= 1200 or not 1 <= max_steps <= 64 or max_tokens <= 0:
+    if not 0 < research_seconds <= 1200 or not 1 <= max_steps <= 64 or max_tokens <= 0 or not 0 < request_timeout <= 1200:
         raise ValueError('Invalid research/token limits (wall <=1200s, turns <=64)')
     report = preflight([k for k, v in TASKS.items() if any(c.startswith(v+'/') for c in selected)],
                        backend=backend, image=image)
@@ -88,7 +88,7 @@ def run(model, out, spend_cap_usd, *, task_ids='all', cases=None, client=None,
     if any(out.iterdir()):
         raise ValueError('Output directory must be empty; use a new directory to preserve prior evidence')
     fake = client is not None
-    client = client or OpenRouterClient(api_key(ROOT))
+    client = client or OpenRouterClient(api_key(ROOT), timeout_s=request_timeout)
     ledger = SpendLedger(out/'spend.sqlite', spend_cap_usd)
     transcript = Transcript(out/'controller')
     # OpenRouter's effort vocabulary uses xhigh, not max. Keep both for audit.
@@ -101,7 +101,7 @@ def run(model, out, spend_cap_usd, *, task_ids='all', cases=None, client=None,
     pricing = {'prompt': row['usd_per_mtok_in']/1e6, 'completion': row['usd_per_mtok_out']/1e6}
     result = {'schema': 'model-runner-v1', 'model': row['openrouter_id'], 'roster': row,
               'settings': settings, 'official': False, 'fake_model': fake, 'backend': backend,
-              'image': image, 'required_cases': selected, 'cases': [], 'status': 'running',
+              'image': image, 'request_timeout_s': request_timeout, 'required_cases': selected, 'cases': [], 'status': 'running',
               'scoring_params_sha256': digest(read(ROOT/'tasks/scoring_params.json'))}
     transcript.append('run_start', result)
 
@@ -109,7 +109,8 @@ def run(model, out, spend_cap_usd, *, task_ids='all', cases=None, client=None,
         result['spend'] = ledger.summary()
         write(out/'submissions.json', result)
 
-    def complete(messages, tools=None, remaining=300, final=False):
+    def complete(messages, tools=None, remaining=None, final=False):
+        timeout = min(request_timeout, remaining) if remaining is not None else request_timeout
         body = {'model': row['openrouter_id'], **settings, 'messages': messages}
         if tools:
             body['tools'] = tools
@@ -122,9 +123,9 @@ def run(model, out, spend_cap_usd, *, task_ids='all', cases=None, client=None,
         def expired(*_):
             raise TimeoutError('Model request wall budget exhausted')
         previous = signal.signal(signal.SIGALRM, expired)
-        signal.setitimer(signal.ITIMER_REAL, min(300, remaining))
+        signal.setitimer(signal.ITIMER_REAL, timeout)
         try:
-            response = client.complete(body, timeout_s=min(300, remaining))
+            response = client.complete(body, timeout_s=timeout)
             transcript.append('model_response', {'reservation': reservation, **response})
             ledger.settle(reservation, response.get('usage') or {})
             return response

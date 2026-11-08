@@ -19,6 +19,7 @@ def main(argv=None):
     run.add_argument('--research-seconds', type=float, default=1200)
     run.add_argument('--max-steps', type=int, default=64)
     run.add_argument('--max-tokens', type=int, default=131072)
+    run.add_argument('--request-timeout', type=float, default=900, help='per-request timeout in seconds (maximum 1200)')
     for p in (run, check):
         p.add_argument('--backend', choices=['docker', 'local', 'macos-development'], default='docker')
         p.add_argument('--image', help='digest-pinned, already installed Docker image')
@@ -35,7 +36,7 @@ def main(argv=None):
             result = run_model(args.model, args.out, args.spend_cap_usd, task_ids=args.task or args.tasks,
                                cases=args.cases, backend=args.backend, image=args.image,
                                research_seconds=args.research_seconds, max_steps=args.max_steps,
-                               max_tokens=args.max_tokens)
+                               max_tokens=args.max_tokens, request_timeout=args.request_timeout)
         except Exception as exc:
             parser.exit(2, f'{type(exc).__name__}: {exc}\n')
         print(json.dumps({'status': result['status'], 'cases': len(result['cases']),
