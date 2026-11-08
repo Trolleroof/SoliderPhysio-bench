@@ -74,7 +74,7 @@ def select_cases(task_ids='all', cases=None):
 
 
 def run(model, out, spend_cap_usd, *, task_ids='all', cases=None, client=None,
-        backend='docker', image=None, research_seconds=1200, max_steps=64, max_tokens=32768):
+        backend='docker', image=None, research_seconds=1200, max_steps=64, max_tokens=131072):
     row = roster_model(model)
     selected = select_cases(task_ids, cases)
     if not 0 < research_seconds <= 1200 or not 1 <= max_steps <= 64 or max_tokens <= 0:
@@ -93,6 +93,8 @@ def run(model, out, spend_cap_usd, *, task_ids='all', cases=None, client=None,
     transcript = Transcript(out/'controller')
     # OpenRouter's effort vocabulary uses xhigh, not max. Keep both for audit.
     effort = 'xhigh' if row['effort'] == 'max' else row['effort']
+    # Requested budget is clamped to the provider's advertised output limit (roster).
+    max_tokens = min(max_tokens, row.get('max_output_tokens') or max_tokens)
     settings = {'max_tokens': max_tokens, 'reasoning': {'effort': effort},
                 'provider': {'require_parameters': True, 'max_price': {
                     'prompt': row['usd_per_mtok_in'], 'completion': row['usd_per_mtok_out'], 'request': 0}}}

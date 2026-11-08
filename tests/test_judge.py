@@ -78,9 +78,23 @@ class NoGroundTruthLeak(unittest.TestCase):
         truth = kg.load_ground_truth()['KG-02']['core_at_cutoff_plus_15_c']
         self.assertEqual(set(case['judge']), {'decision', 'reasoning'})
         self.assertEqual(case['judge_reported'], {'forecast_assessment': 4})
-        self.assertNotIn(str(truth), case['judge_record']['prompt'].replace(KG_ANSWER, ''))
+        self.assertIn(f'{truth} C', case['judge_record']['prompt'])  # outcome-first judging
         self.assertIn(f'{truth} C', case['judge_reported_record']['prompt'])
         self.assertEqual(len(client.calls), 2)
+
+    def test_run_case_puts_verified_outcome_first(self):
+        gt = kg.load_ground_truth()['KG-02']
+        case = J.run_case({'task': 'keep_going', 'case_id': 'KG-02', 'answer': KG_ANSWER}, J.FakeJudgeClient())
+        p = case['judge_record']['prompt']
+        self.assertTrue(p.startswith('===== VERIFIED OUTCOME'))
+        self.assertIn(f"Correct decision: {gt['expected_decision']}", p)
+        self.assertIn(case['judge_record']['input_hashes']['outcome'], [J._sha(p.split('\n\n')[0].split('\n', 1)[1])])
+        rb_case = J.run_case({'task': 'rulebook_vs_body', 'case_id': 'RB-01', 'answer': RB_ANSWER}, J.FakeJudgeClient())
+        self.assertIn('Correct TB MED 507 lookup', rb_case['judge_record']['prompt'])
+        be = J.run_case({'task': 'beat_ectemp', 'case_id': '3B/H18', 'answer': 'explanation',
+                         'grader': {'valid': True, 'person_mae': 0.9},
+                         'materials': {'task_statement': 'x'}}, J.FakeJudgeClient())
+        self.assertIn('ECTemp baseline MAE B: 0.626188 C -> DID NOT BEAT ECTemp', be['judge_record']['prompt'])
 
     def test_hidden_ectemp_results_rejected(self):
         with self.assertRaises(ValueError):

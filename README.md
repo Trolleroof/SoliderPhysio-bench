@@ -33,7 +33,7 @@ id fail before inference. Every run requires a positive spend cap and an empty o
 directory. Failed/unknown requests retain their conservative spend reservation. Settings,
 prompt hashes, raw responses, finish reasons, usage and costs are retained in the controller transcript;
 partial submissions and spend are saved on failure. Roster `max` effort maps to OpenRouter
-`xhigh`, following the [OpenRouter effort vocabulary](https://openrouter.ai/docs/api_reference/parameters); both the requested roster effort and sent settings are recorded. Provider price ceilings match the frozen roster prices. The default output budget is 32,768 tokens, including reasoning.
+`xhigh`, following the [OpenRouter effort vocabulary](https://openrouter.ai/docs/api_reference/parameters); both the requested roster effort and sent settings are recorded. Provider price ceilings match the frozen roster prices. The default output budget is 131,072 tokens including reasoning (4x the original 32,768, raised 2026-11-08 after rulebook answers were truncated), clamped per model to the provider's `max_output_tokens` in the roster (65,536 for Hy4 and Gemini 3.7 Flash; 128,000 for most others). Every request reserves its full output ceiling against the spend cap, so a single Fable 5 / GPT-6 Astra request reserves up to about $6.40: set caps accordingly.
 
 Beat ECTemp gets up to 1200 wall seconds and 64 model turns **per variant**. Tools execute
 commands on public data or return development metrics; hidden scoring happens only after

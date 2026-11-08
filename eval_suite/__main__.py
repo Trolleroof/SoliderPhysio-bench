@@ -18,7 +18,7 @@ def main(argv=None):
     run.add_argument('--out', required=True)
     run.add_argument('--research-seconds', type=float, default=1200)
     run.add_argument('--max-steps', type=int, default=64)
-    run.add_argument('--max-tokens', type=int, default=32768)
+    run.add_argument('--max-tokens', type=int, default=131072)
     for p in (run, check):
         p.add_argument('--backend', choices=['docker', 'local', 'macos-development'], default='docker')
         p.add_argument('--image', help='digest-pinned, already installed Docker image')
