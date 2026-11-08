@@ -121,11 +121,23 @@ class RunnerTests(unittest.TestCase):
             fake = FakeModelClient()
             with patch.object(fake, 'complete', wraps=fake.complete) as call:
                 result = run('6', tmp, 1, cases='KG-01', client=fake, request_timeout=600)
-            self.assertEqual(call.call_args.kwargs['timeout_s'], 600)
+            self.assertGreater(call.call_args.kwargs['timeout_s'], 599)
+            self.assertLessEqual(call.call_args.kwargs['timeout_s'], 600)
             self.assertEqual(result['request_timeout_s'], 600)
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ValueError):
                 run('6', tmp, 1, cases='KG-01', client=FakeModelClient(), request_timeout=1201)
+
+    def test_connection_reset_retries_and_preserves_reservation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake = FakeModelClient()
+            response = fake.complete({'messages': []})
+            with patch.object(fake, 'complete', side_effect=[ConnectionResetError('reset'), response]) as call:
+                result = run('6', tmp, 1, cases='KG-01', client=fake)
+            self.assertEqual(call.call_count, 2)
+            self.assertEqual(len(result['cases']), 1)
+            self.assertEqual(result['spend']['requests_with_reserved_cost'], 1)
+            self.assertEqual(result['spend']['requests'], 2)
 
     def test_failed_request_keeps_reservation_and_partial_results(self):
         with tempfile.TemporaryDirectory() as tmp:

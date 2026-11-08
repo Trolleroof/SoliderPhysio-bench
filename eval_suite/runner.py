@@ -116,26 +116,32 @@ def run(model, out, spend_cap_usd, *, task_ids='all', cases=None, client=None,
             body['tools'] = tools
             if final:
                 body['tool_choice'] = 'none'
-        reservation = ledger.reserve(body, pricing)
-        transcript.append('model_request', {'reservation': reservation, 'body': body,
-                          'prompt_sha256': digest(messages), 'request_sha256': digest(body)})
-        save()
-        def expired(*_):
-            raise TimeoutError('Model request wall budget exhausted')
-        previous = signal.signal(signal.SIGALRM, expired)
-        signal.setitimer(signal.ITIMER_REAL, timeout)
-        try:
-            response = client.complete(body, timeout_s=timeout)
-            transcript.append('model_response', {'reservation': reservation, **response})
-            ledger.settle(reservation, response.get('usage') or {})
-            return response
-        except BaseException as exc:
-            transcript.append('model_error', {'reservation': reservation, 'error': str(exc)})
-            raise
-        finally:
-            signal.setitimer(signal.ITIMER_REAL, 0)
-            signal.signal(signal.SIGALRM, previous)
+        deadline = time.monotonic() + timeout
+        for attempt in range(1, 4):
+            left = deadline - time.monotonic()
+            if left <= 0:
+                raise TimeoutError('Model request wall budget exhausted')
+            reservation = ledger.reserve(body, pricing)
+            transcript.append('model_request', {'reservation': reservation, 'attempt': attempt, 'body': body,
+                              'prompt_sha256': digest(messages), 'request_sha256': digest(body)})
             save()
+            def expired(*_):
+                raise TimeoutError('Model request wall budget exhausted')
+            previous = signal.signal(signal.SIGALRM, expired)
+            signal.setitimer(signal.ITIMER_REAL, left)
+            try:
+                response = client.complete(body, timeout_s=left)
+                transcript.append('model_response', {'reservation': reservation, **response})
+                ledger.settle(reservation, response.get('usage') or {})
+                return response
+            except BaseException as exc:
+                transcript.append('model_error', {'reservation': reservation, 'attempt': attempt, 'error': str(exc)})
+                if not isinstance(exc, (ConnectionResetError, BrokenPipeError)) or attempt == 3:
+                    raise
+            finally:
+                signal.setitimer(signal.ITIMER_REAL, 0)
+                signal.signal(signal.SIGALRM, previous)
+                save()
 
     def execute(public, argv, timeout=60, requests=None):
         execution = worker.execute(public, argv, timeout_s=timeout, backend=backend, image=image,
