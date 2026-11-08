@@ -1,0 +1,31 @@
+{
+  "model": "handwritten-smoke-answer",
+  "cases": [
+    {
+      "task": "keep_going",
+      "case_id": "KG-01",
+      "answer": {
+        "decision": "PULL",
+        "core_c_in_15_min": 38.7,
+        "confidence": 0.65,
+        "reasoning": "At the unchanged 140 W workload, recorded heart rate rises from 147 at minute 6 to 155 at minute 25 as the room warms to 37 C. Skin cooling from 36.0 to 34.5 C may reflect evaporation in the dry air; it does not establish that core temperature is falling. I estimate 38.7 C after another 15 minutes, above the specified 38.5 C threshold, so PULL. Sparse heart-rate readings and absent core measurements make that estimate uncertain."
+      }
+    },
+    {
+      "task": "rulebook_vs_body",
+      "case_id": "RB-01",
+      "answer": {
+        "rulebook": {
+          "work_rest_min": "NL",
+          "water_qt_per_hr": 0.75,
+          "continuous_work_min": "NL",
+          "continuous_water_qt_per_hr": 1.0
+        },
+        "decision": "OVERRIDE",
+        "predicted_core_c": 38.8,
+        "confidence": 0.7,
+        "reasoning": "The 2022 TB MED 507 Category 3/Moderate cells allow NL work with 0.75 qt/h in Table 1 and NL continuous duration with 1.0 qt/h in Table 2. Those population prescriptions do not certify this individual's core temperature. At a steady 195 W, recorded heart rate rises from about 150 to 159 bpm while skin warms from 35.5 to 36.7 C over the trace, consistent with accumulating heat strain. My uncertain 15-minute core estimate is 38.8 C, above 38.5 C, so OVERRIDE: stop riding, rest, cool and monitor."
+      }
+    }
+  ]
+}

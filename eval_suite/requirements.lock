@@ -6,6 +6,7 @@ joblib==1.6.0
 kiwisolver==1.5.1
 matplotlib==3.10.3
 numpy==2.2.6
+openpyxl==3.1.5
 packaging==26.3
 pillow==13.0.0
 pyparsing==3.3.3
