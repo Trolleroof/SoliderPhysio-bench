@@ -39,7 +39,7 @@ heartbeat, active child, saved case coverage and judge records for progress.
 
 ## Parallel lanes
 
-Two additional LaunchAgents use the same interpreter/image and existing caps:
+Additional LaunchAgents use the same interpreter/image and existing caps:
 `dev.soldierphysio.rerun-20261107-lane-a` runs `--ranks 10,12,14`;
 `dev.soldierphysio.rerun-20261107-lane-b` runs `--ranks 11,13,15`.
 Their locks and heartbeat files are in `control/lane-10-12-14/` and
@@ -48,7 +48,9 @@ Their locks and heartbeat files are in `control/lane-10-12-14/` and
 
 The model CLI rejects concurrent runs of the same roster slot using an advisory
 lock in `.benchmark-runs/model-locks/`. The original queue stays active; its later
-passes reuse saved results from these lanes. The five-minute monitor checks all
-three services. Stop the two additional labels with `launchctl bootout` too when
-stopping the whole sweep. At most three research workers run concurrently, each
+passes reuse saved results from these lanes. The five-minute monitor checks all services. Additional lanes `-lane-c`
+(`--ranks 4`, Sonnet 5.5) and `-lane-d` (`--ranks 8`, GPT-6.1 Terra)
+resume missing research cases. Their heartbeat folders are `control/lane-4/`
+and `control/lane-8/`. Stop all additional labels with `launchctl bootout` too
+when stopping the sweep. At most five research workers run concurrently, each
 bounded to 2 CPUs and 1 GB; Docker currently has 14 CPUs and approximately 8 GB.
