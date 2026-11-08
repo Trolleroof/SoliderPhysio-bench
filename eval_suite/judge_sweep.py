@@ -20,6 +20,10 @@ class FrontierJudge(OpenRouterJudgeClient):
         super().__init__(timeout=300)
         self.settings['max_tokens'] = 32768
 
+    def retryable(self, error):
+        return (super().retryable(error) or isinstance(error, (ConnectionResetError, BrokenPipeError))
+                or (type(error) is RuntimeError and str(error) == 'OpenRouter transport failure'))
+
 
 def run(path, out, cap, *, allow_partial=False):
     submission = read(path)
