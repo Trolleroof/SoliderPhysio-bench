@@ -32,6 +32,21 @@ class ResumeSweepTest(unittest.TestCase):
             self.assertFalse(spawn.called)
             self.assertEqual(read(Path(tmp)/'control/status.json')['state'], 'blocked')
 
+    def test_lane_filters_models_and_uses_separate_heartbeat(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            rows = [{'rank': 2, 'openrouter_id': 'provider/a'},
+                    {'rank': 10, 'openrouter_id': 'provider/b'}]
+            with patch('sys.argv', ['resume_sweep', '--root', tmp, '--image', 'fixture',
+                                    '--ranks', '10', '--max-attempts', '0']), \
+                 patch('eval_suite.registry.preflight', return_value={'status': 'ready'}), \
+                 patch('eval_suite.resume_sweep.read', return_value={'models': rows}), \
+                 patch('eval_suite.resume_sweep.select_cases', return_value=['keep_going/KG-01']):
+                with self.assertRaises(SystemExit):
+                    main()
+            state = read(Path(tmp)/'control/lane-10/status.json')
+            self.assertEqual(set(state['missing']), {'provider/b'})
+            self.assertFalse((Path(tmp)/'control/status.json').exists())
+
     def test_missing_cases_are_never_reported_complete(self):
         with tempfile.TemporaryDirectory() as tmp:
             row = {'rank': 2, 'openrouter_id': 'provider/model'}

@@ -41,6 +41,26 @@ class FakeModelClient:
 
 
 class TransportTests(unittest.TestCase):
+    def test_cli_refuses_concurrent_run_of_same_model(self):
+        import contextlib
+        import fcntl
+        from eval_suite.__main__ import main
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            locks = root/'.benchmark-runs/model-locks'
+            locks.mkdir(parents=True)
+            with (locks/'6.lock').open('a') as lock:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                with patch('eval_suite.runner.ROOT', root), \
+                     patch('eval_suite.runner.roster_model', return_value={'rank': 6}), \
+                     patch('eval_suite.runner.run') as request, \
+                     contextlib.redirect_stderr(io.StringIO()) as errors:
+                    with self.assertRaises(SystemExit) as error:
+                        main(['run', '--model', '6', '--out', str(root/'run'), '--spend-cap-usd', '1'])
+                    self.assertEqual(error.exception.code, 2)
+                    self.assertIn('already has an active run', errors.getvalue())
+                    request.assert_not_called()
+
     def test_http_body_headers_raw_usage_and_timeout(self):
         raw = {'choices': [{'message': {'role': 'assistant', 'content': 'answer'}}],
                'usage': {'prompt_tokens': 3, 'completion_tokens': 2, 'cost': 0.001}}

@@ -36,3 +36,19 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.soldierphysio.rerun-
 
 Service state `running` proves only that the supervisor is alive. Check the
 heartbeat, active child, saved case coverage and judge records for progress.
+
+## Parallel lanes
+
+Two additional LaunchAgents use the same interpreter/image and existing caps:
+`dev.soldierphysio.rerun-20261107-lane-a` runs `--ranks 10,12,14`;
+`dev.soldierphysio.rerun-20261107-lane-b` runs `--ranks 11,13,15`.
+Their locks and heartbeat files are in `control/lane-10-12-14/` and
+`control/lane-11-13-15/`. Logs are `control/lane-a.stdout.log` and
+`control/lane-b.stdout.log`, with corresponding stderr files.
+
+The model CLI rejects concurrent runs of the same roster slot using an advisory
+lock in `.benchmark-runs/model-locks/`. The original queue stays active; its later
+passes reuse saved results from these lanes. The five-minute monitor checks all
+three services. Stop the two additional labels with `launchctl bootout` too when
+stopping the whole sweep. At most three research workers run concurrently, each
+bounded to 2 CPUs and 1 GB; Docker currently has 14 CPUs and approximately 8 GB.

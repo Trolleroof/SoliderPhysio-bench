@@ -34,9 +34,15 @@ def main():
     ap.add_argument('--root', required=True, type=Path)
     ap.add_argument('--image', required=True)
     ap.add_argument('--max-attempts', type=int, default=3)
+    ap.add_argument('--ranks', help='comma-separated roster slots assigned to this worker')
     args = ap.parse_args()
+    ranks = tuple(sorted({int(x) for x in args.ranks.split(',')})) if args.ranks else None
+    if ranks is not None and (not ranks or any(x not in CAPS for x in ranks)):
+        ap.error('--ranks must contain available roster slots 2 through 15')
     args.root = args.root.resolve()
     control = args.root/'control'
+    if ranks is not None:
+        control = control/('lane-'+'-'.join(map(str, ranks)))
     control.mkdir(parents=True, exist_ok=True)
     lock = (control/'sweep.lock').open('w')
     try:
@@ -74,6 +80,8 @@ def main():
         awake = subprocess.Popen(['/usr/bin/caffeinate', '-i', '-w', str(os.getpid())],
                                  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     roster = read('eval_suite/roster.json')['models']
+    if ranks is not None:
+        roster = [row for row in roster if row['rank'] in ranks]
     required = select_cases()
     blocked = {}
     judge_failures = []

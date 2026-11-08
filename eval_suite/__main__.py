@@ -1,6 +1,7 @@
 """Run the frozen physiology suite on one roster model with an explicit budget."""
 import argparse
 import json
+import fcntl
 from eval_suite.registry import ACTIVE_TASK_IDS, preflight, tasks
 
 
@@ -31,12 +32,20 @@ def main(argv=None):
         print(json.dumps(report, indent=2))
         return 0 if report['status'] == 'ready' else 2
     else:
-        from eval_suite.runner import run as run_model
+        from eval_suite.runner import run as run_model, roster_model, ROOT
         try:
-            result = run_model(args.model, args.out, args.spend_cap_usd, task_ids=args.task or args.tasks,
-                               cases=args.cases, backend=args.backend, image=args.image,
-                               research_seconds=args.research_seconds, max_steps=args.max_steps,
-                               max_tokens=args.max_tokens, request_timeout=args.request_timeout)
+            rank = roster_model(args.model)['rank']
+            locks = ROOT/'.benchmark-runs/model-locks'
+            locks.mkdir(parents=True, exist_ok=True)
+            with (locks/f'{rank}.lock').open('a') as lock:
+                try:
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    raise RuntimeError('This roster model already has an active run') from None
+                result = run_model(args.model, args.out, args.spend_cap_usd, task_ids=args.task or args.tasks,
+                                   cases=args.cases, backend=args.backend, image=args.image,
+                                   research_seconds=args.research_seconds, max_steps=args.max_steps,
+                                   max_tokens=args.max_tokens, request_timeout=args.request_timeout)
         except Exception as exc:
             parser.exit(2, f'{type(exc).__name__}: {exc}\n')
         print(json.dumps({'status': result['status'], 'cases': len(result['cases']),
