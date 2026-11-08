@@ -54,3 +54,8 @@ resume missing research cases. Their heartbeat folders are `control/lane-4/`
 and `control/lane-8/`. Stop all additional labels with `launchctl bootout` too
 when stopping the sweep. At most five research workers run concurrently, each
 bounded to 2 CPUs and 1 GB; Docker currently has 14 CPUs and approximately 8 GB.
+
+After Terra completed, lane-d was reassigned to `--ranks 5,6,7,8,9`
+(Opus 5.5, DeepSeek, Gemini 3.8, completed Terra, Grok). Its current
+heartbeat is `control/lane-5-6-7-8-9/status.json`; `control/lane-8/`
+is historical. There are still five services total.
