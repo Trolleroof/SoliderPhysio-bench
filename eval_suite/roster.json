@@ -3,7 +3,7 @@
  "source": "https://www.mercor.com/apex/apex-agents-leaderboard/ (APEX-Agents, ranked by mean score, as the leaderboard does)",
  "retrieved": "2026-11-08",
  "pricing_source": "https://openrouter.ai/api/v1/models (retrieved 2026-11-08)",
- "rule": "Top 15 APEX-Agents entries by mean score; each is a distinct model. A judge must not be on this roster.",
+ "rule": "Top 15 APEX-Agents entries by mean score; each is a distinct model. A judge must not be on this roster. Ties on mean score are broken by Pass@1.",
  "models": [
   {
    "rank": 1,
@@ -71,19 +71,6 @@
   },
   {
    "rank": 6,
-   "model": "Gemini 3.7 Flash",
-   "provider": "Google",
-   "effort": "high",
-   "apex_mean_score": 79.4,
-   "apex_mean_error": 3.8,
-   "apex_pass1": 67.8,
-   "apex_model_id": "gemini-3.7-flash",
-   "openrouter_id": "google/gemini-3.7-flash",
-   "usd_per_mtok_in": 0.75,
-   "usd_per_mtok_out": 3.75
-  },
-  {
-   "rank": 7,
    "model": "DeepSeek-V4.1-Flash-1017",
    "provider": "DeepSeek",
    "effort": "max",
@@ -94,6 +81,19 @@
    "openrouter_id": "deepseek/deepseek-v4.1-flash-1017",
    "usd_per_mtok_in": 0.15,
    "usd_per_mtok_out": 0.6
+  },
+  {
+   "rank": 7,
+   "model": "Gemini 3.7 Flash",
+   "provider": "Google",
+   "effort": "high",
+   "apex_mean_score": 79.4,
+   "apex_mean_error": 3.8,
+   "apex_pass1": 67.8,
+   "apex_model_id": "gemini-3.7-flash",
+   "openrouter_id": "google/gemini-3.7-flash",
+   "usd_per_mtok_in": 0.75,
+   "usd_per_mtok_out": 3.75
   },
   {
    "rank": 8,
@@ -136,19 +136,6 @@
   },
   {
    "rank": 11,
-   "model": "Opus 5",
-   "provider": "Anthropic",
-   "effort": "max",
-   "apex_mean_score": 77,
-   "apex_mean_error": 4,
-   "apex_pass1": 65.8,
-   "apex_model_id": "claude-opus-5",
-   "openrouter_id": "anthropic/claude-opus-5",
-   "usd_per_mtok_in": 5.0,
-   "usd_per_mtok_out": 25.0
-  },
-  {
-   "rank": 12,
    "model": "Muse Wonder 1.0",
    "provider": "Meta",
    "effort": "max",
@@ -159,6 +146,19 @@
    "openrouter_id": "meta/muse-wonder",
    "usd_per_mtok_in": 4.0,
    "usd_per_mtok_out": 20.0
+  },
+  {
+   "rank": 12,
+   "model": "Opus 5",
+   "provider": "Anthropic",
+   "effort": "max",
+   "apex_mean_score": 77,
+   "apex_mean_error": 4,
+   "apex_pass1": 65.8,
+   "apex_model_id": "claude-opus-5",
+   "openrouter_id": "anthropic/claude-opus-5",
+   "usd_per_mtok_in": 5.0,
+   "usd_per_mtok_out": 25.0
   },
   {
    "rank": 13,
