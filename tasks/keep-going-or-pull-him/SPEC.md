@@ -1,6 +1,6 @@
 # Keep going or pull him?
 
-Status: preserved design; runner, case bank and grader are not implemented.
+Status: historical design notes. Current implementation and data contract: [README](../keep_going/README.md). Run with `python -m eval_suite run`; runtime readiness is checked by preflight.
 
 Give the model an anonymized measured trace up to a cutoff: heart rate, skin
 temperature, environment, workload in watts and permitted demographics. Hide

@@ -15,3 +15,5 @@ scikit-learn==1.6.1
 scipy==1.15.3
 six==1.17.0
 threadpoolctl==3.7.0
+
+openpyxl==3.1.5
