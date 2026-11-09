@@ -91,8 +91,17 @@ deliberately wrong answers through every deterministic grader.
 - *Reference answers pass.* The ground-truth decision and the measured core temperature
   score 1.0 on every Keep/Pull case. The full TB MED 507 (2022) cell plus the correct
   decision scores 1.0 on both Rulebook cases (`test_score_all_perfect`,
-  `test_perfect_answers`, `test_perfect_suite`). For Beat ECTemp, solvability is shown by
-  the models themselves: 76 of 98 person-cases beat the baseline.
+  `test_perfect_answers`, `test_perfect_suite`). For Beat ECTemp, the reference is
+  [`reference_predictor.py`](tasks/beat_ectemp/reference_predictor.py): the mean core
+  temperature of the 14 training people at each minute of the session, with a 90% interval
+  of ±0.5 °C. It is fit on the public training split only, and a test rebuilds the table
+  from `train.json` to confirm that. On the hidden people it beats the frozen baseline in
+  both tasks (3A MAE 0.315 vs 0.443 °C; 3B 0.281 vs 0.506 °C) and passes the grader
+  (`test_reference_beats_baseline_on_hidden_people`). It does not win every person: it
+  loses to the baseline on H06 in both tasks, and I did not tune it to fix that. Adding
+  heart rate, skin temperature, watts, mass or age did not improve it in leave-one-out
+  checks on the training people. The models themselves also show the task is solvable:
+  76 of 98 person-cases beat the baseline.
 - *Wrong answers fail.* The 2003 card value (40/20) fails the rulebook half
   (`test_old_2003_card_fails_rulebook_half`). Always-KEEP, always-PULL and the shortcut
   "power dropped, so keep going" each score exactly 50% on Keep/Pull and catch no
@@ -140,7 +149,7 @@ Requirements: Python 3.12 or 3.13 (scipy 1.15.3 has no 3.14 wheel), macOS or Lin
 python3.13 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env            # then paste your key: OPENROUTER_API_KEY=...
-python -m unittest discover -s tests       # 186 tests, ~5 s, no key needed
+python -m unittest discover -s tests       # 188 tests, ~5 s, no key needed
 ```
 
 **Re-score the saved run (no key, no cost, about 10 s).** This rebuilds the leaderboard

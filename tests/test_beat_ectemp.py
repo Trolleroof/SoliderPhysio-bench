@@ -130,4 +130,54 @@ class BeatECTempTests(unittest.TestCase):
         self.assertTrue(b.valid(b.run_submission(self.public,[{}])[0]))
 
 
+def worker_backend():
+    if b.sys.platform=='darwin' and b.shutil.which('sandbox-exec'): return 'macos-development'
+    if b.sys.platform.startswith('linux'): return 'local'
+    return None
+
+
+@unittest.skipUnless(worker_backend(),'sandboxed worker backend required')
+class ReferencePredictorTests(unittest.TestCase):
+    """The reference solution passes the hidden grader and beats the frozen baseline."""
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp=tempfile.TemporaryDirectory(dir=BASE)
+        root=Path(cls.tmp.name); cls.public=root/'public'; cls.private=root/'private'
+        b.build(ROOT/'sources/figshare-heat/core_cycling_2025.xlsx',None,cls.public,cls.private)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def score(self, source, task):
+        import shutil, sys
+        sys.path.insert(0,str(ROOT))
+        from eval_suite.core.worker import execute
+        from eval_suite.runner import PREDICT
+        def runner(public, batch):
+            with tempfile.TemporaryDirectory(prefix='predictor-') as tmp:
+                staged=Path(tmp)/'public'; shutil.copytree(public,staged)
+                shutil.copyfile(source,staged/'submission.py')
+                run=execute(staged,['python3','-I','-c',PREDICT],timeout_s=300,backend=worker_backend(),
+                            cpus=2,memory_gb=1,requests=batch)
+            self.assertTrue(run['execution_valid'],run['failure_reason'])
+            return run['responses']
+        return b.evaluate(self.public,self.private,task,hidden=True,runner=runner)
+
+    def test_curve_is_fit_from_public_train_only(self):
+        spec=importlib.util.spec_from_file_location('reference',BASE/'reference_predictor.py')
+        ref=importlib.util.module_from_spec(spec); spec.loader.exec_module(ref)
+        self.assertEqual(ref.fit(json.loads((self.public/'train.json').read_text())),ref.CURVE)
+
+    def test_reference_beats_baseline_on_hidden_people(self):
+        for task,people in (('3A',2),('3B',5)):
+            with self.subTest(task=task):
+                ref=self.score(BASE/'reference_predictor.py',task)
+                base=self.score(BASE/'ectemp_baseline.py',task)
+                self.assertTrue(ref['valid']); self.assertTrue(base['valid'])
+                self.assertEqual(len(ref['person_mae']),people)
+                self.assertLess(ref['primary_mae'],base['primary_mae'])
+                self.assertGreater(ref['score'],base['score'])
+
+
 if __name__=='__main__': unittest.main()
