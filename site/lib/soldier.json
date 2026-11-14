@@ -1,0 +1,351 @@
+{
+ "run": "2026-11-07/08",
+ "judge": "openai/gpt-6.1-sol-pro",
+ "total_usd": 141.2,
+ "judge_usd": 15.66,
+ "rulebook": {
+  "40/20 (2003 card)": 18,
+  "Other value": 2,
+  "No answer": 5,
+  "NL (2022 card, correct)": 3
+ },
+ "keep_pull": [
+  {
+   "design": "Slowed down, core still rising",
+   "correct": 34,
+   "false_pull": 0,
+   "missed": 7
+  },
+  {
+   "design": "Steady work, core rising",
+   "correct": 28,
+   "false_pull": 0,
+   "missed": 13
+  },
+  {
+   "design": "Slowed down, actually safe",
+   "correct": 17,
+   "false_pull": 25,
+   "missed": 0
+  },
+  {
+   "design": "Steady work, actually safe",
+   "correct": 13,
+   "false_pull": 28,
+   "missed": 0
+  }
+ ],
+ "models": [
+  {
+   "rank": 1,
+   "id": "openai/gpt-6-astra",
+   "name": "GPT-6 Astra",
+   "provider": "openai",
+   "effort": "max",
+   "overall": 54.5,
+   "keep": 47.6,
+   "rulebook": 64.5,
+   "research": 51.4,
+   "cost": 8.87,
+   "cost_tasks": {
+    "keep_going": 1.58,
+    "rulebook": 0.96,
+    "research": 6.33
+   },
+   "calls": 6,
+   "cells": 6,
+   "overrides": 1,
+   "beat": 5,
+   "mae": 0.352
+  },
+  {
+   "rank": 2,
+   "id": "meta/muse-wonder",
+   "name": "Muse Wonder 1.0",
+   "provider": "meta",
+   "effort": "max",
+   "overall": 53.6,
+   "keep": 50.8,
+   "rulebook": 50.0,
+   "research": 59.9,
+   "cost": 9.09,
+   "cost_tasks": {
+    "keep_going": 1.5,
+    "rulebook": 0.82,
+    "research": 6.77
+   },
+   "calls": 9,
+   "cells": 4,
+   "overrides": 1,
+   "beat": 5,
+   "mae": 0.273
+  },
+  {
+   "rank": 3,
+   "id": "anthropic/claude-sonnet-5.5",
+   "name": "Sonnet 5.5",
+   "provider": "anthropic",
+   "effort": "max",
+   "overall": 52.5,
+   "keep": 60.1,
+   "rulebook": 47.0,
+   "research": 50.4,
+   "cost": 6.92,
+   "cost_tasks": {
+    "keep_going": 0.4,
+    "rulebook": 0.18,
+    "research": 6.34
+   },
+   "calls": 10,
+   "cells": 4,
+   "overrides": 1,
+   "beat": 5,
+   "mae": 0.215
+  },
+  {
+   "rank": 4,
+   "id": "openai/gpt-6.1-terra",
+   "name": "GPT-6.1 Terra",
+   "provider": "openai",
+   "effort": "max",
+   "overall": 48.1,
+   "keep": 46.7,
+   "rulebook": 50.0,
+   "research": 47.5,
+   "cost": 1.01,
+   "cost_tasks": {
+    "keep_going": 0.2,
+    "rulebook": 0.1,
+    "research": 0.71
+   },
+   "calls": 6,
+   "cells": 4,
+   "overrides": 1,
+   "beat": 6,
+   "mae": 0.298
+  },
+  {
+   "rank": 5,
+   "id": "anthropic/claude-opus-5",
+   "name": "Opus 5",
+   "provider": "anthropic",
+   "effort": "max",
+   "overall": 47.7,
+   "keep": 38.5,
+   "rulebook": 50.0,
+   "research": 54.8,
+   "cost": 12.91,
+   "cost_tasks": {
+    "keep_going": 0.96,
+    "rulebook": 0.71,
+    "research": 11.25
+   },
+   "calls": 6,
+   "cells": 4,
+   "overrides": 1,
+   "beat": 5,
+   "mae": 0.333
+  },
+  {
+   "rank": 6,
+   "id": "tencent/hy4",
+   "name": "Hy4",
+   "provider": "tencent",
+   "effort": "high",
+   "overall": 44.9,
+   "keep": 63.2,
+   "rulebook": 17.5,
+   "research": 54.1,
+   "cost": 1.09,
+   "cost_tasks": {
+    "keep_going": 0.43,
+    "rulebook": 0.14,
+    "research": 0.52
+   },
+   "calls": 10,
+   "cells": 2,
+   "overrides": 0,
+   "beat": 6,
+   "mae": 0.239
+  },
+  {
+   "rank": 7,
+   "id": "moonshotai/kimi-k3.1-pro",
+   "name": "Kimi K3.1 Pro",
+   "provider": "moonshotai",
+   "effort": "max",
+   "overall": 43.9,
+   "keep": 42.2,
+   "rulebook": 46.2,
+   "research": 43.3,
+   "cost": 1.58,
+   "cost_tasks": {
+    "keep_going": 0.51,
+    "rulebook": 0.15,
+    "research": 0.91
+   },
+   "calls": 5,
+   "cells": 3,
+   "overrides": 1,
+   "beat": 6,
+   "mae": 0.368
+  },
+  {
+   "rank": 8,
+   "id": "x-ai/grok-4.6",
+   "name": "Grok 4.6",
+   "provider": "x-ai",
+   "effort": "xhigh",
+   "overall": 43.9,
+   "keep": 30.8,
+   "rulebook": 59.0,
+   "research": 41.8,
+   "cost": 4.42,
+   "cost_tasks": {
+    "keep_going": 0.57,
+    "rulebook": 0.34,
+    "research": 3.51
+   },
+   "calls": 4,
+   "cells": 4,
+   "overrides": 2,
+   "beat": 5,
+   "mae": 0.37
+  },
+  {
+   "rank": 9,
+   "id": "anthropic/claude-fable-5.1",
+   "name": "Fable 5.1",
+   "provider": "anthropic",
+   "effort": "max",
+   "overall": 43.8,
+   "keep": 37.7,
+   "rulebook": 42.5,
+   "research": 51.1,
+   "cost": 29.54,
+   "cost_tasks": {
+    "keep_going": 3.44,
+    "rulebook": 1.08,
+    "research": 25.02
+   },
+   "calls": 6,
+   "cells": 2,
+   "overrides": 1,
+   "beat": 5,
+   "mae": 0.375
+  },
+  {
+   "rank": 10,
+   "id": "google/gemini-3.8-flash",
+   "name": "Gemini 3.8 Flash",
+   "provider": "google",
+   "effort": "high",
+   "overall": 43.5,
+   "keep": 38.7,
+   "rulebook": 43.2,
+   "research": 48.5,
+   "cost": 3.17,
+   "cost_tasks": {
+    "keep_going": 1.25,
+    "rulebook": 0.25,
+    "research": 1.67
+   },
+   "calls": 6,
+   "cells": 3,
+   "overrides": 1,
+   "beat": 5,
+   "mae": 0.342
+  },
+  {
+   "rank": 11,
+   "id": "google/gemini-4-argon",
+   "name": "Gemini 4 Argon",
+   "provider": "google",
+   "effort": "high",
+   "overall": 39.0,
+   "keep": 41.5,
+   "rulebook": 47.0,
+   "research": 28.6,
+   "cost": 3.93,
+   "cost_tasks": {
+    "keep_going": 1.09,
+    "rulebook": 0.26,
+    "research": 2.58
+   },
+   "calls": 7,
+   "cells": 4,
+   "overrides": 1,
+   "beat": 7,
+   "mae": 0.322
+  },
+  {
+   "rank": 12,
+   "id": "deepseek/deepseek-v4.1-flash-1017",
+   "name": "DeepSeek-V4.1-Flash-1017",
+   "provider": "deepseek",
+   "effort": "max",
+   "overall": 38.0,
+   "keep": 38.1,
+   "rulebook": 27.5,
+   "research": 48.5,
+   "cost": 0.29,
+   "cost_tasks": {
+    "keep_going": 0.07,
+    "rulebook": 0.03,
+    "research": 0.19
+   },
+   "calls": 5,
+   "cells": 2,
+   "overrides": 0,
+   "beat": 6,
+   "mae": 0.373
+  },
+  {
+   "rank": 13,
+   "id": "anthropic/claude-fable-5",
+   "name": "Fable 5",
+   "provider": "anthropic",
+   "effort": "max",
+   "overall": 30.6,
+   "keep": 39.5,
+   "rulebook": 0.0,
+   "research": 52.1,
+   "cost": 28.82,
+   "cost_tasks": {
+    "keep_going": 1.67,
+    "rulebook": 0.23,
+    "research": 26.93
+   },
+   "calls": 7,
+   "cells": 0,
+   "overrides": 0,
+   "beat": 5,
+   "mae": 0.318
+  },
+  {
+   "rank": 14,
+   "id": "anthropic/claude-opus-5.5",
+   "name": "Opus 5.5",
+   "provider": "anthropic",
+   "effort": "max",
+   "overall": 30.2,
+   "keep": 32.7,
+   "rulebook": 0.0,
+   "research": 57.9,
+   "cost": 13.66,
+   "cost_tasks": {
+    "keep_going": 2.41,
+    "rulebook": 0.07,
+    "research": 11.17
+   },
+   "calls": 5,
+   "cells": 0,
+   "overrides": 0,
+   "beat": 5,
+   "mae": 0.422
+  }
+ ],
+ "model_usd": 125.55,
+ "research_usd": 104.01,
+ "single_turn_usd": 21.54
+}

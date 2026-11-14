@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SoldierPhysio-bench — 5 min walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  /* Truss brand: paper, slate ink, amber accent, EB Garamond (truss.signalor.app) */
+  :root { --bg:#FAFAF8; --ink:#0F172A; --muted:#57534E; --faint:#A8A29E; --line:#E7E5E4;
+          --amber:#B45309; --amber-deep:#914400; --code:#F3F2EE; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; background:var(--bg); color:var(--ink);
+    font:20px/1.55 'EB Garamond', Georgia, serif; -webkit-font-smoothing:antialiased; }
+  .slide { display:none; height:100vh; padding:7vh 8vw 5vh; flex-direction:column; }
+  .slide.on { display:flex; }
+  .kicker { color:var(--amber-deep); font-size:15px; letter-spacing:.12em; text-transform:uppercase; }
+  h1 { font-size:clamp(38px,4.8vw,68px); font-weight:400; line-height:1.1; margin:.4em 0 .5em; letter-spacing:-.01em; }
+  h2 { font-size:clamp(28px,3.1vw,46px); font-weight:400; line-height:1.15; margin:.35em 0 .6em; }
+  .body { flex:1; display:flex; gap:4vw; align-items:center; min-height:0; }
+  .body img { max-height:62vh; max-width:62vw; }
+  .side { flex:1; font-size:22px; color:var(--muted); }
+  b, strong { color:var(--amber-deep); font-weight:500; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:3vw; width:100%; }
+  .stat { border-top:1px solid var(--ink); padding-top:18px; }
+  .stat .n { font-size:clamp(56px,6.5vw,104px); font-weight:400; line-height:1; letter-spacing:-.02em; margin-bottom:12px; }
+  .stat .l { color:var(--muted); font-size:20px; }
+  .card { border-top:1px solid var(--ink); padding:18px 0 0; }
+  .card h3 { font-size:23px; font-weight:500; margin-bottom:8px; }
+  .card h3 span { color:var(--faint); font-weight:400; }
+  .card p { color:var(--muted); font-size:19px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:3vw; width:100%; }
+  .old { color:var(--amber); } .new { color:var(--ink); }
+  .vs { display:flex; gap:3vw; align-items:flex-start; font-size:clamp(40px,4.2vw,72px); font-weight:400; line-height:1; }
+  .vs small { display:block; font-size:16px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:10px; }
+  table { border-collapse:collapse; font-size:20px; }
+  td,th { padding:9px 20px 9px 0; border-bottom:1px solid var(--line); text-align:left; }
+  th { color:var(--amber-deep); font-weight:400; font-size:14px; letter-spacing:.1em; text-transform:uppercase; border-bottom-color:var(--ink); }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .notes { border-top:1px solid var(--line); padding-top:12px; margin-top:2vh; font-size:16px; color:var(--muted); max-height:18vh; overflow:auto; }
+  body.clean .notes { display:none; }
+  .foot { position:fixed; right:24px; bottom:14px; color:var(--faint); font-size:13px; letter-spacing:.08em; text-transform:uppercase; }
+  code, pre { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
+  code { background:var(--code); padding:1px 6px; font-size:.82em; color:var(--ink); }
+  pre { background:var(--code); border-left:2px solid var(--amber); padding:18px 22px; font-size:16px; line-height:1.55; color:var(--ink); }
+  pre .bad { color:var(--amber); font-weight:600; }
+  pre .ok { color:var(--ink); font-weight:600; }
+  pre .c { color:var(--faint); }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="slide">
+  <div class="kicker">SoldierPhysio-bench · micro1 Eval Hackathon</div>
+  <h1>Can frontier models keep a soldier<br>out of heat stroke?</h1>
+  <div class="body">
+    <div class="stats">
+      <div class="stat"><div class="n">36.4</div><div class="l">heat strokes per 100k soldiers, 2024</div></div>
+      <div class="stat"><div class="n">183.9</div><div class="l">heat exhaustion per 100k, rising every year since 2020</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">core thermometers a field medic actually has</div></div>
+    </div>
+  </div>
+  <div class="notes"><b>~25s.</b> Heat illness is a growing Army problem (MSMR June 2025). A medic has a heart-rate strap, skin temp, work rate, weather and the heat card, but no core thermometer. They make one call over and over: keep going or pull. LLMs are pitched as decision aids for this. I tested whether 14 frontier models can make the call, on real heat-chamber data where we know the true core temperature.</div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="kicker">The eval</div>
+  <h2>Three calls a medic makes. 21 frozen cases.</h2>
+  <div class="body">
+    <div class="grid3">
+      <div class="card"><h3>1 · Keep or pull? <span>12</span></h3><p>25 min of HR, skin temp, watts, room. Forecast core at +15 min. PULL iff measured core ≥ 38.5 °C.</p></div>
+      <div class="card"><h3>2 · Rulebook vs body <span>2</span></h3><p>Recite the TB MED 507 (2022) cell for the flag + work level, then FOLLOW it or OVERRIDE for this soldier.</p></div>
+      <div class="card"><h3>3 · Beat ECTemp <span>7</span></h3><p>Agentic research: write a causal <code>predict()</code> for core temp that beats an ECTemp-style baseline on hidden people.</p></div>
+    </div>
+  </div>
+  <div class="notes"><b>~35s.</b> Data: D'Lugos 2025 heat-chamber study, 24 people cycling, measured rectal temp (Figshare, CC BY). The model never sees core temp. Cases are split on purpose: soldiers who slow down but keep heating (thermal lag), and soldiers who are hot and working hard but actually fine. Tools and browsing off for the single-turn tasks.</div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="kicker">Grading</div>
+  <h2>Code grades the answer. A judge grades only the reasoning.</h2>
+  <div class="body">
+    <table>
+      <tr><th>Task</th><th>Deterministic (code)</th><th>LLM judge</th></tr>
+      <tr><td>Keep/Pull</td><td>decision 40% · forecast error 30%</td><td>reasoning 30%</td></tr>
+      <tr><td>Rulebook</td><td>4 table fields 30% · override 40%</td><td>reasoning 30%</td></tr>
+      <tr><td>Beat ECTemp</td><td>MAE vs baseline on hidden people 60%</td><td>write-up 40%</td></tr>
+    </table>
+    <div class="side">
+      Judge: <b>openai/gpt-6.1-sol-pro</b>, outside the roster.<br><br>
+      Re-judged answers: <b>99–100%</b> same mark.<br>
+      Agreed with code on <b>305 / 305</b> decisions.<br>Checked by me, plus an <b>outside reviewer</b>.
+    </div>
+  </div>
+  <div class="notes"><b>~30s.</b> Everything with a right answer is computed by code against measured temperature or the exact 2022 card. The judge only scores reasoning quality, and is shown the verified outcome. Reliability: 32 answers got judged 2 to 17 times during resumed runs. Same mark 99-100% of the time. Every decision it marked low was wrong by code, every one marked high was right. I also checked the judge's prompt, rubrics and verdicts myself, and an outside reviewer I met recently vetted it too. Overall = mean of the three task scores.</div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="kicker">Results · 14 models · run 2026-11-07/08 · 1 run per case</div>
+  <h2>The best frontier model scores 54.5 / 100</h2>
+  <div class="body"><img src="../figures/leaderboard.png" alt="Leaderboard">
+    <div class="side">Top 3 within <b>2 points</b>: GPT-6 Astra, Muse Wonder 1.0, Sonnet 5.5.<br><br>Fable 5 and Opus 5.5 sink to the bottom on <b>zeros</b> from refused rulebook answers.</div></div>
+  <div class="notes"><b>~15s.</b> Scores are a mix of deterministic and judged parts, not accuracy percentages. One run per case, so a couple of points is noise. Nobody comes close to what a trained medic with the card would do.</div>
+</section>
+
+<!-- 4b -->
+<section class="slide">
+  <div class="kicker">Task scores · cost by task</div>
+  <h2>Where the score and the money go</h2>
+  <div class="body"><img src="../figures/task_scores.png" alt="Task scores" style="max-width:46vw"><img src="../figures/cost_by_task.png" alt="Cost by task" style="max-width:44vw"></div>
+  <div class="notes"><b>~20s.</b> Per-task breakdown. Hy4 has the best keep/pull calls (10/12, tied with Sonnet) but only 2 of 8 card cells. Astra wins on the rulebook. On the right: 83% of all model spend went to the agentic Beat ECTemp task ($103.89 of $125.28). The cheap single-turn medic questions are where models fail, and they cost almost nothing to test.</div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="kicker">Failure 1 · the clearest gap</div>
+  <h2>They recite a heat card the Army replaced in 2022</h2>
+  <div class="body"><img src="../figures/rulebook.png" alt="Rulebook answers">
+    <div class="side">
+      <div class="vs"><div class="old">40/20<small>2003 card · 18 answers</small></div><div class="new">NL<small>2022 card · 3 answers</small></div></div><br>
+      Moderate work, Yellow flag, work/rest per hour.</div></div>
+  <div class="notes"><b>~35s.</b> This is the headline. Both rulebook cases are Moderate work at Yellow flag. Current card: NL, no limit. The 2003 card said 40 min work, 20 rest. 18 of 28 answers gave 40/20; only 3 said NL. Half also invented continuous-work limits of 45 to 120 minutes. A medic holding the current card never misses this. The models answer confidently, with the right format and the wrong edition.</div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="kicker">Failure 2</div>
+  <h2>Keep or pull: a coin flip that leans paranoid</h2>
+  <div class="body"><img src="../figures/keep_pull.png" alt="Keep or pull outcomes">
+    <div class="side"><b>92 / 168</b> right (55%).<br><br><b>53</b> needless pulls.<br><b>20</b> missed pulls.<br><br>Forecast error 0.22–0.42 °C, about the size of the decision margin.</div></div>
+  <div class="notes"><b>~35s.</b> Models mostly catch thermal lag (left bar). They fail the reverse: more than half the safe soldiers got pulled. An aid that pulls everyone gets ignored, then it misses the one that counts. And 22 truly rising soldiers were still missed, the dangerous direction.</div>
+</section>
+
+<!-- 6b transcripts -->
+<section class="slide">
+  <div class="kicker">Reading the transcripts</div>
+  <h2>Two real answers, graded by code</h2>
+  <div class="body" style="align-items:stretch;gap:2.5vw">
+    <div style="flex:1;min-width:0"><div class="kicker" style="margin-bottom:8px">Sonnet 5.5 · RB-01 · prompt says "12 April 2022 edition"</div>
+<pre>"rulebook": {
+  "work_rest_min": <span class="bad">"40/20"</span>,        <span class="c">// 2022 card: NL</span>
+  "water_qt_per_hr": 0.75,
+  "continuous_work_min": <span class="bad">100</span>,      <span class="c">// 2022 card: NL</span>
+  "continuous_water_qt_per_hr": 1
+},
+"decision": "OVERRIDE"    <span class="ok">// correct</span></pre></div>
+    <div style="flex:1;min-width:0"><div class="kicker" style="margin-bottom:8px">GPT-6 Astra · KG-01 · measured core 15 min later: 38.24 °C</div>
+<pre style="white-space:pre-wrap">"decision": <span class="bad">"PULL"</span>,
+"core_c_in_15_min": 38.6,     <span class="c">// off by 0.36 °C</span>
+"reasoning": "...falling skin temperature can
+  coexist with continued core heating and does
+  not establish safety ... My rough, low-confidence
+  estimate is 38.6 C, slightly above the threshold,
+  so I favor PULL."</pre></div>
+  </div>
+  <div class="notes"><b>~35s.</b> Left: Sonnet gets the hard part right (override, this soldier is hot) but recites the 2003 cell, even though the prompt asks for the 2022 edition and offers NL. Honest caveat: the prompt's format example is "40/20", which may prime this. Right: Astra reasons correctly that slowing down doesn't prove safety, then overcorrects and pulls a soldier who measured 38.24 °C fifteen minutes later. That's the pattern: models know the textbook risk, but can't tell when a hot soldier is actually fine. More transcripts in the transcripts/ folder.</div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="kicker">Pricing</div>
+  <h2>Paying 100x more does not buy a better medic</h2>
+  <div class="body"><img src="../figures/index_vs_cost.png" alt="Index vs cost">
+    <div class="side">Whole run: <b>$141.20</b><br>incl. judge <b>$15.66</b><br><br>DeepSeek V4.1 Flash <b>$0.29</b><br>Hy4 <b>$1.09</b> → 44.9<br>GPT-6 Astra <b>$8.87</b> → 54.5<br>Fable 5.1 <b>$29.54</b> → 43.8</div></div>
+  <div class="notes"><b>~25s.</b> Provider-reported spend via OpenRouter, prices retrieved 2026-11-08. Spend barely tracks score. Hy4 matches Fable 5.1 for 1/27th the price. Bonus: research was the relative strength. 76 of 98 predictors beat the baseline. Models can fit data; they lack the field knowledge to apply it.</div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="kicker">Reproduce</div>
+  <h2>Re-score my run in 10 seconds, no API key</h2>
+  <div class="body" style="flex-direction:column;align-items:flex-start;gap:3vh">
+<pre>pip install -r requirements.txt
+python -m eval_suite.report_leaderboard --root results/rerun-20261107
+python scripts/judge_reliability.py
+# or run any OpenRouter model from scratch:
+python -m eval_suite run --model &lt;openrouter-id&gt; --tasks all --spend-cap-usd 5 ...</pre>
+    <div class="side">Limits: one trial per case · format example "40/20" in the rulebook prompt · civilian lab data · public workbook (near-chance calls suggest no memorisation) · research ranks provisional.<br><br><b>The gap isn't math or code. It's the current rulebook and the judgment to leave a hot-but-fine soldier on task.</b></div>
+  </div>
+  <div class="notes"><b>~20s.</b> All raw outputs, grades and judgments are in results/. The tests and the leaderboard recompute from the zip alone. Close on the takeaway line.</div>
+</section>
+
+<div class="foot">← → to move · N toggles notes</div>
+<script>
+  const s=[...document.querySelectorAll('.slide')]; let i=0;
+  const show=()=>{s.forEach((e,k)=>e.classList.toggle('on',k===i));document.querySelector('.foot').textContent=`${i+1}/${s.length} · ← → move · N notes`;};
+  addEventListener('keydown',e=>{
+    if(['ArrowRight',' ','PageDown'].includes(e.key)) i=Math.min(i+1,s.length-1);
+    else if(['ArrowLeft','PageUp'].includes(e.key)) i=Math.max(i-1,0);
+    else if(e.key.toLowerCase()==='n') document.body.classList.toggle('clean');
+    show();});
+  addEventListener('click',()=>{i=Math.min(i+1,s.length-1);show();});
+  show();
+</script>
+</body>
+</html>

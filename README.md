@@ -3,7 +3,7 @@
 **Can frontier models keep a soldier out of heat stroke?**
 
 **Video walkthrough:** TODO_VIDEO_LINK  
-**Results site:** <https://soliderphys-bench.pages.dev>
+**Results site:** [https://soliderphys-bench.pages.dev](https://soliderphys-bench.pages.dev) (source in [`site/`](site/); `cd site && npm install && npm run dev` for localhost)
 
 ![SoldierPhysio index vs cost](docs/figures/index_vs_cost.png)
 
@@ -175,7 +175,9 @@ python -m tasks.combined_score runs/deepseek/judged.json --params tasks/scoring_
 Add `--tasks keep-going-or-pull-him,rulebook-versus-body` to skip the agentic task. Official
 agentic runs use the Docker backend (`--image`); the local backends are development
 sandboxes (see Technical reference). To redraw the charts, run
-`python scripts/make_charts.py` and `python scripts/make_index_charts.py`.
+`python scripts/make_charts.py` and `python scripts/make_index_charts.py`. To refresh the
+results site data (`site/lib/soldier.json`, `site/public/traces/cases.json`), run
+`python scripts/build_site_data.py`.
 
 ## Cost and runtime
 
