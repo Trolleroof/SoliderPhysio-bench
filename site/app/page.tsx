@@ -1,8 +1,5 @@
 import { Board } from "@/components/Board";
-import { Scatter } from "@/components/Scatter";
-import { RulebookBars } from "@/components/RulebookBars";
-import { KeepPull } from "@/components/KeepPull";
-import { CostByTask } from "@/components/CostByTask";
+import { CaseResults } from "@/components/CaseResults";
 import { TaskScores } from "@/components/TaskScores";
 import { Toc } from "@/components/Toc";
 import { PinnedHeads } from "@/components/PinnedHeads";
@@ -32,7 +29,6 @@ function Finding({ n, title, children }: { n: number; title: string; children: R
 }
 
 export default function Home() {
-  const total = data.model_usd, research = data.research_usd, single = data.single_turn_usd;
   return (
     <div className="wrap">
       <Toc />
@@ -66,124 +62,6 @@ export default function Home() {
             the same 21 cases, and code checks each answer against what actually happened.
           </p>
         </div>
-      </section>
-
-      <section className="block rise" id="leaderboard" style={{ "--d": "220ms" } as React.CSSProperties}>
-        <Board />
-      </section>
-
-      <section className="block" id="cost">
-        <div className="block-head"><h3>Score against cost</h3><span className="label">14 models · 21 cases</span></div>
-        <Scatter />
-        <p className="note">Provider-reported USD to answer all 21 cases, log scale.</p>
-      </section>
-
-      <section className="block" id="findings">
-        <h2>Key findings</h2>
-        <p className="sub">
-          Each of the 14 models answered the same 21 cases. Code checked every answer against the real measured
-          temperature, the 2022 heat chart, or the Army&apos;s existing formula. Each finding below says what happened,
-          then gives our best guess at why. The &quot;why&quot; parts are educated guesses, not things we proved.
-        </p>
-
-        <Finding n={1} title="models quote an old version of the Army heat chart">
-          <p>
-            The Army updated its heat chart in 2022. We asked about one specific situation: a medium-hot day (a
-            &quot;yellow flag&quot; day) with medium-effort work. The 2022 chart says there is <strong>no time
-            limit</strong> on work for that situation. The old 2003 chart said 40 minutes of work, then 20 minutes of
-            rest. The question told the models to use the 2022 chart, yet <strong>18 of 28 answers gave the old
-            40/20.</strong> Only 3 got it right. Many answers also made up a work time limit that does not exist on the
-            new chart, or gave the wrong amount of water. A medic holding the current chart would get this right every
-            time. The models answer in the right format and sound confident, but they are reading from the wrong
-            edition. (Fable 5 and Opus 5.5 refused to answer these questions, so they scored zero.)
-          </p>
-          <p>
-            <strong>Why this probably happens:</strong> the 2003 chart was in use for almost 20 years, so it shows up
-            all over the internet in training slides, websites, and old manuals. The 2022 update is newer and much less
-            written about. The models most likely repeat the version they saw most often during training, even when
-            told to use the new one.
-          </p>
-          <div className="fig"><RulebookBars /></div>
-        </Finding>
-
-        <Finding n={2} title="when unsure, models pull the soldier">
-          <p>
-            On keep-or-pull, the models were right <strong>92 of 168 times (55%)</strong>. That is barely better than
-            flipping a coin. The mistakes mostly went one way. Of the 84 cases where the soldier was actually safe, the
-            models pulled 53 of them anyway. Two models (GPT-6 Astra and GPT-6.1 Terra) pulled every safe soldier,
-            which is exactly the score you would get by pulling anyone who looks hot. Sonnet 5.5 was the exception: it
-            kept every safe soldier going and got 10 of 12 right.
-          </p>
-          <p>
-            <strong>Why this probably happens:</strong> AI models are trained to be extra careful with anything
-            medical, so &quot;pull them, just to be safe&quot; feels like the responsible answer. But in the field,
-            pulling is not free. Soldiers lose training time, and a tool that keeps raising false alarms teaches people
-            to ignore it, right up until the time it matters.
-          </p>
-          <div className="fig"><KeepPull /></div>
-        </Finding>
-
-        <Finding n={3} title="they catch the textbook trap but miss the quiet danger">
-          <p>
-            There is a well-known trap called <strong>thermal lag</strong>. A soldier slows down, but their core
-            temperature keeps rising for a while, like a car engine that stays hot after you turn it off. The models
-            were good at this: <strong>34 of 42 calls were right</strong>. The dangerous misses happened somewhere
-            else. 13 of the 20 missed pulls were soldiers working at a steady pace, with nothing
-            dramatic in their heart rate, while their core slowly climbed past the limit. The models&apos; temperature
-            guesses were also off by 0.2 to 0.4 °C on average, which is often enough to flip the decision.
-          </p>
-          <p>
-            <strong>Why this probably happens:</strong> thermal lag is a textbook idea that shows up in a lot of
-            writing, so the models know to look for it. A soldier who is slowly heating up at a steady pace has no
-            obvious warning sign. Nothing in the data &quot;looks&quot; scary, so the models let it go.
-          </p>
-        </Finding>
-
-        <Finding n={4} title="models break the rules no matter what the data says">
-          <p>
-            We gave the models a matched pair of cases. In the first, the sensors look calm, but the soldier is
-            actually overheating (core already at 38.4 °C and rising), so the right move is to ignore the chart and
-            pull them. In the second, the sensors look scary (heart rate 169 to 180), but the soldier is fine, so the
-            right move is to follow the chart. <strong>Of 23 usable answers, 21 chose to ignore the chart in both
-            cases.</strong> Only Grok 4.6 told the two apart.
-          </p>
-          <p>
-            <strong>Why this probably happens:</strong> the question is about heat illness, and heat illness sounds
-            dangerous, so the models react to the topic instead of the actual numbers in front of them. Choosing safety
-            over the rulebook also sounds like the &quot;right&quot; thing to say.
-          </p>
-        </Finding>
-
-        <Finding n={5} title="the coding task is the easy part">
-          <p>
-            In one task, each model got its own coding environment and about 20 minutes to build a tool that estimates
-            core temperature from sensor data. It then had to beat the Army&apos;s existing formula (ECTemp, Buller et
-            al., 2013) on people it had never seen. <strong>76 of 98 attempts beat the existing formula.</strong>{" "}
-            Gemini 4 Argon beat it every time but still finished 11th overall, because it ran out of time before
-            writing up its explanation, which cost it 40% of that task&apos;s score.
-          </p>
-          <p>
-            <strong>Why this probably happens:</strong> coding and fitting data are the skills these models are
-            trained on most. The hard part is not the math. It is field knowledge: knowing the current rules and when a
-            hot soldier is actually fine.
-          </p>
-        </Finding>
-
-        <Finding n={6} title="spending more does not buy a better medic">
-          <p>
-            Running all 21 cases cost <strong>$0.29 on the cheapest model (DeepSeek V4.1 Flash) and $29.54 on the most
-            expensive (Fable 5.1)</strong>, about 100 times more. Hy4 cost $1.09 and still beat Fable 5.1. Of the $
-            {total.toFixed(2)} spent on models, ${research.toFixed(2)} ({Math.round((research / total) * 100)}%) went to
-            the coding task, where models already do well. The quick medic questions, where they struggle, cost only $
-            {single.toFixed(2)} across all 14 models.
-          </p>
-          <p>
-            <strong>Why this probably happens:</strong> paying more mostly buys longer &quot;thinking.&quot; But the
-            models do not fail here because they did not think hard enough. They fail because they have the wrong
-            version of the rules and lean too far toward pulling. More thinking does not fix either one.
-          </p>
-          <div className="fig"><CostByTask limit={6} /></div>
-        </Finding>
       </section>
 
       <section className="block" id="methodology">
@@ -266,8 +144,7 @@ export default function Home() {
             <p>
               SoldierPhysio reports two complementary signals: a deterministic outcome score and a criterion review of
               each decision&apos;s stated reason. The first measures whether the call was right; the second examines
-              whether the model could justify its call from what it was shown. All six key findings above use only the
-              deterministic code grades.
+              whether the model could justify its call from what it was shown. The key takeaways draw on saved reasoning and final answers alongside deterministic code grades.
             </p>
 
             <h4>Deterministic outcome score</h4>
@@ -367,8 +244,40 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="writeup-sec" id="limits">
-            <h3>Limits and reproduction</h3>
+        </div>
+      </section>
+
+      <section className="block rise" id="leaderboard" style={{ "--d": "220ms" } as React.CSSProperties}>
+        <Board />
+      </section>
+
+      <CaseResults />
+
+      <section className="block" id="findings">
+        <h2>Key takeaways</h2>
+        <p className="sub">A closer look at individual saved reasoning traces and final answers. These examples illustrate how models approached particular cases; they do not establish a general tendency across all runs. Some providers expose summaries or encrypted reasoning instead of a complete trace.</p>
+
+        <Finding n={1} title="The same cooling signal led to opposite calls">
+          <p>In KG-04, both Sonnet 5.5 and Opus 5 considered falling skin temperature alongside a roughly 10 bpm rise in heart rate at constant workload. Sonnet’s visible reasoning treated the heart-rate drift as the stronger signal in a borderline case; Opus treated cooling below ambient as evidence that core temperature was leveling off.</p>
+          <p>Sonnet forecast 38.7 °C and pulled; Opus forecast 38.3 °C and kept going. The measured outcome was 39.14 °C. The contrast is in how they weighed the same observations, not evidence that skin temperature alone determines core temperature.</p>
+          <p className="note"><a href="/traces/#4-keep_going-KG-04">Sonnet 5.5 trace</a> · <a href="/traces/#12-keep_going-KG-04">Opus 5 trace</a></p>
+        </Finding>
+
+        <Finding n={2} title="A remembered rule became a ‘confirmed’ rule">
+          <p>In Grok 4.6’s visible reasoning summary for RB-02, it recalled a 40/20 work-rest cycle, then described that value as confirmed while continuing to work through which table applied. Its final answer repeated 40/20. The 2022 card’s expected work-rest entry for this case is no limit.</p>
+          <p>The model did correctly choose FOLLOW for this soldier, whose measured future core temperature stayed below the threshold. Getting the individual decision right did not mean its recalled table entry was right. The saved summary does not establish an external lookup.</p>
+          <p className="note"><a href="/traces/#9-rulebook_vs_body-RB-02">Grok 4.6 trace</a></p>
+        </Finding>
+
+        <Finding n={3} title="An invented time limit became part of the decision">
+          <p>In RB-01, DeepSeek V4.1 Flash’s visible reasoning explored several possible heat-chart values and expressed uncertainty about the continuous-work limit. Its final answer settled on a 60-minute limit, then used the soldier’s 44 minutes of work to argue that another 15 minutes remained within it.</p>
+          <p>The expected 2022 continuous-work entry was no limit, and the case’s decision rule depended on predicted core temperature, not remaining time under that invented limit. DeepSeek forecast 38.4 °C and chose FOLLOW; the measured future core was 38.92 °C, requiring OVERRIDE.</p>
+          <p className="note"><a href="/traces/#6-rulebook_vs_body-RB-01">DeepSeek trace</a></p>
+        </Finding>
+      </section>
+
+      <section className="block" id="limits">
+        <h2>Limits and reproduction</h2>
             <ul>
               <li>
                 <strong>One trial per case.</strong> Model outputs vary run to run. The pooled failure counts (18 of 28
@@ -400,8 +309,6 @@ export default function Home() {
               <code>python -m eval_suite run --model &lt;openrouter-id&gt; --tasks all --spend-cap-usd 5</code>; a full
               run takes up to 45 minutes, and all 14 models plus the judge cost ${data.total_usd.toFixed(2)}.
             </p>
-          </div>
-        </div>
       </section>
     </div>
   );

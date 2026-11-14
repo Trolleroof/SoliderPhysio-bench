@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 
 const ITEMS = [
   { id: "intro", label: "Introduction" },
-  { id: "leaderboard", label: "Results" },
-  { id: "cost", label: "Cost" },
-  { id: "findings", label: "Key findings" },
   { id: "methodology", label: "Methodology" },
   { id: "tasks", label: "Tasks" },
   { id: "scoring", label: "Scoring" },
+  { id: "leaderboard", label: "Results" },
+  { id: "case-results", label: "Case results" },
+  { id: "findings", label: "Key takeaways" },
   { id: "limits", label: "Limits" },
 ];
 
