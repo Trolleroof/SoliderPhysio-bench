@@ -148,7 +148,7 @@ section.block { padding: 40px 0 4px; scroll-margin-top: 68px; }
   padding-top: 10px; padding-bottom: 10px;
 }
 .writeup-sec > h3 {
-  position: sticky; top: 119px; z-index: 3; background: var(--bg);
+  position: sticky; top: var(--pin-sub, 119px); z-index: 3; background: var(--bg);
   padding: 6px 0 8px;
 }
 .block h3 { font: 400 21px var(--serif); margin: 0; color: var(--bone); }

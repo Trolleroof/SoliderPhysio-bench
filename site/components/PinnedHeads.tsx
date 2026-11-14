@@ -11,7 +11,23 @@ const FADE = 160;
 export function PinnedHeads() {
   useEffect(() => {
     const heads = Array.from(document.querySelectorAll<HTMLElement>(SELECTOR));
+    // Fade only the text, never the box: the solid background must keep covering
+    // whatever scrolls underneath, or the content shows through the title.
+    const base = new Map(heads.map((el) => [el, getComputedStyle(el).color.match(/[\d.]+/g)?.slice(0, 3).join(", ")]));
+    const setFade = (el: HTMLElement, o: number) => {
+      const kids = Array.from(el.children) as HTMLElement[];
+      if (kids.length) kids.forEach((k) => (k.style.opacity = o === 1 ? "" : String(o)));
+      else el.style.color = o === 1 ? "" : `rgba(${base.get(el)}, ${o})`;
+      el.style.pointerEvents = o < 0.2 ? "none" : "";
+    };
     let frame = 0;
+    // subsection titles pin directly under the pinned section title: measure it
+    const measure = () => {
+      const header = document.querySelector<HTMLElement>(".site-header");
+      const h2 = document.querySelector<HTMLElement>("#methodology > h2");
+      if (header && h2) document.documentElement.style.setProperty("--pin-sub", `${header.offsetHeight + h2.offsetHeight}px`);
+    };
+    measure();
     const update = () => {
       frame = 0;
       for (const el of heads) {
@@ -20,7 +36,7 @@ export function PinnedHeads() {
         const top = parseFloat(getComputedStyle(el).top) || 0;
         // room left between the bottom of the pinned title and the end of its section
         const room = box.bottom - (top + el.offsetHeight);
-        el.style.opacity = String(Math.max(0, Math.min(1, room / FADE)));
+        setFade(el, Math.max(0, Math.min(1, room / FADE)));
       }
     };
     const onScroll = () => {
@@ -28,12 +44,13 @@ export function PinnedHeads() {
     };
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    const onResize = () => { measure(); onScroll(); };
+    window.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
       if (frame) cancelAnimationFrame(frame);
-      heads.forEach((el) => (el.style.opacity = ""));
+      heads.forEach((el) => setFade(el, 1));
     };
   }, []);
   return null;
